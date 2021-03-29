@@ -10,3 +10,5 @@ edition = "2018"
 clap = "2.33.3"
 tracing = "0.1.25"
 tracing-subscriber = "0.2.17"
+reqwest = { version = "0.11.2", features = ["blocking", "json"] }
+dyn-fmt = "0.3.0"

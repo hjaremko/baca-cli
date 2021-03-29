@@ -1,4 +1,4 @@
-use std::env;
+use crate::util;
 use tracing::Level;
 use tracing_subscriber::FmtSubscriber;
 
@@ -9,20 +9,13 @@ pub fn init_logging() {
     tracing::subscriber::set_global_default(subscriber).expect("setting default subscriber failed");
 }
 
+// todo: generic get env
 fn get_log_level() -> Level {
     const VAR_NAME: &str = "BACA_LOG";
+    let default_level = "error".to_string();
 
     // todo: get from command line arguments
-    match env::var(VAR_NAME) {
-        Ok(raw_level) => to_log_level(raw_level.as_str()),
-        Err(_) => {
-            tracing::debug!(
-                "Variable {} is not present in the environment! Default log level to error.",
-                VAR_NAME
-            );
-            Level::ERROR
-        }
-    }
+    to_log_level(util::get_env(VAR_NAME).unwrap_or(default_level).as_str())
 }
 
 fn to_log_level(raw_level: &str) -> Level {
