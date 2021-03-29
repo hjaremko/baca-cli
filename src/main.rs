@@ -2,6 +2,7 @@ use crate::baca::{InstanceData, RequestBuilder};
 
 mod logging_utils;
 pub mod util;
+mod view;
 
 mod baca {
     use crate::util;
@@ -18,20 +19,23 @@ mod baca {
 
     pub enum RequestType {
         Results,
+        SubmitDetails(String),
     }
 
     impl RequestType {
         fn payload_template(&self) -> String {
-            match *self {
+            match self {
                 RequestType::Results =>
-                            "7|0|5|{}|03D93DB883748ED9135F6A4744CFFA07|testerka.gwt.client.submits.SubmitsService|getAllSubmits|Z|1|2|3|4|1|5|1|".to_string()
-                ,
+                    "7|0|5|{}|03D93DB883748ED9135F6A4744CFFA07|testerka.gwt.client.submits.SubmitsService|getAllSubmits|Z|1|2|3|4|1|5|1|".to_string(),
+                RequestType::SubmitDetails(id) =>
+                    "7|0|5|{}|03D93DB883748ED9135F6A4744CFFA07|testerka.gwt.client.submits.SubmitsService|getSubmitDetails|I|1|2|3|4|1|5|".to_string() + id + "|",
             }
         }
 
         fn mapping(&self) -> String {
             match *self {
                 RequestType::Results => "submits".to_string(),
+                RequestType::SubmitDetails(_) => "submits".to_string(),
             }
         }
     }
@@ -76,6 +80,12 @@ mod baca {
             self.make_request(RequestType::Results).send().unwrap()
         }
 
+        pub fn send_submit_details(&self, submit_id: &str) -> Response {
+            self.make_request(RequestType::SubmitDetails(submit_id.to_string()))
+                .send()
+                .unwrap()
+        }
+
         fn make_request(&self, req_type: RequestType) -> reqwest::blocking::RequestBuilder {
             use reqwest::header::{CONTENT_TYPE, COOKIE};
 
@@ -97,13 +107,18 @@ fn main() {
     logging_utils::init_logging();
 
     // todo: read this from persistence
-    let nm = InstanceData {
+    let _nm = InstanceData {
         name: "mn2020".to_string(),
         permutation: "5A4AE95C27260DF45F17F9BF027335F6".to_string(),
     };
 
-    let req = RequestBuilder::new(nm);
-    let submit_resp = req.send_results();
+    let so = InstanceData {
+        name: "so2018".to_string(),
+        permutation: "022F1CFD68CBD2A9A4422647533A7495".to_string(),
+    };
+
+    let req = RequestBuilder::new(so);
+    let submit_resp = req.send_submit_details("1943");
 
     tracing::info!("{:?}", submit_resp.text());
 }
