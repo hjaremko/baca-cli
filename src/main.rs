@@ -1,12 +1,16 @@
 use crate::baca::{InstanceData, RequestBuilder};
+use crate::submit_parser::SubmitParser;
+use std::rc::Rc;
 
 mod logging_utils;
+mod model;
+mod submit_parser;
 pub mod util;
-mod view;
 
 mod baca {
     use crate::util;
     use reqwest::blocking::Response;
+    use std::rc::Rc;
 
     const BACA_HOST: &str = "baca.ii.uj.edu.pl";
 
@@ -65,13 +69,15 @@ mod baca {
 
     pub struct RequestBuilder {
         client: reqwest::blocking::Client,
-        data: InstanceData,
+        data: Rc<InstanceData>,
     }
 
     impl RequestBuilder {
-        pub fn new(data: InstanceData) -> RequestBuilder {
+        pub fn new(data: Rc<InstanceData>) -> RequestBuilder {
             RequestBuilder {
-                client: reqwest::blocking::Client::new(),
+                client: reqwest::blocking::ClientBuilder::new()
+                    .danger_accept_invalid_certs(true)
+                    .build().unwrap(),
                 data,
             }
         }
@@ -107,18 +113,29 @@ fn main() {
     logging_utils::init_logging();
 
     // todo: read this from persistence
-    let _nm = InstanceData {
+    let nm = Rc::new(InstanceData {
         name: "mn2020".to_string(),
         permutation: "5A4AE95C27260DF45F17F9BF027335F6".to_string(),
-    };
+    });
 
     let so = InstanceData {
         name: "so2018".to_string(),
         permutation: "022F1CFD68CBD2A9A4422647533A7495".to_string(),
     };
 
-    let req = RequestBuilder::new(so);
-    let submit_resp = req.send_submit_details("1943");
+    let p1 = InstanceData {
+        name: "p12018".to_string(),
+        permutation: "5A4AE95C27260DF45F17F9BF027335F6".to_string(),
+    };
 
-    tracing::info!("{:?}", submit_resp.text());
+    let req = RequestBuilder::new(nm.clone());
+
+    let submit_id = "1721";
+    let submit_resp = req.send_submit_details(submit_id);
+    let raw_submit_data = submit_resp.text().expect("Invalid submit data");
+    tracing::info!("{}", raw_submit_data);
+
+    let submit =
+        SubmitParser::parse(submit_id, &nm, &raw_submit_data).expect("Error parsing submit");
+    submit.print();
 }

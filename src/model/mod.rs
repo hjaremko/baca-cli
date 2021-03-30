@@ -1,7 +1,7 @@
 use std::str::FromStr;
 
+#[derive(Debug, PartialEq)]
 enum SubmitStatus {
-    Unknown,
     OK,
     WrongAnswer,
 }
@@ -29,6 +29,7 @@ impl FromStr for SubmitStatus {
     }
 }
 
+#[derive(Debug, PartialEq)]
 pub struct Submit {
     // problem: Problem,
     id: String,
@@ -69,7 +70,7 @@ impl Submit {
 
 #[cfg(test)]
 mod submit_print_tests {
-    use crate::view::Submit;
+    use crate::model::Submit;
 
     #[test]
     fn correct_submit() {
