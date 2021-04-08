@@ -1,6 +1,8 @@
 use crate::baca::{InstanceData, RequestBuilder};
 use crate::submit_parser::SubmitParser;
+use clap::{App, Arg, SubCommand};
 use std::rc::Rc;
+use tracing::Level;
 
 mod logging_utils;
 mod model;
@@ -8,18 +10,10 @@ mod submit_parser;
 pub mod util;
 
 mod baca {
-    use crate::util;
     use reqwest::blocking::Response;
     use std::rc::Rc;
 
     const BACA_HOST: &str = "baca.ii.uj.edu.pl";
-
-    pub fn make_cookie() -> String {
-        const VAR_NAME: &str = "BACA_SESSION";
-        let cookie = util::get_env(VAR_NAME).expect("Session cookie not set!");
-
-        format!("JSESSIONID={}; experimentation_subject_id=IjQ3YTM4YzY5LWI3NDItNDhjMS05MDJkLTIyYjIxZTlkNzZjYiI%3D--f329434f16371429c34e2e6eccd204760a89b9a9; acceptedCookies=yes; _ga=GA1.3.84942962.1597996247", cookie)
-    }
 
     pub enum RequestType {
         Results,
@@ -47,6 +41,7 @@ mod baca {
     pub struct InstanceData {
         pub name: String,
         pub permutation: String,
+        pub cookie: String,
     }
 
     impl InstanceData {
@@ -65,6 +60,10 @@ mod baca {
                 .payload_template()
                 .format(&[self.make_module_base()])
         }
+
+        pub fn make_cookie(&self) -> String {
+            format!("JSESSIONID={}; experimentation_subject_id=IjQ3YTM4YzY5LWI3NDItNDhjMS05MDJkLTIyYjIxZTlkNzZjYiI%3D--f329434f16371429c34e2e6eccd204760a89b9a9; acceptedCookies=yes; _ga=GA1.3.84942962.1597996247", self.cookie)
+        }
     }
 
     pub struct RequestBuilder {
@@ -77,7 +76,8 @@ mod baca {
             RequestBuilder {
                 client: reqwest::blocking::ClientBuilder::new()
                     .danger_accept_invalid_certs(true)
-                    .build().unwrap(),
+                    .build()
+                    .unwrap(),
                 data,
             }
         }
@@ -100,7 +100,7 @@ mod baca {
             self.client
                 .post(post_url)
                 .body(self.data.make_payload(req_type))
-                .header(COOKIE, make_cookie())
+                .header(COOKIE, self.data.make_cookie())
                 .header(CONTENT_TYPE, "text/x-gwt-rpc; charset=UTF-8")
                 .header("DNT", "1")
                 .header("X-GWT-Module-Base", self.data.make_module_base())
@@ -110,32 +110,78 @@ mod baca {
 }
 
 fn main() {
-    logging_utils::init_logging();
+    let matches = App::new("BaCa CLI")
+        .version("1.0.0")
+        .author("Hubert Jaremko <hjaremko@outlook.com>")
+        .about("CLI client for the Jagiellonian University's BaCa online judge")
+        .arg(
+            Arg::with_name("v")
+                .short("v")
+                .multiple(true)
+                .help("Sets the level of verbosity"),
+        )
+        .subcommand(
+            SubCommand::with_name("init")
+                .about("Initializes current directory as BaCa workspace")
+                .arg(
+                    Arg::with_name("host")
+                        .short("h")
+                        .long("host")
+                        .help("BaCa hostname, ex. mn2020")
+                        .required(true)
+                        .takes_value(true),
+                )
+                .arg(Arg::with_name("permutation")
+                    .short("p")
+                    .long("perm")
+                    .help("BaCa host permutation, found in 'X-GWT-Permutation' header of HTTP request")
+                    .required(true)
+                    .takes_value(true)
+                )
+                .arg(Arg::with_name("session")
+                    .short("s")
+                    .long("session")
+                    .help("BaCa session cookie, found in 'JSESSIONID' cookie of HTTP request")
+                    .required(true)
+                    .takes_value(true)
+                ),
+        )
+        .get_matches();
 
-    // todo: read this from persistence
-    let nm = Rc::new(InstanceData {
-        name: "mn2020".to_string(),
-        permutation: "5A4AE95C27260DF45F17F9BF027335F6".to_string(),
-    });
-
-    let so = InstanceData {
-        name: "so2018".to_string(),
-        permutation: "022F1CFD68CBD2A9A4422647533A7495".to_string(),
+    let log_level = match matches.occurrences_of("v") {
+        0 => Level::WARN,
+        1 => Level::INFO,
+        2 => Level::DEBUG,
+        3 | _ => Level::TRACE,
     };
 
-    let p1 = InstanceData {
-        name: "p12018".to_string(),
-        permutation: "5A4AE95C27260DF45F17F9BF027335F6".to_string(),
-    };
+    logging_utils::init_logging(log_level);
 
-    let req = RequestBuilder::new(nm.clone());
+    if let Some(matches) = matches.subcommand_matches("init") {
+        let host = matches.value_of("host").unwrap();
+        let perm = matches.value_of("permutation").unwrap();
+        let cookie = matches.value_of("session").unwrap();
 
-    let submit_id = "1721";
-    let submit_resp = req.send_submit_details(submit_id);
-    let raw_submit_data = submit_resp.text().expect("Invalid submit data");
-    tracing::info!("{}", raw_submit_data);
+        tracing::info!("Using BaCa host: {}", host);
+        tracing::info!("Using BaCa permutation: {}", perm);
+        tracing::info!("Using BaCa session cookie: {}", cookie);
+        // todo: save to persistence
 
-    let submit =
-        SubmitParser::parse(submit_id, &nm, &raw_submit_data).expect("Error parsing submit");
-    submit.print();
+        let instance = Rc::new(InstanceData {
+            name: host.to_string(),
+            permutation: perm.to_string(),
+            cookie: cookie.to_string(),
+        });
+
+        let req = RequestBuilder::new(instance.clone());
+
+        let submit_id = "1721";
+        let submit_resp = req.send_submit_details(submit_id);
+        let raw_submit_data = submit_resp.text().expect("Invalid submit data");
+        tracing::info!("{}", raw_submit_data);
+
+        let submit = SubmitParser::parse(submit_id, &instance, &raw_submit_data)
+            .expect("Error parsing submit");
+        submit.print();
+    }
 }
