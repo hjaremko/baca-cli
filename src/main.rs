@@ -1,16 +1,19 @@
 use crate::baca::{InstanceData, RequestBuilder};
 use crate::submit_parser::SubmitParser;
-use clap::{App, Arg, SubCommand};
+use clap::{App, AppSettings, Arg, SubCommand};
 use std::rc::Rc;
 use tracing::Level;
 
+mod commands;
 mod logging_utils;
 mod model;
+mod persistence;
 mod submit_parser;
 pub mod util;
 
 mod baca {
     use reqwest::blocking::Response;
+    use serde::{Deserialize, Serialize};
     use std::rc::Rc;
 
     const BACA_HOST: &str = "baca.ii.uj.edu.pl";
@@ -38,6 +41,7 @@ mod baca {
         }
     }
 
+    #[derive(Serialize, Deserialize, Debug)]
     pub struct InstanceData {
         pub name: String,
         pub permutation: String,
@@ -110,6 +114,7 @@ mod baca {
 }
 
 fn main() {
+    // todo: from yaml
     let matches = App::new("BaCa CLI")
         .version("1.0.0")
         .author("Hubert Jaremko <hjaremko@outlook.com>")
@@ -146,6 +151,15 @@ fn main() {
                     .takes_value(true)
                 ),
         )
+        .subcommand(
+            SubCommand::with_name("details")
+                .about("Gets submit details")
+                .setting(AppSettings::AllowMissingPositional)
+                .arg(
+                    Arg::with_name("id")
+                        .required(true),
+                ),
+        )
         .get_matches();
 
     let log_level = match matches.occurrences_of("v") {
@@ -165,23 +179,16 @@ fn main() {
         tracing::info!("Using BaCa host: {}", host);
         tracing::info!("Using BaCa permutation: {}", perm);
         tracing::info!("Using BaCa session cookie: {}", cookie);
-        // todo: save to persistence
 
-        let instance = Rc::new(InstanceData {
-            name: host.to_string(),
-            permutation: perm.to_string(),
-            cookie: cookie.to_string(),
-        });
+        commands::init(host, perm, cookie);
+        return; // todo: some error handling
+    }
 
-        let req = RequestBuilder::new(instance.clone());
+    if let Some(matches) = matches.subcommand_matches("details") {
+        let submit_id = matches.value_of("id").unwrap();
+        tracing::info!("Printing details for submit: {}", submit_id);
 
-        let submit_id = "1721";
-        let submit_resp = req.send_submit_details(submit_id);
-        let raw_submit_data = submit_resp.text().expect("Invalid submit data");
-        tracing::info!("{}", raw_submit_data);
-
-        let submit = SubmitParser::parse(submit_id, &instance, &raw_submit_data)
-            .expect("Error parsing submit");
-        submit.print();
+        commands::submit_details(submit_id);
+        return;
     }
 }
