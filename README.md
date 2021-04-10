@@ -1,8 +1,10 @@
 # baca-cli [![Build](https://github.com/hjaremko/baca-cli/actions/workflows/build.yml/badge.svg)](https://github.com/hjaremko/baca-cli/actions/workflows/build.yml)
 
+CLI client for the Jagiellonian University's BaCa online judge
+
 <img src="https://i.imgur.com/qqkTrDa.gif" align="right" alt="UJ" title="Jagiellonian University"/>
 
-CLI client for the Jagiellonian University's BaCa online judge
+![Preview](https://i.imgur.com/jl7j72k.png)
 
 ## Usage
 
