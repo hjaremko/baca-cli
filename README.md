@@ -22,12 +22,13 @@ SUBCOMMANDS:
     details    Gets submit details
     help       Prints this message or the help of the given subcommand(s)
     init       Initializes current directory as BaCa workspace
+    refresh    Refreshes session, use in case of cookie expiration
 ```
 
 ### Workspace initialization: `init`
 
-Initializes current directory as BaCa workspace, similar to `git init`.
-Currently passwords are stored in **plain text**.
+Initializes current directory as BaCa workspace, similar to `git init`. Currently passwords are stored in **plain text**
+.
 
 ```
 baca init --host <host> --login <login> --password <password>
@@ -60,6 +61,14 @@ Example:
 
 ● 100% - [G] Funkcje sklejane - submit 4334
 └─── https://baca.ii.uj.edu.pl/mn2020/#SubmitDetails/4334
+```
+
+### Re-login: `refresh`
+
+Refreshes session, use in case of cookie expiration.
+
+```
+baca refresh
 ```
 
 ## Compilation

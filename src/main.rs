@@ -193,6 +193,10 @@ fn main() {
                 .setting(AppSettings::AllowMissingPositional)
                 .arg(Arg::with_name("id").required(true)),
         )
+        .subcommand(
+            SubCommand::with_name("refresh")
+                .about("Refreshes session, use in case of cookie expiration"),
+        )
         .get_matches();
 
     let log_level = match matches.occurrences_of("v") {
@@ -222,6 +226,12 @@ fn main() {
         tracing::info!("Printing details for submit: {}", submit_id);
 
         commands::submit_details(submit_id);
+        return;
+    }
+
+    if let Some(matches) = matches.subcommand_matches("refresh") {
+        println!("Refreshing BaCa session...");
+        commands::refresh();
         return;
     }
 }

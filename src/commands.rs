@@ -17,18 +17,7 @@ pub fn init(host: &str, login: &str, pass: &str) {
         return; // todo: return error code or something
     }
 
-    let req = RequestBuilder::new(instance.clone());
-    let login_response = req.send_login();
-
-    for (name, val) in login_response.headers() {
-        tracing::debug!("Resp header: {} = {:?}", name, val);
-    }
-
-    for cookie in login_response.cookies() {
-        tracing::debug!("got cookie {} = {}", cookie.name(), cookie.value());
-        instance.borrow_mut().cookie = cookie.value().to_string();
-    }
-
+    instance.borrow_mut().cookie = get_cookie(instance.borrow().clone());
     persistence::save_baca_info(instance.borrow());
 }
 
@@ -43,4 +32,23 @@ pub fn submit_details(submit_id: &str) {
     let submit = SubmitParser::parse(submit_id, &*instance.borrow(), &raw_submit_data)
         .expect("Error parsing submit");
     submit.print();
+}
+
+pub fn refresh() {
+    let mut instance = persistence::read_baca_info();
+    instance.borrow_mut().cookie = get_cookie(instance.borrow().clone());
+    persistence::save_baca_info(instance.borrow());
+}
+
+fn get_cookie(instance: InstanceData) -> String {
+    let req = RequestBuilder::new(instance);
+    let login_response = req.send_login();
+
+    for (name, val) in login_response.headers() {
+        tracing::debug!("Resp header: {} = {:?}", name, val);
+    }
+
+    let cookie = login_response.cookies().next().unwrap();
+    tracing::debug!("got cookie {} = {}", cookie.name(), cookie.value());
+    cookie.value().to_string()
 }
