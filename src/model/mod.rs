@@ -2,14 +2,14 @@ use std::str::FromStr;
 
 #[derive(Debug, PartialEq)]
 enum SubmitStatus {
-    OK,
+    Ok,
     WrongAnswer,
 }
 
 impl SubmitStatus {
     pub fn from_score(score: i32) -> Self {
         if score == 100 {
-            return Self::OK;
+            return Self::Ok;
         }
 
         Self::WrongAnswer
@@ -21,7 +21,7 @@ impl FromStr for SubmitStatus {
 
     fn from_str(input: &str) -> Result<SubmitStatus, Self::Err> {
         match input {
-            "program zaakceptowany" => Ok(SubmitStatus::OK),
+            "program zaakceptowany" => Ok(SubmitStatus::Ok),
             "zĹ\\x82a odpowiedz" => Ok(SubmitStatus::WrongAnswer),
             _ => Ok(SubmitStatus::WrongAnswer), // todo: different colors for different statuses
                                                 // _ => Err(()),
@@ -59,9 +59,8 @@ impl Submit {
         );
 
         let submit_info = match self.status {
-            SubmitStatus::OK => submit_info.green().bold(),
+            SubmitStatus::Ok => submit_info.green().bold(),
             SubmitStatus::WrongAnswer => submit_info.yellow().bold(),
-            _ => submit_info.bold(),
         };
 
         println!("{}\n└─── {}\n", submit_info, self.link);

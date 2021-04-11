@@ -35,9 +35,9 @@ baca init --host <host> --login <login> --password <password>
 ```
 
 ```
--h, --host <host>           BaCa hostname, ex. mn2020
--p, --perm <permutation>    BaCa login
--s, --session <session>     BaCa password
+-h, --host <host>            BaCa hostname, ex. mn2020
+-l, --login <login>          BaCa login
+-p, --password <password>    BaCa password
 ```
 
 Example, running on `Metody numeryczne 2019/2020`:
