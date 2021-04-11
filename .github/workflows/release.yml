@@ -1,0 +1,35 @@
+name: Release
+
+on:
+  push:
+    branches:
+      - master
+
+jobs:
+  build:
+    name: Build
+    runs-on: ${{ matrix.os }}
+
+    strategy:
+      matrix:
+          os: [ubuntu-latest, windows-latest, macos-latest]
+
+    steps:
+      - name: Chceckout code
+        uses: actions/checkout@v2
+      - name: Cache cargo
+        uses: actions/cache@v2
+        with:
+          path: |
+            ~/.cargo/registry
+            ~/.cargo/git
+            target
+          key: ${{ runner.os }}-cargo-debug-${{ hashFiles('**/Cargo.lock') }}
+          restore-keys: ${{ runner.os }}-cargo-debug-
+      - name: Build project
+        run: cargo build --verbose --all --all-targets --release
+      - name: Upload artifact
+        uses: actions/upload-artifact@v2
+        with:
+          name: baca-${{ runner.os }}
+          path: ./target/release/baca*
