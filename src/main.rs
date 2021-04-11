@@ -1,7 +1,4 @@
-use crate::baca::{InstanceData, RequestBuilder};
-use crate::submit_parser::SubmitParser;
 use clap::{App, AppSettings, Arg, SubCommand};
-use std::rc::Rc;
 use tracing::Level;
 
 mod commands;
@@ -13,14 +10,15 @@ pub mod util;
 
 mod baca {
     use reqwest::blocking::Response;
+    use reqwest::header::CONTENT_TYPE;
     use serde::{Deserialize, Serialize};
-    use std::rc::Rc;
 
     const BACA_HOST: &str = "baca.ii.uj.edu.pl";
 
     pub enum RequestType {
         Results,
         SubmitDetails(String),
+        Login(String, String),
     }
 
     impl RequestType {
@@ -30,6 +28,8 @@ mod baca {
                     "7|0|5|{}|03D93DB883748ED9135F6A4744CFFA07|testerka.gwt.client.submits.SubmitsService|getAllSubmits|Z|1|2|3|4|1|5|1|".to_string(),
                 RequestType::SubmitDetails(id) =>
                     "7|0|5|{}|03D93DB883748ED9135F6A4744CFFA07|testerka.gwt.client.submits.SubmitsService|getSubmitDetails|I|1|2|3|4|1|5|".to_string() + id + "|",
+                RequestType::Login(_, _) =>
+                    "7|0|7|{}|620F3CE7784C04B839FC8E10C6C4A753|testerka.gwt.client.acess.PrivilegesService|login|java.lang.String/2004016611|{}|{}|1|2|3|4|2|5|5|6|7|".to_string(),
             }
         }
 
@@ -37,20 +37,23 @@ mod baca {
             match *self {
                 RequestType::Results => "submits".to_string(),
                 RequestType::SubmitDetails(_) => "submits".to_string(),
+                RequestType::Login(_, _) => "privileges".to_string(),
             }
         }
     }
 
-    #[derive(Serialize, Deserialize, Debug)]
+    #[derive(Serialize, Deserialize, Debug, Clone)]
     pub struct InstanceData {
-        pub name: String,
+        pub host: String,
+        pub login: String,
+        pub password: String,
         pub permutation: String,
         pub cookie: String,
     }
 
     impl InstanceData {
         pub fn make_url(&self) -> String {
-            format!("https://{}/{}", BACA_HOST, self.name)
+            format!("https://{}/{}", BACA_HOST, self.host)
         }
 
         pub fn make_module_base(&self) -> String {
@@ -60,9 +63,11 @@ mod baca {
         pub fn make_payload(&self, req_type: RequestType) -> String {
             use dyn_fmt::AsStrFormatExt;
 
-            req_type
-                .payload_template()
-                .format(&[self.make_module_base()])
+            req_type.payload_template().format(&[
+                self.make_module_base(),
+                self.login.clone(),
+                self.password.clone(),
+            ])
         }
 
         pub fn make_cookie(&self) -> String {
@@ -72,11 +77,11 @@ mod baca {
 
     pub struct RequestBuilder {
         client: reqwest::blocking::Client,
-        data: Rc<InstanceData>,
+        data: InstanceData,
     }
 
     impl RequestBuilder {
-        pub fn new(data: Rc<InstanceData>) -> RequestBuilder {
+        pub fn new(data: InstanceData) -> RequestBuilder {
             RequestBuilder {
                 client: reqwest::blocking::ClientBuilder::new()
                     .danger_accept_invalid_certs(true)
@@ -86,24 +91,53 @@ mod baca {
             }
         }
 
+        pub fn send_login(&self) -> Response {
+            self.make_login_request(RequestType::Login(
+                (&self.data.login).to_string(),
+                (&self.data.password).to_string(),
+            ))
+            .send()
+            .unwrap()
+        }
+
         pub fn send_results(&self) -> Response {
             self.make_request(RequestType::Results).send().unwrap()
         }
 
         pub fn send_submit_details(&self, submit_id: &str) -> Response {
-            self.make_request(RequestType::SubmitDetails(submit_id.to_string()))
-                .send()
-                .unwrap()
+            let req = self.make_request(RequestType::SubmitDetails(submit_id.to_string()));
+
+            tracing::debug!("{:?}", req);
+
+            req.send().unwrap()
         }
 
-        fn make_request(&self, req_type: RequestType) -> reqwest::blocking::RequestBuilder {
-            use reqwest::header::{CONTENT_TYPE, COOKIE};
-
+        fn make_login_request(&self, req_type: RequestType) -> reqwest::blocking::RequestBuilder {
             let post_url = format!("{}{}", self.data.make_module_base(), req_type.mapping());
+            let payload = self.data.make_payload(req_type);
+
+            tracing::debug!("Making login request with payload: {}", payload);
 
             self.client
                 .post(post_url)
-                .body(self.data.make_payload(req_type))
+                .body(payload)
+                .header(CONTENT_TYPE, "text/x-gwt-rpc; charset=UTF-8")
+                .header("DNT", "1")
+                .header("X-GWT-Module-Base", self.data.make_module_base())
+                .header("X-GWT-Permutation", &self.data.permutation)
+        }
+
+        fn make_request(&self, req_type: RequestType) -> reqwest::blocking::RequestBuilder {
+            use reqwest::header::COOKIE;
+            let post_url = format!("{}{}", self.data.make_module_base(), req_type.mapping());
+            let payload = self.data.make_payload(req_type);
+
+            tracing::debug!("Making request to: {}", post_url);
+            tracing::debug!("Making request with payload: {}", payload);
+
+            self.client
+                .post(post_url)
+                .body(payload)
                 .header(COOKIE, self.data.make_cookie())
                 .header(CONTENT_TYPE, "text/x-gwt-rpc; charset=UTF-8")
                 .header("DNT", "1")
@@ -136,29 +170,28 @@ fn main() {
                         .required(true)
                         .takes_value(true),
                 )
-                .arg(Arg::with_name("permutation")
-                    .short("p")
-                    .long("perm")
-                    .help("BaCa host permutation, found in 'X-GWT-Permutation' header of HTTP request")
-                    .required(true)
-                    .takes_value(true)
+                .arg(
+                    Arg::with_name("login")
+                        .short("l")
+                        .long("login")
+                        .help("BaCa login")
+                        .required(true)
+                        .takes_value(true),
                 )
-                .arg(Arg::with_name("session")
-                    .short("s")
-                    .long("session")
-                    .help("BaCa session cookie, found in 'JSESSIONID' cookie of HTTP request")
-                    .required(true)
-                    .takes_value(true)
+                .arg(
+                    Arg::with_name("password")
+                        .short("p")
+                        .long("password")
+                        .help("BaCa password")
+                        .required(true)
+                        .takes_value(true),
                 ),
         )
         .subcommand(
             SubCommand::with_name("details")
                 .about("Gets submit details")
                 .setting(AppSettings::AllowMissingPositional)
-                .arg(
-                    Arg::with_name("id")
-                        .required(true),
-                ),
+                .arg(Arg::with_name("id").required(true)),
         )
         .get_matches();
 
@@ -173,14 +206,14 @@ fn main() {
 
     if let Some(matches) = matches.subcommand_matches("init") {
         let host = matches.value_of("host").unwrap();
-        let perm = matches.value_of("permutation").unwrap();
-        let cookie = matches.value_of("session").unwrap();
+        let login = matches.value_of("login").unwrap();
+        let password = matches.value_of("password").unwrap();
 
         tracing::info!("Using BaCa host: {}", host);
-        tracing::info!("Using BaCa permutation: {}", perm);
-        tracing::info!("Using BaCa session cookie: {}", cookie);
+        tracing::info!("Using BaCa login: {}", login);
+        tracing::info!("Using BaCa password: {}", password);
 
-        commands::init(host, perm, cookie);
+        commands::init(host, login, password);
         return; // todo: some error handling
     }
 

@@ -68,7 +68,9 @@ mod submit_parser_tests {
     #[test]
     fn correct_submit() {
         let baca: InstanceData = InstanceData {
-            name: "baca".to_string(),
+            host: "baca".to_string(),
+            login: "".to_string(),
+            password: "".to_string(),
             permutation: "permutation".to_string(),
             cookie: "cookie".to_string(),
         };
@@ -89,7 +91,9 @@ mod submit_parser_tests {
     #[test]
     fn wrong_submit() {
         let baca: InstanceData = InstanceData {
-            name: "baca".to_string(),
+            host: "baca".to_string(),
+            login: "".to_string(),
+            password: "".to_string(),
             permutation: "permutation".to_string(),
             cookie: "cookie".to_string(),
         };

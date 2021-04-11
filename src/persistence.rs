@@ -1,7 +1,6 @@
 use crate::baca::InstanceData;
 use std::fs;
 use std::fs::DirBuilder;
-use std::rc::Rc;
 
 const BACA_DIR: &str = ".baca";
 const INSTANCE_PATH: &str = ".baca/instance";

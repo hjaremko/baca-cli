@@ -27,21 +27,22 @@ SUBCOMMANDS:
 ### Workspace initialization: `init`
 
 Initializes current directory as BaCa workspace, similar to `git init`.
+Currently passwords are stored in **plain text**.
 
 ```
-baca init --host <host> --perm <permutation> --session <session>
+baca init --host <host> --login <login> --password <password>
 ```
 
 ```
 -h, --host <host>           BaCa hostname, ex. mn2020
--p, --perm <permutation>    BaCa host permutation, found in 'X-GWT-Permutation' header of HTTP request
--s, --session <session>     BaCa session cookie, found in 'JSESSIONID' cookie of HTTP request
+-p, --perm <permutation>    BaCa login
+-s, --session <session>     BaCa password
 ```
 
 Example, running on `Metody numeryczne 2019/2020`:
 
 ```
-baca init --host mn2020 --perm 5A4AE95C27260DF45F17F9BF027335F6 --session BC41D1615839AE5D7883EE62D49BCFE2
+baca init --host mn2020 --login jaremko --password PaSsWorD
 ```
 
 ### Submit details: `details`
