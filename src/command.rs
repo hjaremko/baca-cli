@@ -22,7 +22,7 @@ pub fn init(host: &str, login: &str, pass: &str) {
 pub fn details(submit_id: &str) {
     let instance = workspace::read();
     let submit = baca::api::get_submit_details(&instance, submit_id);
-    let submit = Submit::parse(submit_id, &instance, &submit).expect("Error parsing submit");
+    let submit = Submit::parse(&instance, &submit);
 
     submit.print();
 }

@@ -1,2 +1,2 @@
-pub mod details;
 pub mod api;
+pub mod details;

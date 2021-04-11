@@ -93,6 +93,5 @@ fn main() {
     if matches.subcommand_matches("refresh").is_some() {
         println!("Refreshing BaCa session...");
         command::refresh();
-        return;
     }
 }
