@@ -22,6 +22,14 @@ pub fn get_submit_details(instance: &InstanceData, submit_id: &str) -> String {
     resp
 }
 
+pub fn get_results(instance: &InstanceData) -> String {
+    let resp = Request::new(instance).results().unwrap();
+    let resp = resp.text().expect("Invalid submit data");
+    tracing::debug!("Received raw results: {}", resp); // todo: handle //OK[0,[],0,7]
+
+    resp
+}
+
 struct Request<'a> {
     instance: &'a InstanceData,
     client: reqwest::blocking::Client,
@@ -46,6 +54,11 @@ impl<'a> Request<'a> {
 
     pub fn details(self, id: &str) -> reqwest::Result<Response> {
         let req = self.make_request(RequestType::SubmitDetails(id.to_string()));
+        req.send()
+    }
+
+    pub fn results(self) -> reqwest::Result<Response> {
+        let req = self.make_request(RequestType::Results);
         req.send()
     }
 
@@ -77,7 +90,7 @@ impl<'a> Request<'a> {
 }
 
 pub enum RequestType {
-    // Results,
+    Results,
     SubmitDetails(String),
     Login(String, String),
 }
@@ -85,8 +98,8 @@ pub enum RequestType {
 impl RequestType {
     pub fn payload_template(&self) -> String {
         match self {
-            // RequestType::Results =>
-            //     "7|0|5|{}|03D93DB883748ED9135F6A4744CFFA07|testerka.gwt.client.submits.SubmitsService|getAllSubmits|Z|1|2|3|4|1|5|1|".to_string(),
+            RequestType::Results =>
+                "7|0|5|{}|03D93DB883748ED9135F6A4744CFFA07|testerka.gwt.client.submits.SubmitsService|getAllSubmits|Z|1|2|3|4|1|5|1|".to_string(),
             RequestType::SubmitDetails(id) =>
                 "7|0|5|{}|03D93DB883748ED9135F6A4744CFFA07|testerka.gwt.client.submits.SubmitsService|getSubmitDetails|I|1|2|3|4|1|5|".to_string() + id + "|",
             RequestType::Login(_, _) =>
@@ -96,7 +109,7 @@ impl RequestType {
 
     fn mapping(&self) -> String {
         match *self {
-            // RequestType::Results => "submits".to_string(),
+            RequestType::Results => "submits".to_string(),
             RequestType::SubmitDetails(_) => "submits".to_string(),
             RequestType::Login(_, _) => "privileges".to_string(),
         }

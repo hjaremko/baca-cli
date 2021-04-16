@@ -42,13 +42,13 @@ impl Results {
     // todo: rename, extract common lines
     fn deserialize(data: &str) -> Vec<String> {
         let data = Self::remove_outer_layer(data);
-        let data = Self::to_vector(data);
+        let data = Self::split_raw(data);
         let keys = Self::get_keys(&data);
         let values = Self::get_values(&data, keys.len());
         Self::map_serialized(&keys, &values)
     }
 
-    fn map_serialized(keys: &Vec<String>, values: &Vec<String>) -> Vec<String> {
+    fn map_serialized(keys: &[String], values: &[String]) -> Vec<String> {
         let to_usize = |x: &String| x.to_string().parse::<usize>().unwrap();
         let not_zero = |x: &usize| *x != 0usize;
         let to_value = |x: usize| (*values[x - 1]).to_string();
@@ -61,7 +61,7 @@ impl Results {
             .collect()
     }
 
-    fn get_values(data: &Vec<String>, keys_len: usize) -> Vec<String> {
+    fn get_values(data: &[String], keys_len: usize) -> Vec<String> {
         data.iter()
             .skip(keys_len)
             .map(|x| x.to_string())
@@ -72,11 +72,11 @@ impl Results {
         data.chars().skip(5).take(data.len() - 13).collect()
     }
 
-    fn to_vector(data: String) -> Vec<String> {
+    fn split_raw(data: String) -> Vec<String> {
         data.split(',').map(|x| x.to_owned()).collect()
     }
 
-    fn get_keys(data: &Vec<String>) -> Vec<String> {
+    fn get_keys(data: &[String]) -> Vec<String> {
         let is_number = |x: &&String| (**x).chars().all(|c| c.is_ascii_digit());
         data.iter()
             .take_while(is_number)

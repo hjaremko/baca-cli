@@ -43,6 +43,7 @@ pub struct Submit {
 impl Submit {
     // todo: ctor
 
+    // todo: print_extended with tests
     pub fn print(&self) {
         use colored::*;
 
@@ -59,11 +60,11 @@ impl Submit {
 
         match self.max_points {
             None => println!(
-                "{}\n├─── {}% - {} pkt - {:?}",
+                "{}\n├─── {}% - {} pts - {:?}",
                 submit_info, self.accepted, self.points, self.status
             ),
             Some(max) => println!(
-                "{}\n├─── {}% - {}/{} pkt - {:?}",
+                "{}\n├─── {}% - {}/{} pts - {:?}",
                 submit_info, self.accepted, self.points, max, self.status
             ),
         };

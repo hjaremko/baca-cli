@@ -58,6 +58,17 @@ fn main() {
             SubCommand::with_name("refresh")
                 .about("Refreshes session, use in case of cookie expiration"),
         )
+        .subcommand(
+            SubCommand::with_name("log")
+                .about("Prints last (default: 3) submits")
+                .setting(AppSettings::AllowMissingPositional)
+                .arg(
+                    Arg::with_name("amount")
+                        .help("Amount of last submits to print")
+                        .default_value("3")
+                        .takes_value(true),
+                ),
+        )
         .get_matches();
 
     let log_level = match matches.occurrences_of("v") {
@@ -93,5 +104,11 @@ fn main() {
     if matches.subcommand_matches("refresh").is_some() {
         println!("Refreshing BaCa session...");
         command::refresh();
+        return;
+    }
+
+    if let Some(matches) = matches.subcommand_matches("log") {
+        let last_n = matches.value_of("amount").unwrap().parse().unwrap();
+        command::log(last_n);
     }
 }

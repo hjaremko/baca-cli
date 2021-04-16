@@ -1,4 +1,4 @@
-use crate::model::Submit;
+use crate::model::{Results, Submit};
 use crate::{baca, workspace};
 
 pub fn init(host: &str, login: &str, pass: &str) {
@@ -31,4 +31,12 @@ pub fn refresh() {
     let mut instance = workspace::read();
     instance.cookie = baca::api::get_cookie(&instance);
     workspace::save(&instance);
+}
+
+pub fn log(n: usize) {
+    let instance = workspace::read();
+    let results = baca::api::get_results(&instance);
+    let results = Results::parse(&instance, &results);
+
+    results.print(n);
 }

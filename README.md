@@ -22,6 +22,7 @@ SUBCOMMANDS:
     details    Gets submit details
     help       Prints this message or the help of the given subcommand(s)
     init       Initializes current directory as BaCa workspace
+    log        Prints last (default: 3) submits
     refresh    Refreshes session, use in case of cookie expiration
 ```
 
@@ -46,6 +47,30 @@ Example, running on `Metody numeryczne 2019/2020`:
 baca init --host mn2020 --login jaremko --password PaSsWorD
 ```
 
+### Recent submits: `log`
+
+Prints statuses of a couple of recent submits (default 3).
+
+```
+baca log [optional: number]
+```
+
+Example:
+
+```
+● [G] Funkcje sklejane - C++ - 2020-05-17 18:53:09 - submit 4334
+├─── 100% - 4 pts - Ok
+└─── https://baca.ii.uj.edu.pl/mn2020/#SubmitDetails/4334
+
+● [G] Funkcje sklejane - C++ - 2020-05-17 16:57:22 - submit 4328
+├─── 100% - 4 pts - Ok
+└─── https://baca.ii.uj.edu.pl/mn2020/#SubmitDetails/4328
+
+● [G] Funkcje sklejane - C++ - 2020-05-17 16:53:41 - submit 4326
+├─── 0% - 0 pts - WrongAnswer
+└─── https://baca.ii.uj.edu.pl/mn2020/#SubmitDetails/4326
+```
+
 ### Submit details: `details`
 
 Prints details of given submit. Requires initialized workspace.
@@ -59,7 +84,8 @@ Example:
 ```
 > baca details 4334
 
-● 100% - [G] Funkcje sklejane - submit 4334
+● [G] Funkcje sklejane - C++ - 2020-05-17 18:53:09 - submit 4334
+├─── 100% - 4 pts - Ok
 └─── https://baca.ii.uj.edu.pl/mn2020/#SubmitDetails/4334
 ```
 
