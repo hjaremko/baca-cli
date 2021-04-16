@@ -17,7 +17,7 @@ pub fn get_cookie(instance: &InstanceData) -> String {
 pub fn get_submit_details(instance: &InstanceData, submit_id: &str) -> String {
     let resp = Request::new(instance).details(submit_id).unwrap();
     let resp = resp.text().expect("Invalid submit data");
-    tracing::debug!("Received raw submit: {}", resp);
+    tracing::debug!("Received raw submit: {}", resp); // todo: handle //OK[0,[],0,7]
 
     resp
 }

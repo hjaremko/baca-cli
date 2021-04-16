@@ -1,3 +1,6 @@
+mod results;
+pub use self::results::Results;
+
 use std::str::FromStr;
 
 #[derive(Debug, PartialEq)]
@@ -26,13 +29,13 @@ pub struct Submit {
     // problem: Problem,
     pub status: SubmitStatus,
     pub points: f32,
-    pub lateness: i32,
+    pub lateness: Option<i32>,
     pub accepted: i32,
     pub size: i32,
     pub timestamp: String,
     pub language: String,
     pub id: String,
-    pub max_points: i32,
+    pub max_points: Option<i32>,
     pub problem_name: String,
     pub link: String,
 }
@@ -54,10 +57,16 @@ impl Submit {
             SubmitStatus::TimeExceeded => submit_info.cyan().bold(),
         };
 
-        println!(
-            "{}\n├─── {}% - {}/{} pkt - {:?}",
-            submit_info, self.accepted, self.points, self.max_points, self.status
-        );
+        match self.max_points {
+            None => println!(
+                "{}\n├─── {}% - {} pkt - {:?}",
+                submit_info, self.accepted, self.points, self.status
+            ),
+            Some(max) => println!(
+                "{}\n├─── {}% - {}/{} pkt - {:?}",
+                submit_info, self.accepted, self.points, max, self.status
+            ),
+        };
         println!("└─── {}\n", self.link);
     }
 }
