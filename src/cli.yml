@@ -1,0 +1,45 @@
+name: BaCa CLI
+version: "0.1.0"
+author: Hubert Jaremko <hjaremko@outlook.com>
+about: CLI client for the Jagiellonian University's BaCa online judge
+args:
+  - verbose:
+      short: v
+      multiple: true
+      help: Sets the level of verbosity
+subcommands:
+  - init:
+      about: Initializes current directory as BaCa workspace
+      args:
+        - host:
+            short: h
+            long: host
+            help: BaCa hostname, ex. mn2020
+            required: true
+            takes_value: true
+        - login:
+            short: l
+            long: login
+            help: BaCa login
+            required: true
+            takes_value: true
+        - password:
+            short: p
+            long: password
+            help: BaCa password
+            required: true
+            takes_value: true
+  - details:
+      about: Gets submit details
+      args:
+        - id:
+            required: true
+  - refresh:
+      about: Refreshes session, use in case of cookie expiration
+  - log:
+      about: Prints last (default 3) submits
+      args:
+        - amount:
+            help: Amount of last submits to print
+            default_value: "3"
+            takes_value: true
