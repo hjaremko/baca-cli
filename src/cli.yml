@@ -60,3 +60,7 @@ subcommands:
             help: File to submit
             required: true
             takes_value: true
+        - zip:
+            long: zip
+            short: z
+            help: Zips files to 'source.zip' before submitting

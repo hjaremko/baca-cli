@@ -2,7 +2,10 @@ use std::fs;
 use std::fs::DirBuilder;
 
 mod instance_data;
+mod zip;
+
 pub use self::instance_data::InstanceData;
+pub use self::zip::zip_file;
 
 const BACA_DIR: &str = ".baca";
 const INSTANCE_PATH: &str = ".baca/instance";

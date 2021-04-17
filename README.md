@@ -59,10 +59,11 @@ baca refresh
 
 ### Submit: `submit`
 
-Submit file to task given by its id. Use 'baca tasks' to see what ids are available.
+Submit file to task given by its id. Use 'baca tasks' to see what ids are available.  
+Passing optional parameter `--zip` will zip given file before submitting.
 
 ```
-baca submit -t <task_id> -f <filename>
+baca submit -t <task_id> -f <filename> [optional --zip]
 ```
 
 Example:

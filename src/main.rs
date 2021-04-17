@@ -1,6 +1,7 @@
 #[macro_use]
 extern crate clap;
 use clap::App;
+use std::path::Path;
 use tracing::Level;
 
 mod baca;
@@ -64,8 +65,23 @@ fn main() {
     if let Some(matches) = matches.subcommand_matches("submit") {
         let task_id = matches.value_of("task_id").unwrap();
         let file_path = matches.value_of("file").unwrap();
+        let to_zip = matches.is_present("zip");
 
-        command::submit(task_id, file_path);
+        let file_to_submit = if to_zip {
+            let path = Path::new(file_path);
+            let res = workspace::zip_file(path);
+
+            if res.is_none() {
+                println!("Error zipping {}!", path.to_str().unwrap());
+                return;
+            }
+
+            res.unwrap()
+        } else {
+            file_path.to_string()
+        };
+
+        command::submit(task_id, file_to_submit.as_str());
         return;
     }
 }
