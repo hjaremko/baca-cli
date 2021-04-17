@@ -32,3 +32,11 @@ pub fn get_results(instance: &InstanceData) -> String {
 
     resp
 }
+
+pub fn get_tasks(instance: &InstanceData) -> String {
+    let resp = Request::new(instance).tasks().unwrap();
+    let resp = resp.text().expect("Invalid submit data");
+    tracing::debug!("Received raw tasks: {}", resp); // todo: handle //OK[0,[],0,7]
+
+    resp
+}

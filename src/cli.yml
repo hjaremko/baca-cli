@@ -43,3 +43,5 @@ subcommands:
             help: Amount of last submits to print
             default_value: "3"
             takes_value: true
+  - tasks:
+      about: Prints available tasks

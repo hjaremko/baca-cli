@@ -22,8 +22,9 @@ SUBCOMMANDS:
     details    Gets submit details
     help       Prints this message or the help of the given subcommand(s)
     init       Initializes current directory as BaCa workspace
-    log        Prints last (default: 3) submits
+    log        Prints last (default 3) submits
     refresh    Refreshes session, use in case of cookie expiration
+    tasks      Prints available tasks
 ```
 
 ### Workspace initialization: `init`
@@ -45,6 +46,14 @@ Example, running on `Metody numeryczne 2019/2020`:
 
 ```
 baca init --host mn2020 --login jaremko --password PaSsWorD
+```
+
+### Re-login: `refresh`
+
+Refreshes session, use in case of cookie expiration.
+
+```
+baca refresh
 ```
 
 ### Recent submits: `log`
@@ -89,12 +98,33 @@ Example:
 └─── https://baca.ii.uj.edu.pl/mn2020/#SubmitDetails/4334
 ```
 
-### Re-login: `refresh`
+### All tasks: `tasks`
 
-Refreshes session, use in case of cookie expiration.
+Prints all tasks.
 
 ```
-baca refresh
+baca tasks
+```
+
+Example:
+
+```
+> baca tasks
+
+● 1 - [A] Zera funkcji - 69 OK
+● 2 - [B] Metoda Newtona - 58 OK
+● 3 - [C] FAD\x3Csup\x3E2\x3C/sup\x3E - Pochodne mieszane - 62 OK
+● 4 - [D] Skalowany Gauss - 52 OK
+● 5 - [E] Metoda SOR - 64 OK
+● 6 - [F] Interpolacja - 63 OK
+● 7 - [G] Funkcje sklejane - 59 OK
+● 8 - A2 - 1 OK
+● 9 - B2 - 2 OK
+● 10 - C2 - 1 OK
+● 11 - D2 - 2 OK
+● 12 - E2 - 1 OK
+● 13 - F2 - 3 OK
+● 14 - G2 - 2 OK
 ```
 
 ## Compilation

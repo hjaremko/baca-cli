@@ -53,5 +53,10 @@ fn main() {
     if let Some(matches) = matches.subcommand_matches("log") {
         let last_n = matches.value_of("amount").unwrap().parse().unwrap();
         command::log(last_n);
+        return;
+    }
+
+    if matches.subcommand_matches("tasks").is_some() {
+        command::tasks();
     }
 }

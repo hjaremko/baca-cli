@@ -35,6 +35,11 @@ impl<'a> Request<'a> {
         req.send()
     }
 
+    pub fn tasks(&self) -> reqwest::Result<Response> {
+        let req = self.make_request(RequestType::Tasks);
+        req.send()
+    }
+
     fn make_request(&self, req_type: RequestType) -> RequestBuilder {
         let post_url = format!("{}{}", self.instance.make_module_base(), req_type.mapping());
         let payload = self.instance.make_payload(&req_type);

@@ -34,6 +34,6 @@ impl InstanceData {
     }
 
     pub fn make_cookie(&self) -> String {
-        format!("JSESSIONID={}; experimentation_subject_id=IjQ3YTM4YzY5LWI3NDItNDhjMS05MDJkLTIyYjIxZTlkNzZjYiI%3D--f329434f16371429c34e2e6eccd204760a89b9a9; acceptedCookies=yes; _ga=GA1.3.84942962.1597996247", self.cookie)
+        format!("JSESSIONID={};", self.cookie)
     }
 }

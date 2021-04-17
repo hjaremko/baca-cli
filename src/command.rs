@@ -1,4 +1,4 @@
-use crate::model::{Results, Submit};
+use crate::model::{Results, Submit, Tasks};
 use crate::{baca, workspace};
 
 pub fn init(host: &str, login: &str, pass: &str) {
@@ -39,4 +39,12 @@ pub fn log(n: usize) {
     let results = Results::parse(&instance, &results);
 
     results.print(n);
+}
+
+pub fn tasks() {
+    let instance = workspace::read();
+    let tasks = baca::api::get_tasks(&instance);
+    let tasks = Tasks::parse(&tasks);
+
+    tasks.print();
 }
