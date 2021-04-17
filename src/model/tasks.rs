@@ -19,6 +19,10 @@ impl Tasks {
             println!("{}", s);
         }
     }
+
+    pub fn get_by_id(&self, task_id: &str) -> &Task {
+        self.tasks.iter().find(|x| x.id == task_id).unwrap()
+    }
 }
 
 // todo: fetch all data

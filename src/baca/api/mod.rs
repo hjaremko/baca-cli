@@ -4,6 +4,8 @@ mod request;
 mod request_type;
 pub use self::request::Request;
 pub use self::request_type::RequestType;
+use reqwest::blocking::multipart;
+use reqwest::header::COOKIE;
 
 pub fn get_cookie(instance: &InstanceData) -> String {
     let login_response = Request::new(instance).login().unwrap();
@@ -39,4 +41,39 @@ pub fn get_tasks(instance: &InstanceData) -> String {
     tracing::debug!("Received raw tasks: {}", resp); // todo: handle //OK[0,[],0,7]
 
     resp
+}
+
+pub fn submit(instance: &InstanceData, task_id: &str, file_path: &str) -> Result<(), String> {
+    let form = multipart::Form::new()
+        .text("zadanie", task_id.to_owned())
+        .text("jezyk", "1")
+        .file("zrodla", file_path)
+        .unwrap();
+
+    let client = reqwest::blocking::ClientBuilder::new()
+        .danger_accept_invalid_certs(true)
+        .build()
+        .unwrap();
+    let url = format!("https://baca.ii.uj.edu.pl/{}/sendSubmit", instance.host);
+    tracing::debug!("SendSubmit url: {}", url);
+
+    let resp = client
+        .post(url)
+        .multipart(form)
+        .header(COOKIE, instance.make_cookie())
+        .send()
+        .unwrap();
+
+    let resp = resp.text().unwrap();
+    tracing::debug!("Response: {}", resp);
+
+    // todo: return Result
+    match resp.as_str() {
+        "Niezalogowany jesteś" => Err(
+            "The session cookie has expired, type 'baca refresh' to re-log and try again."
+                .to_string(),
+        ),
+        "Błąd" => Err("Error sending submit. Is the task still active?".to_string()),
+        _ => Ok(()),
+    }
 }

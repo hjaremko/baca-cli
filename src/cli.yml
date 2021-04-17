@@ -45,3 +45,18 @@ subcommands:
             takes_value: true
   - tasks:
       about: Prints available tasks
+  - submit:
+      about: Submits file
+      args:
+        - task_id:
+            long: task-id
+            short: t
+            help: Task id, type 'baca tasks' to see what ids are available
+            required: true
+            takes_value: true
+        - file:
+            long: file
+            short: f
+            help: File to submit
+            required: true
+            takes_value: true

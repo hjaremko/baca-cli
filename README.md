@@ -24,6 +24,7 @@ SUBCOMMANDS:
     init       Initializes current directory as BaCa workspace
     log        Prints last (default 3) submits
     refresh    Refreshes session, use in case of cookie expiration
+    submit     Submits file
     tasks      Prints available tasks
 ```
 
@@ -56,6 +57,22 @@ Refreshes session, use in case of cookie expiration.
 baca refresh
 ```
 
+### Submit: `submit`
+
+Submit file to task given by its id. Use 'baca tasks' to see what ids are available.
+
+```
+baca submit -t <task_id> -f <filename>
+```
+
+Example:
+
+```
+> baca submit -f hello.cpp -t 5
+
+Submitting hello.cpp to task [E] Metoda SOR.
+```
+
 ### Recent submits: `log`
 
 Prints statuses of a couple of recent submits (default 3).
@@ -67,6 +84,8 @@ baca log [optional: number]
 Example:
 
 ```
+> baca log
+
 ● [G] Funkcje sklejane - C++ - 2020-05-17 18:53:09 - submit 4334
 ├─── 100% - 4 pts - Ok
 └─── https://baca.ii.uj.edu.pl/mn2020/#SubmitDetails/4334

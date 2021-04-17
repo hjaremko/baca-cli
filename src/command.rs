@@ -1,5 +1,6 @@
 use crate::model::{Results, Submit, Tasks};
 use crate::{baca, workspace};
+use colored::Colorize;
 
 pub fn init(host: &str, login: &str, pass: &str) {
     let mut instance = workspace::InstanceData {
@@ -47,4 +48,24 @@ pub fn tasks() {
     let tasks = Tasks::parse(&tasks);
 
     tasks.print();
+}
+
+pub fn submit(task_id: &str, file_path: &str) {
+    let instance = workspace::read();
+    let tasks = baca::api::get_tasks(&instance);
+    let tasks = Tasks::parse(&tasks);
+    let task = tasks.get_by_id(task_id);
+
+    println!(
+        "Submitting {} to task {}.",
+        file_path.bright_yellow(),
+        task.problem_name.bright_green()
+    );
+
+    if let Err(msg) = baca::api::submit(&instance, task_id, file_path) {
+        println!("{}", msg.bright_red());
+    } else {
+        println!();
+        log(1);
+    }
 }

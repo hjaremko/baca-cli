@@ -58,5 +58,14 @@ fn main() {
 
     if matches.subcommand_matches("tasks").is_some() {
         command::tasks();
+        return;
+    }
+
+    if let Some(matches) = matches.subcommand_matches("submit") {
+        let task_id = matches.value_of("task_id").unwrap();
+        let file_path = matches.value_of("file").unwrap();
+
+        command::submit(task_id, file_path);
+        return;
     }
 }
