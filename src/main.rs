@@ -1,7 +1,7 @@
 #[macro_use]
 extern crate clap;
 use crate::workspace::TaskConfig;
-use clap::App;
+use clap::{App, AppSettings};
 use colored::Colorize;
 use std::path::Path;
 use tracing::Level;
@@ -15,7 +15,8 @@ mod workspace;
 
 fn main() {
     let yaml = load_yaml!("cli.yml");
-    let matches = App::from_yaml(yaml).get_matches();
+    let app = App::from_yaml(yaml).setting(AppSettings::ArgRequiredElseHelp);
+    let matches = app.get_matches();
 
     let log_level = match matches.occurrences_of("verbose") {
         0 => Level::WARN,
