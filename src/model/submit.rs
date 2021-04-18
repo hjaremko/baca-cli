@@ -31,6 +31,7 @@ impl Submit {
             SubmitStatus::Ok => submit_info.green().bold(),
             SubmitStatus::WrongAnswer => submit_info.yellow().bold(),
             SubmitStatus::TimeExceeded => submit_info.cyan().bold(),
+            SubmitStatus::NoHeader => submit_info.blue().bold()
         };
 
         match self.max_points {

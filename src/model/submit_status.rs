@@ -5,6 +5,7 @@ pub enum SubmitStatus {
     Ok,
     WrongAnswer,
     TimeExceeded,
+    NoHeader
 }
 
 impl FromStr for SubmitStatus {
@@ -15,6 +16,7 @@ impl FromStr for SubmitStatus {
             "program zaakceptowany" => Ok(SubmitStatus::Ok),
             "zĹ\\x82a odpowiedz" => Ok(SubmitStatus::WrongAnswer),
             "przekroczony czas" => Ok(SubmitStatus::TimeExceeded),
+            "brak nagĹ\\x82Ăłwka" => Ok(SubmitStatus::NoHeader),
             _ => Ok(SubmitStatus::WrongAnswer), // todo: different colors for different statuses
                                                 // _ => Err(()),
         }
