@@ -152,8 +152,12 @@ fn main() {
             let path = Path::new(&file_path);
             let res = workspace::zip_file(path);
 
-            if res.is_none() {
-                println!("Error zipping {}!", path.to_str().unwrap());
+            if let Err(e) = res {
+                println!(
+                    "Error zipping {}! Error: {}",
+                    path.to_str().unwrap(),
+                    e.to_string().bright_red()
+                );
                 return;
             }
 
