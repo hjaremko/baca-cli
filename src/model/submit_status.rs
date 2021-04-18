@@ -3,10 +3,12 @@ use std::str::FromStr;
 #[derive(Debug, PartialEq)]
 pub enum SubmitStatus {
     Ok,
+    InQueue,
+    Processing,
     WrongAnswer,
     TimeExceeded,
     CompileError,
-    NoHeader
+    NoHeader,
 }
 
 impl FromStr for SubmitStatus {
@@ -15,6 +17,8 @@ impl FromStr for SubmitStatus {
     fn from_str(input: &str) -> Result<SubmitStatus, Self::Err> {
         match input {
             "program zaakceptowany" => Ok(SubmitStatus::Ok),
+            "czekanie na przetworzenie" => Ok(SubmitStatus::Processing),
+            "w kolejce" => Ok(SubmitStatus::InQueue),
             "zĹ\\x82a odpowiedz" => Ok(SubmitStatus::WrongAnswer),
             "przekroczony czas" => Ok(SubmitStatus::TimeExceeded),
             "brak nagĹ\\x82Ăłwka" => Ok(SubmitStatus::NoHeader),
