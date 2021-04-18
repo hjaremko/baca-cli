@@ -51,16 +51,21 @@ subcommands:
         - task_id:
             long: task-id
             short: t
-            help: Task id, type 'baca tasks' to see what ids are available
-            required: true
+            help: Task id, type 'baca tasks' to see what ids are available, overrides saved task id
             takes_value: true
         - file:
             long: file
             short: f
-            help: File to submit
-            required: true
+            help: File to submit, overrided saved path
             takes_value: true
         - zip:
             long: zip
             short: z
-            help: Zips files to 'source.zip' before submitting
+            help: Zips files to 'source.zip' before submitting, overrides saved config
+        - default:
+            long: default
+            help: Saves task config, if provided, future 'submit' calls won't require providing task config
+      subcommands:
+        - clear:
+            long: clear
+            about: Clears saved task config

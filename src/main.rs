@@ -1,6 +1,8 @@
 #[macro_use]
 extern crate clap;
+use crate::workspace::TaskConfig;
 use clap::App;
+use colored::Colorize;
 use std::path::Path;
 use tracing::Level;
 
@@ -37,6 +39,7 @@ fn main() {
         return; // todo: some error handling
     }
 
+    // todo: print test logs as well
     if let Some(matches) = matches.subcommand_matches("details") {
         let submit_id = matches.value_of("id").unwrap();
         tracing::info!("Printing details for submit: {}", submit_id);
@@ -51,6 +54,7 @@ fn main() {
         return;
     }
 
+    // if task is configured, filter logs, add --all switch
     if let Some(matches) = matches.subcommand_matches("log") {
         let last_n = matches.value_of("amount").unwrap().parse().unwrap();
         command::log(last_n);
@@ -63,12 +67,64 @@ fn main() {
     }
 
     if let Some(matches) = matches.subcommand_matches("submit") {
-        let task_id = matches.value_of("task_id").unwrap();
-        let file_path = matches.value_of("file").unwrap();
+        if matches.subcommand_matches("clear").is_some() {
+            println!("Clearing task config...");
+            workspace::remove_task();
+            return;
+        }
+
+        let task_id = matches.value_of("task_id");
+        let file_path = matches.value_of("file");
         let to_zip = matches.is_present("zip");
+        let saved = workspace::read_task();
+
+        if saved.is_none() {
+            tracing::info!("Task not loaded.");
+        }
+
+        if task_id.is_none() && saved.is_none() {
+            println!(
+                "{}",
+                "Please provide task_id. Type 'baca submit -h' for more info.".bright_red()
+            );
+            return;
+        }
+
+        if file_path.is_none() && saved.is_none() {
+            println!(
+                "{}",
+                "Please provide file. Type 'baca submit -h' for more info.".bright_red()
+            );
+            return;
+        }
+
+        let saved = saved.unwrap_or(TaskConfig {
+            id: "".to_string(),
+            file: "".to_string(),
+            to_zip: false,
+        });
+
+        let task_id = match task_id {
+            None => saved.id.clone(),
+            Some(id) => id.to_string(),
+        };
+
+        let file_path = match file_path {
+            None => saved.file.clone(),
+            Some(file) => file.to_string(),
+        };
+
+        let to_zip = match to_zip {
+            true => true,
+            false => saved.to_zip,
+        };
+
+        if matches.is_present("default") {
+            workspace::save_task(&task_id, &file_path, to_zip);
+        }
 
         let file_to_submit = if to_zip {
-            let path = Path::new(file_path);
+            let path = Path::new(&file_path);
             let res = workspace::zip_file(path);
 
             if res.is_none() {
@@ -78,10 +134,10 @@ fn main() {
 
             res.unwrap()
         } else {
-            file_path.to_string()
+            file_path
         };
 
-        command::submit(task_id, file_to_submit.as_str());
+        command::submit(&task_id, file_to_submit.as_str());
         return;
     }
 }

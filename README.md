@@ -59,7 +59,7 @@ baca refresh
 
 ### Submit: `submit`
 
-Submit file to task given by its id. Use 'baca tasks' to see what ids are available.  
+Submit file to task given by its id. Use `baca tasks` to see what ids are available.  
 Passing optional parameter `--zip` will zip given file before submitting.
 
 ```
@@ -71,6 +71,21 @@ Example:
 ```
 > baca submit -f hello.cpp -t 5
 
+Submitting hello.cpp to task [E] Metoda SOR.
+```
+
+#### Saving task info
+
+If you don't want to type task info (id and filename) every time you submit, you can use `--default` flag to save it.
+Keep in mind, that config provided though parameters will override saved data. To completely remove saved data
+use `baca submit clear`.
+
+Example:
+
+```
+> baca submit -f hello.cpp -t 5 --default
+Submitting hello.cpp to task [E] Metoda SOR.
+> baca submit
 Submitting hello.cpp to task [E] Metoda SOR.
 ```
 
