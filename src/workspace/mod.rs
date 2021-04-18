@@ -8,8 +8,9 @@ mod zip;
 pub use self::instance_data::InstanceData;
 pub use self::zip::zip_file;
 
-mod task;
-pub use self::task::TaskConfig;
+mod task_config;
+pub use self::task_config::TaskConfig;
+use crate::baca::details::Language;
 
 // todo: walk up dir tree until found
 const BACA_DIR: &str = ".baca";
@@ -62,12 +63,13 @@ pub fn read_task() -> Option<TaskConfig> {
     Some(deserialized)
 }
 
-pub fn save_task(task_id: &str, filepath: &str, to_zip: bool) {
+pub fn save_task(task_id: &str, filepath: &str, to_zip: bool, language: Language) {
     tracing::info!("Saving task info to {}.", TASK_PATH);
 
     let task = TaskConfig {
         id: task_id.to_string(),
         file: filepath.to_string(),
+        language,
         to_zip,
     };
     let serialized = serde_json::to_string(&task).unwrap();

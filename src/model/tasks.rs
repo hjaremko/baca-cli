@@ -1,3 +1,4 @@
+use crate::baca::details::Language;
 use colored::Colorize;
 
 pub struct Tasks {
@@ -26,10 +27,10 @@ impl Tasks {
 }
 
 // todo: fetch all data
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct Task {
     pub id: String,
-    // pub language: String,
+    pub language: Language,
     pub problem_name: String,
     pub overall_oks: i32,
 }

@@ -1,9 +1,11 @@
 #[macro_use]
 extern crate clap;
+use crate::baca::details::Language;
 use crate::workspace::TaskConfig;
 use clap::{App, AppSettings};
 use colored::Colorize;
 use std::path::Path;
+use std::str::FromStr;
 use tracing::Level;
 
 mod baca;
@@ -77,7 +79,15 @@ fn main() {
         let task_id = matches.value_of("task_id");
         let file_path = matches.value_of("file");
         let to_zip = matches.is_present("zip");
+        let lang = matches.value_of("language");
         let saved = workspace::read_task();
+
+        if let Some(lang) = lang {
+            if let Ok(Language::Unsupported) = Language::from_str(lang) {
+                println!("{} {}", lang, "is not yet supported!! Please create an issue at https://github.com/hjaremko/baca-cli/issues".bright_red());
+                return;
+            }
+        }
 
         if saved.is_none() {
             tracing::info!("Task not loaded.");
@@ -99,10 +109,19 @@ fn main() {
             return;
         }
 
+        if lang.is_none() && saved.is_none() {
+            println!(
+                "{}",
+                "Please provide language. Type 'baca submit -h' for more info.".bright_red()
+            );
+            return;
+        }
+
         let saved = saved.unwrap_or(TaskConfig {
             id: "".to_string(),
             file: "".to_string(),
             to_zip: false,
+            language: Language::Unsupported,
         });
 
         let task_id = match task_id {
@@ -115,13 +134,18 @@ fn main() {
             Some(file) => file.to_string(),
         };
 
+        let lang = match lang {
+            None => saved.language,
+            Some(lang) => Language::from_str(lang).unwrap(),
+        };
+
         let to_zip = match to_zip {
             true => true,
             false => saved.to_zip,
         };
 
         if matches.is_present("default") {
-            workspace::save_task(&task_id, &file_path, to_zip);
+            workspace::save_task(&task_id, &file_path, to_zip, lang);
         }
 
         let file_to_submit = if to_zip {
@@ -138,7 +162,7 @@ fn main() {
             file_path
         };
 
-        command::submit(&task_id, file_to_submit.as_str());
+        command::submit(&task_id, file_to_submit.as_str(), &lang);
         return;
     }
 }

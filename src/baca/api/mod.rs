@@ -4,6 +4,7 @@ mod request;
 mod request_type;
 pub use self::request::Request;
 pub use self::request_type::RequestType;
+use crate::model::Task;
 use reqwest::blocking::multipart;
 use reqwest::header::COOKIE;
 
@@ -43,10 +44,11 @@ pub fn get_tasks(instance: &InstanceData) -> String {
     resp
 }
 
-pub fn submit(instance: &InstanceData, task_id: &str, file_path: &str) -> Result<(), String> {
+pub fn submit(instance: &InstanceData, task: &Task, file_path: &str) -> Result<(), String> {
+    tracing::debug!("{:?}", task);
     let form = multipart::Form::new()
-        .text("zadanie", task_id.to_owned())
-        .text("jezyk", "1")
+        .text("zadanie", task.id.clone())
+        .text("jezyk", task.language.code())
         .file("zrodla", file_path)
         .unwrap();
 

@@ -1,5 +1,5 @@
 name: BaCa CLI
-version: "0.1.0"
+version: "0.2.0"
 author: Hubert Jaremko <hjaremko@outlook.com>
 about: CLI client for the Jagiellonian University's BaCa online judge
 args:
@@ -62,6 +62,11 @@ subcommands:
             long: zip
             short: z
             help: Zips files to 'source.zip' before submitting, overrides saved config
+        - language:
+            long: language
+            short: l
+            help: Task language. Please type exacly as it is displayed on Baca.
+            takes_value: true
         - default:
             long: default
             help: Saves task config, if provided, future 'submit' calls won't require providing task config

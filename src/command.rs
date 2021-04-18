@@ -1,3 +1,4 @@
+use crate::baca::details::Language;
 use crate::model::{Results, Submit, Tasks};
 use crate::{baca, workspace};
 use colored::Colorize;
@@ -50,19 +51,21 @@ pub fn tasks() {
     tasks.print();
 }
 
-pub fn submit(task_id: &str, file_path: &str) {
+pub fn submit(task_id: &str, file_path: &str, lang: &Language) {
     let instance = workspace::read();
     let tasks = baca::api::get_tasks(&instance);
     let tasks = Tasks::parse(&tasks);
-    let task = tasks.get_by_id(task_id);
+    let mut task = tasks.get_by_id(task_id).clone();
+    task.language = *lang;
 
     println!(
-        "Submitting {} to task {}.",
+        "Submitting {} to task {} ({}).",
         file_path.bright_yellow(),
-        task.problem_name.bright_green()
+        task.problem_name.bright_green(),
+        task.language.to_string()
     );
 
-    if let Err(msg) = baca::api::submit(&instance, task_id, file_path) {
+    if let Err(msg) = baca::api::submit(&instance, &task, file_path) {
         println!("{}", msg.bright_red());
     } else {
         println!();
