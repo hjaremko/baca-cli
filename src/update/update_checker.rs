@@ -24,7 +24,7 @@ impl<T: ReleaseService> UpdateChecker<T> {
 
         if let Err(e) = last {
             return match e {
-                Error::_NoRelease => Ok(NoUpdates),
+                Error::NoRelease => Ok(NoUpdates),
                 _ => {
                     error!("{}", e);
                     Err(e)
@@ -56,12 +56,12 @@ mod tests {
     fn connection_error_should_return_error() {
         let mut mock = MockReleaseService::new();
         mock.expect_get_last_release()
-            .returning(|| Err(Error::_FetchingReleaseError));
+            .returning(|| Err(Error::FetchingReleaseError));
         let checker = UpdateChecker::new(mock, CURRENT_VERSION);
 
         let actual = checker.check_for_updates();
 
-        if let Some(Error::_FetchingReleaseError) = actual.err() {
+        if let Some(Error::FetchingReleaseError) = actual.err() {
             return;
         }
         panic!();
@@ -71,7 +71,7 @@ mod tests {
     fn no_releases_should_not_report_update() {
         let mut mock = MockReleaseService::new();
         mock.expect_get_last_release()
-            .returning(|| Err(Error::_NoRelease));
+            .returning(|| Err(Error::NoRelease));
         let checker = UpdateChecker::new(mock, "v0.0.1");
         let actual = checker.check_for_updates().unwrap();
 

@@ -1,4 +1,4 @@
-# baca-cli [![Build](https://github.com/hjaremko/baca-cli/actions/workflows/build.yml/badge.svg)](https://github.com/hjaremko/baca-cli/actions/workflows/build.yml)
+# baca-cli [![Build](https://github.com/hjaremko/baca-cli/actions/workflows/build.yml/badge.svg)](https://github.com/hjaremko/baca-cli/actions/workflows/build.yml) [![codecov](https://codecov.io/gh/hjaremko/baca-cli/branch/master/graph/badge.svg?token=CP9EWDCOMV)](https://codecov.io/gh/hjaremko/baca-cli)
 
 CLI client for the Jagiellonian University's BaCa online judge
 

@@ -32,7 +32,7 @@ impl ReleaseService for GithubReleases {
         let response = response?.text()?;
 
         if response.contains("Not Found") {
-            return Err(Error::_FetchingReleaseError);
+            return Err(Error::FetchingReleaseError);
         }
 
         debug!("{:?}", response);
@@ -41,7 +41,7 @@ impl ReleaseService for GithubReleases {
         let link = &v[0]["html_url"];
 
         if ver.is_null() || link.is_null() {
-            return Err(Error::_NoRelease);
+            return Err(Error::NoRelease);
         }
 
         let ver = ver.as_str().unwrap();
@@ -80,5 +80,12 @@ mod tests {
         let gh = GithubReleases::new("hjaremko", "baca-cli");
         let actual = gh.get_last_release();
         assert!(actual.is_ok());
+    }
+
+    #[test]
+    fn correct_repo_with_no_releases_should_return_error() {
+        let gh = GithubReleases::new("hjaremko", "fi");
+        let actual = gh.get_last_release();
+        assert!(actual.is_err());
     }
 }
