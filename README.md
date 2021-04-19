@@ -2,11 +2,10 @@
 
 CLI client for the Jagiellonian University's BaCa online judge
 
-<img src="https://i.imgur.com/qqkTrDa.gif" align="right" alt="UJ" title="Jagiellonian University"/>
-
-![Preview](https://i.imgur.com/jl7j72k.png)
+![Preview](https://i.imgur.com/xOAHuXk.png)
 
 ## Installation
+
 Latest release can be downloaded [here](https://github.com/hjaremko/baca-cli/releases).
 
 - **Windows** users can use convenient installer or download raw binary.
@@ -68,6 +67,7 @@ baca refresh
 Submit file to task given by its id. Use `baca tasks` to see what ids are available.  
 Passing optional parameter `--zip` will zip given file before submitting.  
 **Currently a correct language string needs to be provided as well.**
+
 ```
 baca submit -t <task_id> -f <filename> [optional --zip]
 ```
