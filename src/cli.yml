@@ -1,5 +1,5 @@
 name: BaCa CLI
-version: "0.2.0"
+version: "0.2.1"
 author: Hubert Jaremko <hjaremko@outlook.com>
 about: CLI client for the Jagiellonian University's BaCa online judge
 args:
