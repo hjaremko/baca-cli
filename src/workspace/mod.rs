@@ -1,70 +1,83 @@
-use colored::Colorize;
-use std::fs;
-use std::fs::DirBuilder;
-
 mod instance_data;
 mod zip;
 
+use std::fs::{DirBuilder, ReadDir};
+use std::io::ErrorKind;
+use std::{fs, io};
+use tracing::{debug, info};
+
 pub use self::instance_data::InstanceData;
 pub use self::zip::zip_file;
-
 mod task_config;
 pub use self::task_config::TaskConfig;
 use crate::baca::details::Language;
+use crate::error;
+use crate::error::Error;
 
 // todo: walk up dir tree until found
 const BACA_DIR: &str = ".baca";
 const INSTANCE_PATH: &str = ".baca/instance";
 const TASK_PATH: &str = ".baca/task";
 
-pub fn initialize() -> Result<(), String> {
-    let baca_dir = fs::read_dir(BACA_DIR);
+pub fn initialize() -> error::Result<()> {
+    let baca_dir = check_if_initialized();
 
     if baca_dir.is_ok() {
-        return Err("BaCa directory already exists.".to_string());
+        return Err(error::Error::WorkspaceAlreadyInitialized);
     }
 
-    if let Err(e) = DirBuilder::new().create(BACA_DIR) {
-        return Err(format!("Error creating BaCa directory: {}", e.to_string()));
-    }
+    info!("Creating new {}", BACA_DIR);
+    DirBuilder::new()
+        .create(BACA_DIR)
+        .map_err(as_config_create_error)?;
 
-    tracing::info!("BaCa directory created successfully.");
+    info!("Baca directory created successfully.");
     Ok(())
 }
 
-pub fn save(instance: &InstanceData) {
-    let serialized = serde_json::to_string(instance).unwrap();
-    tracing::debug!("serialized = {}", serialized);
+pub fn save_instance(instance: &InstanceData) -> error::Result<()> {
+    info!("Saving instance to the workspace.");
+    let serialized = serde_json::to_string(instance).expect("Instance serialization error");
+    debug!("Serialized: {}", serialized);
 
-    fs::write(INSTANCE_PATH, serialized).expect("Unable to write file");
+    fs::write(INSTANCE_PATH, serialized).map_err(as_config_write_error)?;
+    Ok(())
 }
 
-// todo: uniform error reporting
-pub fn read() -> InstanceData {
-    let serialized = fs::read_to_string(INSTANCE_PATH).expect("Unable to read file");
-    tracing::debug!("serialized = {}", serialized);
+pub fn read_instance() -> error::Result<InstanceData> {
+    check_if_initialized()?;
 
-    let deserialized: InstanceData = serde_json::from_str(&serialized).unwrap();
-    tracing::debug!("deserialized = {:?}", deserialized);
+    info!("Reading {}", INSTANCE_PATH);
+    let serialized = fs::read_to_string(INSTANCE_PATH).map_err(as_config_read_error)?;
+    debug!("Serialized: {}", serialized);
 
-    deserialized
+    let deserialized: InstanceData = serde_json::from_str(&serialized)?;
+    debug!("Deserialized: {:?}", deserialized);
+
+    info!("Deserialized Baca instance");
+    Ok(deserialized)
 }
 
-pub fn read_task() -> Option<TaskConfig> {
-    tracing::info!("Reading task from workspace.");
+pub fn read_task() -> error::Result<TaskConfig> {
+    check_if_initialized()?;
+    info!("Reading task from workspace.");
+    let serialized = fs::read_to_string(TASK_PATH).map_err(as_task_read_error)?;
+    debug!("Serialized: {}", serialized);
 
-    let serialized = fs::read_to_string(TASK_PATH).ok()?;
-    tracing::debug!("serialized = {}", serialized);
+    let deserialized: TaskConfig = serde_json::from_str(&serialized)?;
+    debug!("Deserialized: {:?}", deserialized);
 
-    let deserialized: TaskConfig = serde_json::from_str(&serialized).ok()?;
-    tracing::debug!("deserialized = {:?}", deserialized);
-
-    tracing::info!("Read task successfully.");
-    Some(deserialized)
+    info!("Read task successfully.");
+    Ok(deserialized)
 }
 
-pub fn save_task(task_id: &str, filepath: &str, to_zip: bool, language: Language) {
-    tracing::info!("Saving task info to {}.", TASK_PATH);
+pub fn save_task(
+    task_id: &str,
+    filepath: &str,
+    to_zip: bool,
+    language: Language,
+) -> error::Result<()> {
+    info!("Saving task info to {}.", TASK_PATH);
 
     let task = TaskConfig {
         id: task_id.to_string(),
@@ -72,21 +85,58 @@ pub fn save_task(task_id: &str, filepath: &str, to_zip: bool, language: Language
         language,
         to_zip,
     };
-    let serialized = serde_json::to_string(&task).unwrap();
-    tracing::debug!("serialized = {}", serialized);
+    let serialized = serde_json::to_string(&task)?;
+    debug!("Serialized: {}", serialized);
 
-    fs::write(TASK_PATH, serialized).expect("Unable to write task.");
-    tracing::info!("Saved task successfully.");
+    fs::write(TASK_PATH, serialized).map_err(as_task_write_error)?;
+    info!("Saved task successfully.");
+    Ok(())
 }
 
-pub fn remove_task() {
-    tracing::info!("Removing task from {}.", TASK_PATH);
-    match fs::remove_file(TASK_PATH) {
-        Ok(_) => {
-            tracing::info!("Removed successfully.");
-        }
-        Err(e) => {
-            println!("{}{}", "Error removing task info: ".bright_red(), e);
-        }
+pub fn remove_task() -> error::Result<()> {
+    info!("Removing task from {}.", TASK_PATH);
+
+    fs::remove_file(TASK_PATH).map_err(as_task_remove_error)?;
+
+    println!("Task config cleared.");
+    Ok(())
+}
+
+fn check_if_initialized() -> Result<ReadDir, Error> {
+    info!("Checking if {} exists.", BACA_DIR);
+    fs::read_dir(BACA_DIR).map_err(as_not_init_error)
+}
+
+fn as_not_init_error(e: io::Error) -> Error {
+    match e.kind() {
+        ErrorKind::NotFound => Error::WorkspaceNotInitialized,
+        _ => error::Error::OpeningWorkspaceError(e.into()),
     }
+}
+
+fn as_config_read_error(e: io::Error) -> Error {
+    match e.kind() {
+        ErrorKind::NotFound => Error::WorkspaceCorrupted,
+        _ => error::Error::OpeningWorkspaceError(e.into()),
+    }
+}
+
+fn as_config_write_error(e: io::Error) -> Error {
+    error::Error::WritingWorkspaceError(e.into())
+}
+
+fn as_config_create_error(e: io::Error) -> Error {
+    error::Error::CreatingWorkspaceError(e.into())
+}
+
+fn as_task_remove_error(e: io::Error) -> Error {
+    error::Error::RemovingTaskError(e.into())
+}
+
+fn as_task_read_error(e: io::Error) -> Error {
+    error::Error::ReadingTaskError(e.into())
+}
+
+fn as_task_write_error(e: io::Error) -> Error {
+    error::Error::ReadingTaskError(e.into())
 }

@@ -10,69 +10,90 @@ use tracing::Level;
 
 mod baca;
 mod command;
+mod error;
 mod log;
 mod model;
 mod parse;
 mod workspace;
+// pub use error::Error;
+// pub use error::Result;
 
 fn main() {
     let yaml = load_yaml!("cli.yml");
     let app = App::from_yaml(yaml).setting(AppSettings::ArgRequiredElseHelp);
     let matches = app.get_matches();
 
-    let log_level = match matches.occurrences_of("verbose") {
-        0 => Level::WARN,
+    let verbose_matches = matches.occurrences_of("verbose");
+
+    let log_level = match verbose_matches {
         1 => Level::INFO,
         2 => Level::DEBUG,
         _ => Level::TRACE,
     };
 
-    log::init_logging(log_level);
+    if verbose_matches != 0 {
+        log::init_logging(log_level);
+    }
 
+    // todo: -r to override current config
     if let Some(matches) = matches.subcommand_matches("init") {
         let host = matches.value_of("host").unwrap();
         let login = matches.value_of("login").unwrap();
         let password = matches.value_of("password").unwrap();
 
-        tracing::info!("Using BaCa host: {}", host);
-        tracing::info!("Using BaCa login: {}", login);
-        tracing::info!("Using BaCa password: {}", password);
-
-        command::init(host, login, password);
-        return; // todo: some error handling
+        // todo: if error remove dir
+        if let Err(e) = command::init(host, login, password) {
+            println!("{}", format!("{}", e).bright_red());
+        }
+        return;
     }
 
     // todo: print test logs as well
     if let Some(matches) = matches.subcommand_matches("details") {
         let submit_id = matches.value_of("id").unwrap();
-        tracing::info!("Printing details for submit: {}", submit_id);
 
-        command::details(submit_id);
+        if let Err(e) = command::details(submit_id) {
+            println!("{}", format!("{}", e).bright_red());
+        }
         return;
     }
 
     if matches.subcommand_matches("refresh").is_some() {
-        println!("Refreshing BaCa session...");
-        command::refresh();
+        if let Err(e) = command::refresh() {
+            println!("{}", format!("{}", e).bright_red());
+        }
         return;
     }
 
     // if task is configured, filter logs, add --all switch
     if let Some(matches) = matches.subcommand_matches("log") {
-        let last_n = matches.value_of("amount").unwrap().parse().unwrap();
-        command::log(last_n);
+        let last_n = matches.value_of("amount").unwrap().parse::<usize>();
+        let last_n = match last_n {
+            Ok(n) => n,
+            Err(_) => {
+                println!("{}", "Invalid log argument.".bright_red());
+                return;
+            }
+        };
+
+        if let Err(e) = command::log(last_n) {
+            println!("{}", format!("{}", e).bright_red());
+        }
         return;
     }
 
     if matches.subcommand_matches("tasks").is_some() {
-        command::tasks();
-        return;
+        if let Err(e) = command::tasks() {
+            println!("{}", format!("{}", e).bright_red());
+        }
+        return; // todo: return error
     }
 
     if let Some(matches) = matches.subcommand_matches("submit") {
         if matches.subcommand_matches("clear").is_some() {
-            println!("Clearing task config...");
-            workspace::remove_task();
+            if let Err(e) = workspace::remove_task() {
+                println!("{}", format!("{}", e).bright_red());
+            }
             return;
         }
 
@@ -89,11 +110,11 @@ fn main() {
             }
         }
 
-        if saved.is_none() {
+        if saved.is_err() {
             tracing::info!("Task not loaded.");
         }
 
-        if task_id.is_none() && saved.is_none() {
+        if task_id.is_none() && saved.is_err() {
             println!(
                 "{}",
                 "Please provide task_id. Type 'baca submit -h' for more info.".bright_red()
@@ -101,7 +122,7 @@ fn main() {
             return;
         }
 
-        if file_path.is_none() && saved.is_none() {
+        if file_path.is_none() && saved.is_err() {
             println!(
                 "{}",
                 "Please provide file. Type 'baca submit -h' for more info.".bright_red()
@@ -109,7 +130,7 @@ fn main() {
             return;
         }
 
-        if lang.is_none() && saved.is_none() {
+        if lang.is_none() && saved.is_err() {
             println!(
                 "{}",
                 "Please provide language. Type 'baca submit -h' for more info.".bright_red()
@@ -117,6 +138,7 @@ fn main() {
             return;
         }
 
+        // todo: default()
         let saved = saved.unwrap_or(TaskConfig {
             id: "".to_string(),
             file: "".to_string(),
@@ -145,7 +167,9 @@ fn main() {
         };
 
         if matches.is_present("default") {
-            workspace::save_task(&task_id, &file_path, to_zip, lang);
+            if let Err(e) = workspace::save_task(&task_id, &file_path, to_zip, lang) {
+                println!("{}", format!("{}", e).bright_red());
+            }
         }
 
         let file_to_submit = if to_zip {
@@ -166,7 +190,9 @@ fn main() {
             file_path
         };
 
-        command::submit(&task_id, file_to_submit.as_str(), &lang);
+        if let Err(e) = command::submit(&task_id, file_to_submit.as_str(), &lang) {
+            println!("{}", format!("{}", e).bright_red());
+        }
         return;
     }
 }

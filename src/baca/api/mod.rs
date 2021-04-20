@@ -7,6 +7,8 @@ pub use self::request_type::RequestType;
 use crate::model::Task;
 use reqwest::blocking::multipart;
 use reqwest::header::COOKIE;
+use crate::error;
+use crate::baca::details::EMPTY_RESPONSE;
 
 pub fn get_cookie(instance: &InstanceData) -> String {
     let login_response = Request::new(instance).login().unwrap();
@@ -20,12 +22,16 @@ pub fn get_cookie(instance: &InstanceData) -> String {
     cookie.value().to_string()
 }
 
-pub fn get_submit_details(instance: &InstanceData, submit_id: &str) -> String {
+pub fn get_submit_details(instance: &InstanceData, submit_id: &str) -> error::Result<String> {
     let resp = Request::new(instance).details(submit_id).unwrap();
     let resp = resp.text().expect("Invalid submit data");
     tracing::debug!("Received raw submit: {}", resp); // todo: handle //OK[0,[],0,7]
 
-    resp
+    if resp == EMPTY_RESPONSE || resp.contains("failed") {
+        return Err(error::Error::InvalidSubmitId);
+    }
+
+    Ok(resp)
 }
 
 pub fn get_results(instance: &InstanceData) -> String {

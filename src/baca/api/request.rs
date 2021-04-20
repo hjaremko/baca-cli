@@ -46,8 +46,8 @@ impl<'a> Request<'a> {
         let post_url = format!("{}{}", self.instance.make_module_base(), req_type.mapping());
         let payload = self.instance.make_payload(&req_type);
 
-        tracing::debug!("Making request to: {}", post_url);
-        tracing::debug!("Making request with payload: {}", payload);
+        tracing::info!("Making request to: {}", post_url);
+        tracing::debug!("Request payload: {}", payload);
 
         let req = self.make_base_request(&post_url).body(payload);
         let req = match req_type {
