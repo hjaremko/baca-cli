@@ -1,16 +1,18 @@
-use crate::workspace::InstanceData;
-
 mod request;
 mod request_type;
+
 pub use self::request::Request;
 pub use self::request_type::RequestType;
+
 use crate::baca::details::EMPTY_RESPONSE;
-use crate::error;
+use crate::error::Error;
+use crate::error::Result;
 use crate::model::Task;
+use crate::workspace::InstanceData;
 use reqwest::blocking::multipart;
 use reqwest::header::COOKIE;
 
-pub fn get_cookie(instance: &InstanceData) -> error::Result<String> {
+pub fn get_cookie(instance: &InstanceData) -> Result<String> {
     let login_response = Request::new(instance).login()?;
 
     for (name, val) in login_response.headers() {
@@ -25,46 +27,45 @@ pub fn get_cookie(instance: &InstanceData) -> error::Result<String> {
     Ok(cookie.value().to_string())
 }
 
-pub fn get_submit_details(instance: &InstanceData, submit_id: &str) -> error::Result<String> {
-    let resp = Request::new(instance).details(submit_id).unwrap();
+pub fn get_submit_details(instance: &InstanceData, submit_id: &str) -> Result<String> {
+    let resp = Request::new(instance).details(submit_id)?;
     let resp = resp.text().expect("Invalid submit data");
-    tracing::debug!("Received raw submit: {}", resp); // todo: handle //OK[0,[],0,7]
+    tracing::debug!("Received raw submit: {}", resp);
 
     if resp == EMPTY_RESPONSE || resp.contains("failed") {
-        return Err(error::Error::InvalidSubmitId);
+        return Err(Error::InvalidSubmitId);
     }
 
-    Ok(resp)
+    check_for_empty_response(resp)
 }
 
-pub fn get_results(instance: &InstanceData) -> String {
-    let resp = Request::new(instance).results().unwrap();
+pub fn get_results(instance: &InstanceData) -> Result<String> {
+    let resp = Request::new(instance).results()?;
     let resp = resp.text().expect("Invalid submit data");
-    tracing::debug!("Received raw results: {}", resp); // todo: handle //OK[0,[],0,7]
+    tracing::debug!("Received raw results: {}", resp);
 
-    resp
+    check_for_empty_response(resp)
 }
 
-pub fn get_tasks(instance: &InstanceData) -> String {
-    let resp = Request::new(instance).tasks().unwrap();
+pub fn get_tasks(instance: &InstanceData) -> Result<String> {
+    let resp = Request::new(instance).tasks()?;
     let resp = resp.text().expect("Invalid submit data");
-    tracing::debug!("Received raw tasks: {}", resp); // todo: handle //OK[0,[],0,7]
+    tracing::debug!("Received raw tasks: {}", resp);
 
-    resp
+    check_for_empty_response(resp)
 }
 
-pub fn submit(instance: &InstanceData, task: &Task, file_path: &str) -> Result<(), String> {
+pub fn submit(instance: &InstanceData, task: &Task, file_path: &str) -> Result<()> {
     tracing::debug!("{:?}", task);
     let form = multipart::Form::new()
         .text("zadanie", task.id.clone())
         .text("jezyk", task.language.code())
         .file("zrodla", file_path)
-        .unwrap();
+        .map_err(|e| Error::ReadingSourceError(e.into()))?;
 
     let client = reqwest::blocking::ClientBuilder::new()
         .danger_accept_invalid_certs(true)
-        .build()
-        .unwrap();
+        .build()?;
     let url = format!("https://baca.ii.uj.edu.pl/{}/sendSubmit", instance.host);
     tracing::debug!("SendSubmit url: {}", url);
 
@@ -72,19 +73,22 @@ pub fn submit(instance: &InstanceData, task: &Task, file_path: &str) -> Result<(
         .post(url)
         .multipart(form)
         .header(COOKIE, instance.make_cookie())
-        .send()
-        .unwrap();
+        .send()?;
 
-    let resp = resp.text().unwrap();
+    let resp = resp.text().expect("Invalid response.");
     tracing::debug!("Response: {}", resp);
 
-    // todo: return Result
     match resp.as_str() {
-        "Niezalogowany jesteś" => Err(
-            "The session cookie has expired, type 'baca refresh' to re-log and try again."
-                .to_string(),
-        ),
-        "Błąd" => Err("Error sending submit. Is the task still active?".to_string()),
+        "Niezalogowany jesteś" => Err(Error::LoggedOutError),
+        "Błąd" => Err(Error::SubmitError),
         _ => Ok(()),
+    }
+}
+
+fn check_for_empty_response(resp: String) -> Result<String> {
+    if resp == EMPTY_RESPONSE {
+        Err(Error::LoggedOutError)
+    } else {
+        Ok(resp)
     }
 }

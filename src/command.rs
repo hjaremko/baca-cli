@@ -48,7 +48,7 @@ pub fn refresh() -> error::Result<()> {
 pub fn log(n: usize) -> error::Result<()> {
     info!("Fetching {} logs.", n);
     let instance = workspace::read_instance()?;
-    let results = baca::api::get_results(&instance);
+    let results = baca::api::get_results(&instance)?;
     let results = Results::parse(&instance, &results);
 
     results.print(n);
@@ -57,7 +57,7 @@ pub fn log(n: usize) -> error::Result<()> {
 
 pub fn tasks() -> error::Result<()> {
     let instance = workspace::read_instance()?;
-    let tasks = baca::api::get_tasks(&instance);
+    let tasks = baca::api::get_tasks(&instance)?;
     let tasks = Tasks::parse(&tasks);
 
     tasks.print();
@@ -66,7 +66,7 @@ pub fn tasks() -> error::Result<()> {
 
 pub fn submit(task_id: &str, file_path: &str, lang: &Language) -> error::Result<()> {
     let instance = workspace::read_instance()?;
-    let tasks = baca::api::get_tasks(&instance);
+    let tasks = baca::api::get_tasks(&instance)?;
     let tasks = Tasks::parse(&tasks);
     let mut task = tasks.get_by_id(task_id).clone();
     task.language = *lang;
@@ -78,12 +78,9 @@ pub fn submit(task_id: &str, file_path: &str, lang: &Language) -> error::Result<
         task.language.to_string()
     );
 
-    if let Err(msg) = baca::api::submit(&instance, &task, file_path) {
-        println!("{}", msg.bright_red());
-    } else {
-        println!();
-        log(1)?;
-    }
+    baca::api::submit(&instance, &task, file_path)?;
+    println!();
+    log(1)?;
 
     Ok(())
 }
