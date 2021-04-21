@@ -68,7 +68,10 @@ pub fn submit(task_id: &str, file_path: &str, lang: &Language) -> error::Result<
     let instance = workspace::read_instance()?;
     let tasks = baca::api::get_tasks(&instance)?;
     let tasks = Tasks::parse(&tasks);
-    let mut task = tasks.get_by_id(task_id).clone();
+    let mut task = tasks
+        .get_by_id(task_id)
+        .ok_or_else(|| error::Error::InvalidTaskId(task_id.to_string()))?
+        .clone();
     task.language = *lang;
 
     println!(

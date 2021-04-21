@@ -21,8 +21,8 @@ impl Tasks {
         }
     }
 
-    pub fn get_by_id(&self, task_id: &str) -> &Task {
-        self.tasks.iter().find(|x| x.id == task_id).unwrap()
+    pub fn get_by_id(&self, task_id: &str) -> Option<&Task> {
+        self.tasks.iter().find(|x| x.id == task_id)
     }
 }
 

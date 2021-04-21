@@ -21,6 +21,7 @@ pub enum Error {
     ProtocolError,
     LoggedOutError,
     SubmitError,
+    InvalidTaskId(String),
 }
 
 impl fmt::Display for Error {
@@ -41,6 +42,7 @@ impl fmt::Display for Error {
             Error::ProtocolError => "Unfortunately, Baca still uses deprecated TSLv1 protocol which is not supported on your system. Sorry!".to_owned(),
             Error::LoggedOutError => "The session cookie has expired, type 'baca refresh' to re-log and try again.".to_owned(),
             Error::SubmitError => "Error sending submit. Is the task still active?".to_owned(),
+            Error::InvalidTaskId(id) => format!("Task no. {} does not exist.", id),
         };
 
         write!(f, "{}", msg)
