@@ -15,8 +15,6 @@ mod log;
 mod model;
 mod parse;
 mod workspace;
-// pub use error::Error;
-// pub use error::Result;
 
 fn main() {
     let yaml = load_yaml!("cli.yml");

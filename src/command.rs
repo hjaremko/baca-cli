@@ -19,7 +19,7 @@ pub fn init(host: &str, login: &str, pass: &str) -> error::Result<()> {
     };
 
     workspace::initialize()?;
-    instance.cookie = baca::api::get_cookie(&instance);
+    instance.cookie = baca::api::get_cookie(&instance)?;
     workspace::save_instance(&instance)?;
     Ok(())
 }
@@ -38,7 +38,7 @@ pub fn details(submit_id: &str) -> error::Result<()> {
 pub fn refresh() -> error::Result<()> {
     info!("Refreshing Baca session.");
     let mut instance = workspace::read_instance()?;
-    instance.cookie = baca::api::get_cookie(&instance);
+    instance.cookie = baca::api::get_cookie(&instance)?;
     workspace::save_instance(&instance)?;
 
     println!("New session obtained.");

@@ -1,4 +1,4 @@
-use crate::error::Error::WorkspaceCorrupted;
+use crate::error::Error::{WorkspaceCorrupted, NetworkError};
 use std::fmt;
 
 pub type Result<T> = std::result::Result<T, self::Error>;
@@ -6,6 +6,7 @@ pub type Result<T> = std::result::Result<T, self::Error>;
 #[derive(Debug)]
 pub enum Error {
     // Other(Box<dyn std::error::Error>),
+    NetworkError(Box<dyn std::error::Error>),
     CreatingWorkspaceError(Box<dyn std::error::Error>),
     OpeningWorkspaceError(Box<dyn std::error::Error>),
     WritingWorkspaceError(Box<dyn std::error::Error>),
@@ -21,6 +22,7 @@ impl fmt::Display for Error {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         let msg = match self {
             // Error::Other(e) => write!(f, "Error: {}", e),
+            Error::NetworkError(e) => format!("Network error: {}", e),
             Error::CreatingWorkspaceError(e) => format!("Error creating workspace directory: {}", e),
             Error::OpeningWorkspaceError(e) => format!("Error opening workspace directory: {}", e),
             Error::WritingWorkspaceError(e) => format!("Error writing config to the workspace directory: {}", e),
@@ -42,3 +44,11 @@ impl From<serde_json::Error> for Error {
         WorkspaceCorrupted
     }
 }
+
+impl From<reqwest::Error> for Error {
+    fn from(e: reqwest::Error) -> Self {
+        tracing::error!("{}", e);
+        NetworkError(e.into())
+    }
+}
+

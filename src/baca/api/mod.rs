@@ -4,22 +4,25 @@ mod request;
 mod request_type;
 pub use self::request::Request;
 pub use self::request_type::RequestType;
+use crate::baca::details::EMPTY_RESPONSE;
+use crate::error;
 use crate::model::Task;
 use reqwest::blocking::multipart;
 use reqwest::header::COOKIE;
-use crate::error;
-use crate::baca::details::EMPTY_RESPONSE;
 
-pub fn get_cookie(instance: &InstanceData) -> String {
-    let login_response = Request::new(instance).login().unwrap();
+pub fn get_cookie(instance: &InstanceData) -> error::Result<String> {
+    let login_response = Request::new(instance).login()?;
 
     for (name, val) in login_response.headers() {
         tracing::debug!("Resp header: {} = {:?}", name, val);
     }
 
-    let cookie = login_response.cookies().next().unwrap();
-    tracing::debug!("got cookie {} = {}", cookie.name(), cookie.value());
-    cookie.value().to_string()
+    let cookie = login_response
+        .cookies()
+        .next()
+        .expect("No cookie in response!");
+    tracing::debug!("Cookie: {} = {}", cookie.name(), cookie.value());
+    Ok(cookie.value().to_string())
 }
 
 pub fn get_submit_details(instance: &InstanceData, submit_id: &str) -> error::Result<String> {
