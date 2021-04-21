@@ -6,10 +6,11 @@ CLI client for the Jagiellonian University's BaCa online judge
 
 ## Installation
 
-Latest release can be downloaded [here](https://github.com/hjaremko/baca-cli/releases).
+Latest release can be downloaded **[here](https://github.com/hjaremko/baca-cli/releases)**.
 
 - **Windows** users can use convenient installer or download raw binary.
 - **Linux** and **macOS** users should rename binary to `baca` and copy it to `~/.local/bin` or whatever your `PATH` is.
+- **Cargo** users can clone the repo, then install with command  `cargo install --path .`.
 
 ## Usage
 
