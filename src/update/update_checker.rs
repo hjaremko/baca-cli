@@ -63,7 +63,7 @@ mod tests {
         if let Some(Error::_FetchingReleaseError) = actual.err() {
             return;
         }
-        assert!(false);
+        panic!();
     }
 
     #[test]
@@ -111,6 +111,6 @@ mod tests {
             assert_eq!(new_release.version, "v0.0.2");
             return;
         }
-        assert!(false);
+        panic!();
     }
 }
