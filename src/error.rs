@@ -11,6 +11,7 @@ pub enum Error {
     CreatingWorkspaceError(Box<dyn std::error::Error>),
     OpeningWorkspaceError(Box<dyn std::error::Error>),
     WritingWorkspaceError(Box<dyn std::error::Error>),
+    RemovingWorkspaceError(Box<dyn std::error::Error>),
     RemovingTaskError(Box<dyn std::error::Error>),
     ReadingTaskError(Box<dyn std::error::Error>),
     ReadingSourceError(Box<dyn std::error::Error>),
@@ -22,6 +23,8 @@ pub enum Error {
     LoggedOutError,
     SubmitError,
     InvalidTaskId(String),
+    InvalidHost,
+    InvalidLoginOrPassword,
 }
 
 impl fmt::Display for Error {
@@ -32,6 +35,7 @@ impl fmt::Display for Error {
             Error::CreatingWorkspaceError(e) => format!("Error creating workspace directory: {}", e),
             Error::OpeningWorkspaceError(e) => format!("Error opening workspace directory: {}", e),
             Error::WritingWorkspaceError(e) => format!("Error writing config to the workspace directory: {}", e),
+            Error::RemovingWorkspaceError(e) => format!("Error removing workspace directory: {}", e),
             Error::RemovingTaskError(e) => format!("Error removing task config: {}", e),
             Error::ReadingTaskError(e) => format!("Error reading task config: {}", e),
             Error::ReadingSourceError(e) => format!("Error reading source file: {}", e),
@@ -43,6 +47,8 @@ impl fmt::Display for Error {
             Error::LoggedOutError => "The session cookie has expired, type 'baca refresh' to re-log and try again.".to_owned(),
             Error::SubmitError => "Error sending submit. Is the task still active?".to_owned(),
             Error::InvalidTaskId(id) => format!("Task no. {} does not exist.", id),
+            Error::InvalidHost => "Invalid host provided. Example: for baca url 'https://baca.ii.uj.edu.pl/mn2021/', the host is 'mn2021'.".to_owned(),
+            Error::InvalidLoginOrPassword => "Invalid login or password!".to_owned(),
         };
 
         write!(f, "{}", msg)

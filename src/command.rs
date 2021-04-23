@@ -18,9 +18,14 @@ pub fn init(host: &str, login: &str, pass: &str) -> error::Result<()> {
         cookie: "".to_string(),
     };
 
-    workspace::initialize()?;
-    instance.cookie = baca::api::get_cookie(&instance)?;
-    workspace::save_instance(&instance)?;
+    let cleanup_directory = |e| {
+        workspace::remove_workspace().expect("Cannot cleanup baca directory");
+        e
+    };
+
+    workspace::initialize().map_err(cleanup_directory)?;
+    instance.cookie = baca::api::get_cookie(&instance).map_err(cleanup_directory)?;
+    workspace::save_instance(&instance).map_err(cleanup_directory)?;
     Ok(())
 }
 

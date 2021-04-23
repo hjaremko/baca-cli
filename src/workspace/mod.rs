@@ -1,4 +1,5 @@
 mod instance_data;
+mod task_config;
 mod zip;
 
 use std::fs::{DirBuilder, ReadDir};
@@ -7,23 +8,22 @@ use std::{fs, io};
 use tracing::{debug, info};
 
 pub use self::instance_data::InstanceData;
-pub use self::zip::zip_file;
-mod task_config;
 pub use self::task_config::TaskConfig;
+pub use self::zip::zip_file;
 use crate::baca::details::Language;
-use crate::error;
 use crate::error::Error;
+use crate::error::Result;
 
 // todo: walk up dir tree until found
 const BACA_DIR: &str = ".baca";
 const INSTANCE_PATH: &str = ".baca/instance";
 const TASK_PATH: &str = ".baca/task";
 
-pub fn initialize() -> error::Result<()> {
+pub fn initialize() -> Result<()> {
     let baca_dir = check_if_initialized();
 
     if baca_dir.is_ok() {
-        return Err(error::Error::WorkspaceAlreadyInitialized);
+        return Err(Error::WorkspaceAlreadyInitialized);
     }
 
     info!("Creating new {}", BACA_DIR);
@@ -35,7 +35,7 @@ pub fn initialize() -> error::Result<()> {
     Ok(())
 }
 
-pub fn save_instance(instance: &InstanceData) -> error::Result<()> {
+pub fn save_instance(instance: &InstanceData) -> Result<()> {
     info!("Saving instance to the workspace.");
     let serialized = serde_json::to_string(instance).expect("Instance serialization error");
     debug!("Serialized: {}", serialized);
@@ -44,7 +44,7 @@ pub fn save_instance(instance: &InstanceData) -> error::Result<()> {
     Ok(())
 }
 
-pub fn read_instance() -> error::Result<InstanceData> {
+pub fn read_instance() -> Result<InstanceData> {
     check_if_initialized()?;
 
     info!("Reading {}", INSTANCE_PATH);
@@ -53,12 +53,10 @@ pub fn read_instance() -> error::Result<InstanceData> {
 
     let deserialized: InstanceData = serde_json::from_str(&serialized)?;
     debug!("Deserialized: {:?}", deserialized);
-
-    info!("Deserialized Baca instance");
     Ok(deserialized)
 }
 
-pub fn read_task() -> error::Result<TaskConfig> {
+pub fn read_task() -> Result<TaskConfig> {
     check_if_initialized()?;
     info!("Reading task from workspace.");
     let serialized = fs::read_to_string(TASK_PATH).map_err(as_task_read_error)?;
@@ -71,12 +69,7 @@ pub fn read_task() -> error::Result<TaskConfig> {
     Ok(deserialized)
 }
 
-pub fn save_task(
-    task_id: &str,
-    filepath: &str,
-    to_zip: bool,
-    language: Language,
-) -> error::Result<()> {
+pub fn save_task(task_id: &str, filepath: &str, to_zip: bool, language: Language) -> Result<()> {
     info!("Saving task info to {}.", TASK_PATH);
 
     let task = TaskConfig {
@@ -93,16 +86,17 @@ pub fn save_task(
     Ok(())
 }
 
-pub fn remove_task() -> error::Result<()> {
+pub fn remove_task() -> Result<()> {
     info!("Removing task from {}.", TASK_PATH);
-
-    fs::remove_file(TASK_PATH).map_err(as_task_remove_error)?;
-
-    println!("Task config cleared.");
-    Ok(())
+    fs::remove_file(TASK_PATH).map_err(as_task_remove_error)
 }
 
-fn check_if_initialized() -> Result<ReadDir, Error> {
+pub fn remove_workspace() -> Result<()> {
+    info!("Removing Baca workspace.");
+    fs::remove_dir_all(BACA_DIR).map_err(as_config_remove_error)
+}
+
+fn check_if_initialized() -> Result<ReadDir> {
     info!("Checking if {} exists.", BACA_DIR);
     fs::read_dir(BACA_DIR).map_err(as_not_init_error)
 }
@@ -110,33 +104,37 @@ fn check_if_initialized() -> Result<ReadDir, Error> {
 fn as_not_init_error(e: io::Error) -> Error {
     match e.kind() {
         ErrorKind::NotFound => Error::WorkspaceNotInitialized,
-        _ => error::Error::OpeningWorkspaceError(e.into()),
+        _ => Error::OpeningWorkspaceError(e.into()),
     }
 }
 
 fn as_config_read_error(e: io::Error) -> Error {
     match e.kind() {
         ErrorKind::NotFound => Error::WorkspaceCorrupted,
-        _ => error::Error::OpeningWorkspaceError(e.into()),
+        _ => Error::OpeningWorkspaceError(e.into()),
     }
 }
 
 fn as_config_write_error(e: io::Error) -> Error {
-    error::Error::WritingWorkspaceError(e.into())
+    Error::WritingWorkspaceError(e.into())
 }
 
 fn as_config_create_error(e: io::Error) -> Error {
-    error::Error::CreatingWorkspaceError(e.into())
+    Error::CreatingWorkspaceError(e.into())
+}
+
+fn as_config_remove_error(e: io::Error) -> Error {
+    Error::RemovingWorkspaceError(e.into())
 }
 
 fn as_task_remove_error(e: io::Error) -> Error {
-    error::Error::RemovingTaskError(e.into())
+    Error::RemovingTaskError(e.into())
 }
 
 fn as_task_read_error(e: io::Error) -> Error {
-    error::Error::ReadingTaskError(e.into())
+    Error::ReadingTaskError(e.into())
 }
 
 fn as_task_write_error(e: io::Error) -> Error {
-    error::Error::ReadingTaskError(e.into())
+    Error::ReadingTaskError(e.into())
 }

@@ -9,28 +9,43 @@ use crate::error::Error;
 use crate::error::Result;
 use crate::model::Task;
 use crate::workspace::InstanceData;
-use reqwest::blocking::multipart;
+use reqwest::blocking::{multipart, Response};
 use reqwest::header::COOKIE;
+use tracing::debug;
 
 pub fn get_cookie(instance: &InstanceData) -> Result<String> {
     let login_response = Request::new(instance).login()?;
+    log_response_details(&login_response);
 
+    if login_response.status().as_str() == "404" {
+        return Err(Error::InvalidHost);
+    };
+
+    extract_cookie(&login_response)
+}
+
+fn log_response_details(login_response: &Response) {
     for (name, val) in login_response.headers() {
-        tracing::debug!("Resp header: {} = {:?}", name, val);
+        debug!("Response header: {} = {:?}", name, val);
     }
 
-    let cookie = login_response
+    debug!("Status code: {}", login_response.status());
+}
+
+fn extract_cookie(response: &Response) -> Result<String> {
+    let cookie = response
         .cookies()
         .next()
-        .expect("No cookie in response!");
-    tracing::debug!("Cookie: {} = {}", cookie.name(), cookie.value());
+        .ok_or(Error::InvalidLoginOrPassword)?;
+
+    debug!("Cookie: {} = {}", cookie.name(), cookie.value());
     Ok(cookie.value().to_string())
 }
 
 pub fn get_submit_details(instance: &InstanceData, submit_id: &str) -> Result<String> {
     let resp = Request::new(instance).details(submit_id)?;
     let resp = resp.text().expect("Invalid submit data");
-    tracing::debug!("Received raw submit: {}", resp);
+    debug!("Received raw submit: {}", resp);
 
     if resp == EMPTY_RESPONSE || resp.contains("failed") {
         return Err(Error::InvalidSubmitId);
@@ -42,7 +57,7 @@ pub fn get_submit_details(instance: &InstanceData, submit_id: &str) -> Result<St
 pub fn get_results(instance: &InstanceData) -> Result<String> {
     let resp = Request::new(instance).results()?;
     let resp = resp.text().expect("Invalid submit data");
-    tracing::debug!("Received raw results: {}", resp);
+    debug!("Received raw results: {}", resp);
 
     check_for_empty_response(resp)
 }
@@ -50,13 +65,13 @@ pub fn get_results(instance: &InstanceData) -> Result<String> {
 pub fn get_tasks(instance: &InstanceData) -> Result<String> {
     let resp = Request::new(instance).tasks()?;
     let resp = resp.text().expect("Invalid submit data");
-    tracing::debug!("Received raw tasks: {}", resp);
+    debug!("Received raw tasks: {}", resp);
 
     check_for_empty_response(resp)
 }
 
 pub fn submit(instance: &InstanceData, task: &Task, file_path: &str) -> Result<()> {
-    tracing::debug!("{:?}", task);
+    debug!("{:?}", task);
     let form = multipart::Form::new()
         .text("zadanie", task.id.clone())
         .text("jezyk", task.language.code())
@@ -67,7 +82,7 @@ pub fn submit(instance: &InstanceData, task: &Task, file_path: &str) -> Result<(
         .danger_accept_invalid_certs(true)
         .build()?;
     let url = format!("https://baca.ii.uj.edu.pl/{}/sendSubmit", instance.host);
-    tracing::debug!("SendSubmit url: {}", url);
+    debug!("SendSubmit url: {}", url);
 
     let resp = client
         .post(url)
@@ -76,7 +91,7 @@ pub fn submit(instance: &InstanceData, task: &Task, file_path: &str) -> Result<(
         .send()?;
 
     let resp = resp.text().expect("Invalid response.");
-    tracing::debug!("Response: {}", resp);
+    debug!("Response: {}", resp);
 
     match resp.as_str() {
         "Niezalogowany jesteś" => Err(Error::LoggedOutError),
