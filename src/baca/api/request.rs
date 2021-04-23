@@ -86,11 +86,13 @@ mod tests {
 
     fn check_response(response: reqwest::Result<Response>) {
         // todo: tsl error
-        if response.is_ok() {
-            let response = response.unwrap();
-            assert_eq!(response.status(), StatusCode::OK);
-            assert_eq!(response.text().unwrap(), "//OK[0,[],0,7]");
-        }
+        match response {
+            Ok(response) => {
+                assert_eq!(response.status(), StatusCode::OK);
+                assert_eq!(response.text().unwrap(), "//OK[0,[],0,7]");
+            }
+            Err(_) => {}
+        };
     }
 
     #[test]
@@ -127,6 +129,9 @@ mod tests {
         let req = Request::new(&baca);
         let response = req.tasks();
 
-        check_response(response);
+        if response.is_ok() {
+            let response = response.unwrap();
+            assert_eq!(response.status(), StatusCode::OK);
+        }
     }
 }

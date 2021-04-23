@@ -25,6 +25,8 @@ pub enum Error {
     InvalidTaskId(String),
     InvalidHost,
     InvalidLoginOrPassword,
+    _FetchingReleaseError,
+    _NoRelease,
 }
 
 impl fmt::Display for Error {
@@ -49,6 +51,8 @@ impl fmt::Display for Error {
             Error::InvalidTaskId(id) => format!("Task no. {} does not exist.", id),
             Error::InvalidHost => "Invalid host provided. Example: for baca url 'https://baca.ii.uj.edu.pl/mn2021/', the host is 'mn2021'.".to_owned(),
             Error::InvalidLoginOrPassword => "Invalid login or password!".to_owned(),
+            Error::_FetchingReleaseError => "Error fetching releases.".to_owned(),
+            Error::_NoRelease => "No releases available.".to_owned(),
         };
 
         write!(f, "{}", msg)

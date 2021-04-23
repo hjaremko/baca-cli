@@ -14,6 +14,7 @@ mod error;
 mod log;
 mod model;
 mod parse;
+mod update;
 mod workspace;
 
 fn main() {
