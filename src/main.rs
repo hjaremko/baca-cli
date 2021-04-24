@@ -1,12 +1,13 @@
 #[macro_use]
 extern crate clap;
 use crate::baca::details::Language;
+use crate::update::{GithubReleases, UpdateChecker, UpdateStatus};
 use crate::workspace::TaskConfig;
 use clap::{App, AppSettings};
 use colored::Colorize;
 use std::path::Path;
 use std::str::FromStr;
-use tracing::Level;
+use tracing::{error, info, Level};
 
 mod baca;
 mod command;
@@ -33,6 +34,8 @@ fn main() {
     if verbose_matches != 0 {
         log::init_logging(log_level);
     }
+
+    check_for_updates();
 
     // todo: -r to override current config
     if let Some(matches) = matches.subcommand_matches("init") {
@@ -110,7 +113,7 @@ fn main() {
         }
 
         if saved.is_err() {
-            tracing::info!("Task not loaded.");
+            info!("Task not loaded.");
         }
 
         if task_id.is_none() && saved.is_err() {
@@ -194,4 +197,29 @@ fn main() {
         }
         return;
     }
+}
+
+fn check_for_updates() {
+    let gh_service = GithubReleases::new("hjaremko", "baca-cli");
+    let checker = UpdateChecker::new(gh_service, update::CURRENT_VERSION);
+    let status = checker.check_for_updates();
+
+    if let Err(e) = status {
+        error!("Error checking for updates: {}", e);
+        return;
+    }
+
+    match status.unwrap() {
+        UpdateStatus::NoUpdates => info!("No updates available."),
+        UpdateStatus::Update(new_rel) => {
+            println!(
+                "{}",
+                format!(
+                    "New version {} is available!!\nDownload at {}",
+                    new_rel.version, new_rel.link
+                )
+                .bright_yellow()
+            )
+        }
+    };
 }

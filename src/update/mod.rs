@@ -5,7 +5,8 @@ pub use self::release_service::ReleaseService;
 mod update_status;
 pub use self::update_status::UpdateStatus;
 pub mod update_checker;
-pub use self::update_checker::_UpdateChecker;
+pub use self::update_checker::UpdateChecker;
 mod github_releases;
+pub use self::github_releases::GithubReleases;
 
-const _CURRENT_VERSION: &str = env!("CARGO_PKG_VERSION");
+pub const CURRENT_VERSION: &str = env!("CARGO_PKG_VERSION");

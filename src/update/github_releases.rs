@@ -3,13 +3,13 @@ use crate::update::{BacaRelease, ReleaseService};
 use serde_json::Value;
 use tracing::debug;
 
-struct GithubReleases {
+pub struct GithubReleases {
     owner: String,
     repo: String,
 }
 
 impl GithubReleases {
-    pub fn _new(owner: &str, repo: &str) -> Self {
+    pub fn new(owner: &str, repo: &str) -> Self {
         GithubReleases {
             owner: owner.to_string(),
             repo: repo.to_string(),
@@ -40,17 +40,13 @@ impl ReleaseService for GithubReleases {
         let ver = &v[0]["tag_name"];
         let link = &v[0]["html_url"];
 
-        debug!("Last version: {}", ver);
-        debug!("Url: {}", link);
-
         if ver.is_null() || link.is_null() {
             return Err(Error::_NoRelease);
         }
 
-        Ok(BacaRelease::_new(
-            ver.as_str().unwrap(),
-            link.as_str().unwrap(),
-        ))
+        let ver = ver.as_str().unwrap();
+        let ver = &ver[1..];
+        Ok(BacaRelease::new(ver, link.as_str().unwrap()))
     }
 }
 
@@ -60,28 +56,28 @@ mod tests {
 
     #[test]
     fn invalid_repo_should_return_error() {
-        let gh = GithubReleases::_new("hjaremko", "invalid");
+        let gh = GithubReleases::new("hjaremko", "invalid");
         let actual = gh.get_last_release();
         assert!(actual.is_err());
     }
 
     #[test]
     fn invalid_owner_should_return_error() {
-        let gh = GithubReleases::_new("invalid", "baca-cli");
+        let gh = GithubReleases::new("invalid", "baca-cli");
         let actual = gh.get_last_release();
         assert!(actual.is_err());
     }
 
     #[test]
     fn correct_repo_no_releases_should_return_error() {
-        let gh = GithubReleases::_new("invalid", "baca-cli");
+        let gh = GithubReleases::new("invalid", "baca-cli");
         let actual = gh.get_last_release();
         assert!(actual.is_err());
     }
 
     #[test]
-    fn correct_repo_should_return_lastest_release() {
-        let gh = GithubReleases::_new("hjaremko", "baca-cli");
+    fn correct_repo_should_return_latest_release() {
+        let gh = GithubReleases::new("hjaremko", "baca-cli");
         let actual = gh.get_last_release();
         assert!(actual.is_ok());
     }
