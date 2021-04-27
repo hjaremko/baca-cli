@@ -13,14 +13,12 @@ use reqwest::blocking::{multipart, Response};
 use reqwest::header::COOKIE;
 use tracing::debug;
 
+pub mod baca_service;
+
 pub fn get_cookie(instance: &InstanceData) -> Result<String> {
     let login_response = Request::new(instance).login()?;
     log_response_details(&login_response);
-
-    if login_response.status().as_str() == "404" {
-        return Err(Error::InvalidHost);
-    };
-
+    check_response_status(&login_response)?;
     extract_cookie(&login_response)
 }
 
@@ -64,6 +62,8 @@ pub fn get_results(instance: &InstanceData) -> Result<String> {
 
 pub fn get_tasks(instance: &InstanceData) -> Result<String> {
     let resp = Request::new(instance).tasks()?;
+    check_response_status(&resp)?;
+
     let resp = resp.text().expect("Invalid submit data");
     debug!("Received raw tasks: {}", resp);
 
@@ -98,6 +98,14 @@ pub fn submit(instance: &InstanceData, task: &Task, file_path: &str) -> Result<(
         "Błąd" => Err(Error::SubmitError),
         _ => Ok(()),
     }
+}
+
+fn check_response_status(response: &Response) -> Result<()> {
+    if response.status().as_str() == "404" {
+        return Err(Error::InvalidHost);
+    };
+
+    Ok(())
 }
 
 fn check_for_empty_response(resp: String) -> Result<String> {
