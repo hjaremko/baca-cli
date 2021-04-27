@@ -1,3 +1,4 @@
+use crate::error;
 use serde::{Deserialize, Serialize};
 use std::str::FromStr;
 
@@ -34,7 +35,7 @@ impl ToString for Language {
 }
 
 impl FromStr for Language {
-    type Err = ();
+    type Err = error::Error;
 
     fn from_str(s: &str) -> Result<Self, Self::Err> {
         let l = match s.to_lowercase().as_str() {
@@ -42,7 +43,7 @@ impl FromStr for Language {
             "java" => Language::Java,
             "bash" => Language::Bash,
             "c++ z obsluga plikow" => Language::CppWithFileSupport,
-            _ => Self::Unsupported,
+            lang => return Err(Self::Err::UnsupportedLanguage(lang.to_string())),
         };
 
         Ok(l)
@@ -52,6 +53,7 @@ impl FromStr for Language {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::error::Error;
 
     #[test]
     fn from_string() {
@@ -62,8 +64,8 @@ mod tests {
             Language::from_str("C++ z obsluga plikow").unwrap(),
             Language::CppWithFileSupport
         );
-        assert_eq!(Language::from_str("Ada").unwrap(), Language::Unsupported);
-        assert_eq!(Language::from_str("C").unwrap(), Language::Unsupported);
+        assert!(Language::from_str("Ada").is_err());
+        assert!(Language::from_str("C").is_err());
     }
 
     #[test]
@@ -79,15 +81,15 @@ mod tests {
     }
 
     #[test]
+    fn from_string_polish() {
+        let result = Language::from_str("C++ z obsługą plików");
+        assert!(matches!(result, Err(Error::UnsupportedLanguage { .. })));
+    }
+
+    #[test]
     fn from_invalid_string() {
-        assert_eq!(
-            Language::from_str("C++ z obsługą plików").unwrap(),
-            Language::Unsupported
-        );
-        assert_eq!(
-            Language::from_str("sada224214@dasdas").unwrap(),
-            Language::Unsupported
-        );
+        let result = Language::from_str("sada224214@dasdas");
+        assert!(matches!(result, Err(Error::UnsupportedLanguage { .. })));
     }
 
     #[test]

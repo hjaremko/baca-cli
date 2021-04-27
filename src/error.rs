@@ -15,6 +15,7 @@ pub enum Error {
     RemovingTaskError(Box<dyn std::error::Error>),
     ReadingTaskError(Box<dyn std::error::Error>),
     ReadingSourceError(Box<dyn std::error::Error>),
+    ZippingError(Box<dyn std::error::Error>),
     WorkspaceNotInitialized,
     WorkspaceCorrupted,
     WorkspaceAlreadyInitialized,
@@ -27,6 +28,8 @@ pub enum Error {
     InvalidLoginOrPassword,
     FetchingReleaseError,
     NoRelease,
+    InvalidArgument,
+    UnsupportedLanguage(String),
 }
 
 impl fmt::Display for Error {
@@ -41,6 +44,7 @@ impl fmt::Display for Error {
             Error::RemovingTaskError(e) => format!("Error removing task config: {}", e),
             Error::ReadingTaskError(e) => format!("Error reading task config: {}", e),
             Error::ReadingSourceError(e) => format!("Error reading source file: {}", e),
+            Error::ZippingError(e) => format!("Error zipping! Error: {}", e),
             Error::WorkspaceNotInitialized => "Baca is not initialized! Type 'baca init --help' for more information.".to_owned(),
             Error::WorkspaceCorrupted => "Workspace corrupted, please delete .baca directory and initialize again.".to_owned(),
             Error::WorkspaceAlreadyInitialized => "Baca already initialized. Remove '.baca' directory if you want to change config or edit it manually.".to_owned(),
@@ -53,6 +57,8 @@ impl fmt::Display for Error {
             Error::InvalidLoginOrPassword => "Invalid login or password!".to_owned(),
             Error::FetchingReleaseError => "Error fetching releases.".to_owned(),
             Error::NoRelease => "No releases available.".to_owned(),
+            Error::InvalidArgument => "Invalid argument.".to_owned(),
+            Error::UnsupportedLanguage(lang) => format!("{} is not yet supported!! Please create an issue at https://github.com/hjaremko/baca-cli/issues", lang),
         };
 
         write!(f, "{}", msg)

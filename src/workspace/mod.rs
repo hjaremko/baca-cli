@@ -24,25 +24,19 @@ use mockall::{automock, predicate::*};
 
 #[cfg_attr(test, automock)]
 pub trait Workspace {
-    fn initialize(&self) -> Result<()>;
-    fn save_instance(&self, instance: &InstanceData) -> Result<()>;
-    fn read_instance(&self) -> Result<InstanceData>;
-    fn read_task(&self) -> Result<TaskConfig>;
-    fn save_task(
-        &self,
-        task_id: &str,
-        filepath: &str,
-        to_zip: bool,
-        language: Language,
-    ) -> Result<()>;
-    fn remove_task(&self) -> Result<()>;
-    fn remove_workspace(&self) -> Result<()>;
+    fn initialize() -> Result<()>;
+    fn save_instance(instance: &InstanceData) -> Result<()>;
+    fn read_instance() -> Result<InstanceData>;
+    fn read_task() -> Result<TaskConfig>;
+    fn save_task(task_id: &str, filepath: &str, to_zip: bool, language: Language) -> Result<()>;
+    fn remove_task() -> Result<()>;
+    fn remove_workspace() -> Result<()>;
 }
 
 pub struct WorkspaceDir {}
 
 impl Workspace for WorkspaceDir {
-    fn initialize(&self) -> Result<()> {
+    fn initialize() -> Result<()> {
         let baca_dir = check_if_initialized();
 
         if baca_dir.is_ok() {
@@ -58,7 +52,7 @@ impl Workspace for WorkspaceDir {
         Ok(())
     }
 
-    fn save_instance(&self, instance: &InstanceData) -> Result<()> {
+    fn save_instance(instance: &InstanceData) -> Result<()> {
         info!("Saving instance to the workspace.");
         let serialized = serde_json::to_string(instance).expect("Instance serialization error");
         debug!("Serialized: {}", serialized);
@@ -67,7 +61,7 @@ impl Workspace for WorkspaceDir {
         Ok(())
     }
 
-    fn read_instance(&self) -> Result<InstanceData> {
+    fn read_instance() -> Result<InstanceData> {
         check_if_initialized()?;
 
         info!("Reading {}", INSTANCE_PATH);
@@ -79,7 +73,7 @@ impl Workspace for WorkspaceDir {
         Ok(deserialized)
     }
 
-    fn read_task(&self) -> Result<TaskConfig> {
+    fn read_task() -> Result<TaskConfig> {
         check_if_initialized()?;
         info!("Reading task from workspace.");
         let serialized = fs::read_to_string(TASK_PATH).map_err(as_task_read_error)?;
@@ -92,13 +86,7 @@ impl Workspace for WorkspaceDir {
         Ok(deserialized)
     }
 
-    fn save_task(
-        &self,
-        task_id: &str,
-        filepath: &str,
-        to_zip: bool,
-        language: Language,
-    ) -> Result<()> {
+    fn save_task(task_id: &str, filepath: &str, to_zip: bool, language: Language) -> Result<()> {
         info!("Saving task info to {}.", TASK_PATH);
 
         let task = TaskConfig {
@@ -115,12 +103,12 @@ impl Workspace for WorkspaceDir {
         Ok(())
     }
 
-    fn remove_task(&self) -> Result<()> {
+    fn remove_task() -> Result<()> {
         info!("Removing task from {}.", TASK_PATH);
         fs::remove_file(TASK_PATH).map_err(as_task_remove_error)
     }
 
-    fn remove_workspace(&self) -> Result<()> {
+    fn remove_workspace() -> Result<()> {
         info!("Removing Baca workspace.");
         fs::remove_dir_all(BACA_DIR).map_err(as_config_remove_error)
     }
@@ -176,8 +164,7 @@ mod tests {
     #[test]
     #[serial]
     fn init_success() {
-        let w = WorkspaceDir {};
-        let result = w.initialize();
+        let result = WorkspaceDir::initialize();
 
         assert!(result.is_ok());
         assert!(fs::read_dir(BACA_DIR).is_ok());
@@ -187,11 +174,10 @@ mod tests {
     #[test]
     #[serial]
     fn init_already_initialized() {
-        let w = WorkspaceDir {};
-        let result = w.initialize();
+        let result = WorkspaceDir::initialize();
         assert!(result.is_ok());
 
-        let result = w.initialize();
+        let result = WorkspaceDir::initialize();
         assert!(result.is_err());
 
         if let Err(e) = result {
@@ -215,17 +201,16 @@ mod tests {
     #[test]
     #[serial]
     fn save_read_instance_success() {
-        let w = WorkspaceDir {};
-        let result = w.initialize();
+        let result = WorkspaceDir::initialize();
         assert!(result.is_ok());
 
         let baca = make_baca();
-        let result = w.save_instance(&baca);
+        let result = WorkspaceDir::save_instance(&baca);
 
         assert!(result.is_ok());
         assert!(fs::read(INSTANCE_PATH).is_ok());
 
-        let result = w.read_instance();
+        let result = WorkspaceDir::read_instance();
         assert!(result.is_ok());
         assert_eq!(result.unwrap(), baca);
 
