@@ -1,8 +1,14 @@
 #[macro_use]
 extern crate clap;
+
+#[cfg(test)]
+#[macro_use]
+extern crate serial_test;
+
 use crate::baca::details::Language;
 use crate::update::{GithubReleases, UpdateChecker, UpdateStatus};
-use crate::workspace::TaskConfig;
+use crate::workspace::Workspace;
+use crate::workspace::{TaskConfig, WorkspaceDir};
 use clap::{App, AppSettings};
 use colored::Colorize;
 use std::path::Path;
@@ -36,6 +42,7 @@ fn main() {
     }
 
     check_for_updates();
+    let workspace = WorkspaceDir {};
 
     // todo: -r to override current config
     if let Some(matches) = matches.subcommand_matches("init") {
@@ -44,7 +51,7 @@ fn main() {
         let password = matches.value_of("password").unwrap();
 
         // todo: if error remove dir
-        if let Err(e) = command::init(host, login, password) {
+        if let Err(e) = command::init(workspace, host, login, password) {
             println!("{}", format!("{}", e).bright_red());
         }
         return;
@@ -54,14 +61,14 @@ fn main() {
     if let Some(matches) = matches.subcommand_matches("details") {
         let submit_id = matches.value_of("id").unwrap();
 
-        if let Err(e) = command::details(submit_id) {
+        if let Err(e) = command::details(workspace, submit_id) {
             println!("{}", format!("{}", e).bright_red());
         }
         return;
     }
 
     if matches.subcommand_matches("refresh").is_some() {
-        if let Err(e) = command::refresh() {
+        if let Err(e) = command::refresh(workspace) {
             println!("{}", format!("{}", e).bright_red());
         }
         return;
@@ -78,14 +85,14 @@ fn main() {
             }
         };
 
-        if let Err(e) = command::log(last_n) {
+        if let Err(e) = command::log(workspace, last_n) {
             println!("{}", format!("{}", e).bright_red());
         }
         return;
     }
 
     if matches.subcommand_matches("tasks").is_some() {
-        if let Err(e) = command::tasks() {
+        if let Err(e) = command::tasks(workspace) {
             println!("{}", format!("{}", e).bright_red());
         }
         return; // todo: return error
@@ -93,7 +100,7 @@ fn main() {
 
     if let Some(matches) = matches.subcommand_matches("submit") {
         if matches.subcommand_matches("clear").is_some() {
-            if let Err(e) = workspace::remove_task() {
+            if let Err(e) = workspace.remove_task() {
                 println!("{}", format!("{}", e).bright_red());
             }
             return;
@@ -103,7 +110,7 @@ fn main() {
         let file_path = matches.value_of("file");
         let to_zip = matches.is_present("zip");
         let lang = matches.value_of("language");
-        let saved = workspace::read_task();
+        let saved = workspace.read_task();
 
         if let Some(lang) = lang {
             if let Ok(Language::Unsupported) = Language::from_str(lang) {
@@ -169,7 +176,7 @@ fn main() {
         };
 
         if matches.is_present("default") {
-            if let Err(e) = workspace::save_task(&task_id, &file_path, to_zip, lang) {
+            if let Err(e) = workspace.save_task(&task_id, &file_path, to_zip, lang) {
                 println!("{}", format!("{}", e).bright_red());
             }
         }
@@ -192,7 +199,7 @@ fn main() {
             file_path
         };
 
-        if let Err(e) = command::submit(&task_id, file_to_submit.as_str(), &lang) {
+        if let Err(e) = command::submit(workspace, &task_id, file_to_submit.as_str(), &lang) {
             println!("{}", format!("{}", e).bright_red());
         }
         return;
