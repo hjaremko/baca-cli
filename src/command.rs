@@ -18,9 +18,12 @@ pub fn init(host: &str, login: &str, pass: &str) -> error::Result<()> {
         cookie: "".to_string(),
     };
 
-    let cleanup_directory = |e| {
-        workspace::remove_workspace().expect("Cannot cleanup baca directory");
-        e
+    let cleanup_directory = |e| match e {
+        error::Error::WorkspaceAlreadyInitialized => e,
+        _ => {
+            workspace::remove_workspace().expect("Cannot cleanup baca directory");
+            e
+        }
     };
 
     workspace::initialize().map_err(cleanup_directory)?;
