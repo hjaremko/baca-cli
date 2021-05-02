@@ -12,6 +12,15 @@ Latest release can be downloaded **[here](https://github.com/hjaremko/baca-cli/r
 - **Linux** and **macOS** users should rename binary to `baca` and copy it to `~/.local/bin` or whatever your `PATH` is.
 - **Cargo** users can clone the repo, then install with command  `cargo install --path .`.
 
+### Arch Linux
+You can download the latest release from [AUR](https://aur.archlinux.org/packages/baca-cli) and install it using your favourite AUR helper or directly from source:
+```
+sudo pacman -S base-devel git
+git clone https://aur.archlinux.org/baca-cli.git
+cd baca-cli
+makepkg -sic
+```
+
 ## Usage
 
 ```
