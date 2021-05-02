@@ -6,7 +6,7 @@ CLI client for the Jagiellonian University's BaCa online judge
 
 ## Installation
 
-Latest release can be downloaded **[here](https://github.com/hjaremko/baca-cli/releases)**.
+The latest release can be downloaded **[here](https://github.com/hjaremko/baca-cli/releases)**.
 
 - **Windows** users can use convenient installer or download raw binary.
 - **Linux** and **macOS** users should rename binary to `baca` and copy it to `~/.local/bin` or whatever your `PATH` is.
@@ -36,11 +36,11 @@ SUBCOMMANDS:
 
 ### Workspace initialization: `init`
 
-Initializes current directory as BaCa workspace, similar to `git init`. Currently passwords are stored in **plain text**
-.
+Initializes current directory as BaCa workspace, similar to `git init`. Currently, passwords are stored in **plain
+text.**
 
 ```
-baca init --host <host> --login <login> --password <password>
+baca init --host <host>
 ```
 
 ```
@@ -49,7 +49,7 @@ baca init --host <host> --login <login> --password <password>
 -p, --password <password>    BaCa password
 ```
 
-Example, running on `Metody numeryczne 2019/2020`:
+Example, running on `Metody numeryczne 2019/2020` with no login prompt:
 
 ```
 baca init --host mn2020 --login jaremko --password PaSsWorD
