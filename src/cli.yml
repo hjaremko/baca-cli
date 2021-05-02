@@ -21,13 +21,11 @@ subcommands:
             short: l
             long: login
             help: BaCa login
-            required: true
             takes_value: true
         - password:
             short: p
             long: password
             help: BaCa password
-            required: true
             takes_value: true
   - details:
       about: Gets submit details
