@@ -25,7 +25,17 @@ jobs:
           toolchain: ${{ matrix.toolchain }}
           override: true
 
+      - name: Cache cargo
+        id: cache-cargo
+        uses: actions/cache@v2
+        with:
+          path: |
+            ~/.cargo/bin/grcov
+          key: ${{ runner.os }}-grcov
+          restore-keys: ${{ runner.os }}-grcov
+
       - name: Install grcov
+        if: steps.cache-cargo.outputs.cache-hit != 'true'
         uses: actions-rs/install@v0.1
         with:
           crate: grcov
