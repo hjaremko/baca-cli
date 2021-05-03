@@ -9,7 +9,7 @@ jobs:
     strategy:
       matrix:
         os:
-          - ubuntu-latest
+          - macos-latest
         toolchain:
           - nightly
         cargo_flags:
@@ -38,6 +38,7 @@ jobs:
           command: test
           args: --all --no-fail-fast ${{ matrix.cargo_flags }}
         env:
+          BACA_PASSWORD: ${{ secrets.BACA_PASSWORD }}
           CARGO_INCREMENTAL: "0"
           RUSTFLAGS: '-Zprofile -Ccodegen-units=1 -Copt-level=0 -Clink-dead-code -Coverflow-checks=off -Zpanic_abort_tests -Cpanic=abort -Cdebug-assertions=off'
           RUSTDOCFLAGS: '-Zprofile -Ccodegen-units=1 -Copt-level=0 -Clink-dead-code -Coverflow-checks=off -Zpanic_abort_tests -Cpanic=abort -Cdebug-assertions=off'

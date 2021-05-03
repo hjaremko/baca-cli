@@ -194,7 +194,7 @@ sudo apt install pkg-config libssl-dev
 
 Log levels are configured by `-v` flag.
 
-- `no flag` - **warn**
+- `no flag` - no additional logs
 - `-v` - **info**
 - `-vv` - **debug**
 - `-vvv or more` - **trace**

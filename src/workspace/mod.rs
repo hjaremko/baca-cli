@@ -200,20 +200,18 @@ mod tests {
 
     #[test]
     #[serial]
-    fn save_read_instance_success() {
-        let result = WorkspaceDir::initialize();
-        assert!(result.is_ok());
+    fn save_read_instance_success() -> Result<()> {
+        WorkspaceDir::initialize()?;
 
         let baca = make_baca();
-        let result = WorkspaceDir::save_instance(&baca);
+        WorkspaceDir::save_instance(&baca)?;
 
-        assert!(result.is_ok());
-        assert!(fs::read(INSTANCE_PATH).is_ok());
+        fs::read(INSTANCE_PATH)?;
 
         let result = WorkspaceDir::read_instance();
-        assert!(result.is_ok());
-        assert_eq!(result.unwrap(), baca);
+        assert_eq!(result?, baca);
 
-        assert!(fs::remove_dir_all(BACA_DIR).is_ok());
+        fs::remove_dir_all(BACA_DIR)?;
+        Ok(())
     }
 }
