@@ -1,7 +1,11 @@
 use crate::baca::api::RequestType;
+use crate::error;
+use crate::error::Error;
+use crate::model::Task;
 use crate::workspace::InstanceData;
-use reqwest::blocking::{RequestBuilder, Response};
+use reqwest::blocking::{multipart, RequestBuilder, Response};
 use reqwest::header::{CONTENT_TYPE, COOKIE};
+use tracing::{debug, info};
 
 pub struct Request<'a> {
     instance: &'a InstanceData,
@@ -40,14 +44,17 @@ impl<'a> Request<'a> {
         req.send()
     }
 
-    // todo: submit here
+    pub fn submit(&self, task: &Task, file_path: &str) -> error::Result<Response> {
+        let req = self.make_submit_request(task, file_path)?;
+        req.send().map_err(|e| e.into())
+    }
 
     fn make_request(&self, req_type: RequestType) -> RequestBuilder {
         let post_url = format!("{}{}", self.instance.make_module_base(), req_type.mapping());
         let payload = self.instance.make_payload(&req_type);
 
-        tracing::info!("Making request to: {}", post_url);
-        tracing::debug!("Request payload: {}", payload);
+        info!("Making request to: {}", post_url);
+        debug!("Request payload: {}", payload);
 
         let req = self.make_base_request(&post_url).body(payload);
         let req = match req_type {
@@ -55,7 +62,7 @@ impl<'a> Request<'a> {
             _ => req.header(COOKIE, self.instance.make_cookie()),
         };
 
-        tracing::debug!("{:?}", req);
+        debug!("{:?}", req);
         req
     }
 
@@ -66,6 +73,30 @@ impl<'a> Request<'a> {
             .header("DNT", "1")
             .header("X-GWT-Module-Base", self.instance.make_module_base())
             .header("X-GWT-Permutation", &self.instance.permutation)
+    }
+
+    fn make_submit_request(&self, task: &Task, file_path: &str) -> error::Result<RequestBuilder> {
+        let form = multipart::Form::new()
+            .text("zadanie", task.id.clone())
+            .text("jezyk", task.language.code())
+            .file("zrodla", file_path)
+            .map_err(|e| Error::ReadingSourceError(e.into()))?;
+
+        let url = format!(
+            "https://baca.ii.uj.edu.pl/{}/sendSubmit",
+            self.instance.host
+        );
+
+        info!("Making submit request to: {}", url);
+        debug!("Form: {:?}", form);
+
+        let req = self
+            .client
+            .post(url)
+            .multipart(form)
+            .header(COOKIE, self.instance.make_cookie());
+        debug!("{:?}", req);
+        Ok(req)
     }
 }
 
