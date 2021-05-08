@@ -86,6 +86,7 @@ impl Workspace for WorkspaceDir {
         Ok(deserialized)
     }
 
+    // todo: prompt for override
     fn save_task(task_id: &str, filepath: &str, to_zip: bool, language: Language) -> Result<()> {
         info!("Saving task info to {}.", TASK_PATH);
 
@@ -99,7 +100,7 @@ impl Workspace for WorkspaceDir {
         debug!("Serialized: {}", serialized);
 
         fs::write(TASK_PATH, serialized).map_err(as_task_write_error)?;
-        info!("Saved task successfully.");
+        println!("Task config has been saved.");
         Ok(())
     }
 
