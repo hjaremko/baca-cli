@@ -4,7 +4,7 @@ mod submit {
     use assert_fs::prelude::*;
     use assert_fs::TempDir;
     use predicates::prelude::*;
-    use std::env;
+    use std::{env, fs};
 
     fn initialize() -> Result<TempDir, Box<dyn std::error::Error>> {
         let pass = env::var("BACA_PASSWORD")?;
@@ -194,5 +194,98 @@ mod submit {
         Ok(())
     }
 
-    // todo: default tests
+    #[test]
+    fn default_option_should_save_task() -> Result<(), Box<dyn std::error::Error>> {
+        let temp = initialize()?;
+
+        let mut cmd = Command::cargo_bin("baca")?;
+        cmd.args(&[
+            "submit",
+            "-f",
+            "dummy.txt",
+            "-t",
+            "2",
+            "-l",
+            "Java",
+            "--default",
+        ]);
+        cmd.current_dir(&temp);
+
+        cmd.assert()
+            .stdout(predicate::str::contains("Task config has been saved."))
+            .stdout(predicate::str::contains("Submitting dummy.txt"))
+            .stdout(predicate::str::contains("Java"))
+            .stdout(predicate::str::contains("[B] Metoda Newtona"));
+
+        let config_path = &*temp.path().join(".baca/task");
+        let does_exit_pred = predicate::path::exists().eval(config_path);
+        assert!(does_exit_pred);
+        let saved_config = fs::read_to_string(config_path)?;
+        assert!(saved_config.contains("dummy.txt"));
+        assert!(saved_config.contains("Java"));
+        assert!(saved_config.contains("2"));
+
+        temp.close()?;
+        Ok(())
+    }
+
+    #[test]
+    fn saved_task_should_be_used() -> Result<(), Box<dyn std::error::Error>> {
+        let temp = initialize()?;
+
+        let mut cmd = Command::cargo_bin("baca")?;
+        cmd.args(&[
+            "submit",
+            "-f",
+            "dummy.txt",
+            "-t",
+            "2",
+            "-l",
+            "Java",
+            "--default",
+        ]);
+        cmd.current_dir(&temp);
+        cmd.assert();
+
+        let mut cmd = Command::cargo_bin("baca")?;
+        cmd.arg("submit");
+        cmd.current_dir(&temp);
+        cmd.assert()
+            .stdout(predicate::str::contains("Submitting dummy.txt"))
+            .stdout(predicate::str::contains("Java"))
+            .stdout(predicate::str::contains("[B] Metoda Newtona"));
+
+        temp.close()?;
+        Ok(())
+    }
+
+    #[test]
+    fn cmd_options_should_override_saved_task() -> Result<(), Box<dyn std::error::Error>> {
+        let temp = initialize()?;
+
+        let mut cmd = Command::cargo_bin("baca")?;
+        cmd.args(&[
+            "submit",
+            "-f",
+            "dummy.txt",
+            "-t",
+            "2",
+            "-l",
+            "Java",
+            "--default",
+        ]);
+        cmd.current_dir(&temp);
+        cmd.assert();
+
+        let mut cmd = Command::cargo_bin("baca")?;
+        cmd.args(&["submit", "-f", "hello.cpp", "-l", "C++"]);
+        cmd.current_dir(&temp);
+        cmd.assert()
+            .stdout(predicate::str::contains("Submitting hello.cpp"))
+            .stdout(predicate::str::contains("C++"))
+            .stdout(predicate::str::contains("[B] Metoda Newtona"));
+
+        temp.close()?;
+        Ok(())
+    }
 }

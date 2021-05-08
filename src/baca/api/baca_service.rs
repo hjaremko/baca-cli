@@ -43,6 +43,7 @@ impl BacaApi for BacaService {
 
     fn get_results(instance: &InstanceData) -> Result<String> {
         let resp = Request::new(instance).results()?;
+        check_response_status(&resp)?;
         let resp = resp.text().expect("Invalid submit data");
         debug!("Received raw results: {}", resp);
 
@@ -202,6 +203,22 @@ mod tests {
     fn get_details_on_incorrect_session_should_fail() {
         let baca = make_correct_baca_invalid_session();
         let result = BacaService::get_submit_details(&baca, "123");
+
+        check_logged_out(result);
+    }
+
+    #[test]
+    fn get_results_on_incorrect_host_should_fail() {
+        let baca = make_incorrect_baca();
+        let result = BacaService::get_results(&baca);
+
+        check_invalid_host(result);
+    }
+
+    #[test]
+    fn get_results_on_incorrect_session_should_fail() {
+        let baca = make_correct_baca_invalid_session();
+        let result = BacaService::get_results(&baca);
 
         check_logged_out(result);
     }
