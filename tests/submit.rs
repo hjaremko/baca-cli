@@ -6,6 +6,7 @@ mod submit {
     use predicates::prelude::*;
     use std::{env, fs};
 
+    // todo: move to test::util
     fn initialize() -> Result<TempDir, Box<dyn std::error::Error>> {
         let pass = env::var("BACA_PASSWORD")?;
         let temp = assert_fs::TempDir::new()?;
@@ -32,6 +33,24 @@ mod submit {
         "#,
         )?;
         Ok(input_file)
+    }
+
+    fn assert_config_file_exists(temp: &TempDir) {
+        let config_path = &*temp.path().join(".baca/instance");
+        let pred = predicate::path::exists().eval(config_path);
+        assert!(pred);
+    }
+
+    fn assert_task_config_file_exists(temp: &TempDir) {
+        let config_path = &*temp.path().join(".baca/task");
+        let pred = predicate::path::exists().eval(config_path);
+        assert!(pred);
+    }
+
+    fn assert_task_config_file_does_not_exist(temp: &TempDir) {
+        let config_path = &*temp.path().join(".baca/task");
+        let pred = predicate::path::exists().not().eval(config_path);
+        assert!(pred);
     }
 
     #[test]
@@ -285,6 +304,51 @@ mod submit {
             .stdout(predicate::str::contains("C++"))
             .stdout(predicate::str::contains("[B] Metoda Newtona"));
 
+        temp.close()?;
+        Ok(())
+    }
+
+    #[test]
+    fn clear_should_remove_saved_task() -> Result<(), Box<dyn std::error::Error>> {
+        let temp = initialize()?;
+
+        let mut cmd = Command::cargo_bin("baca")?;
+        cmd.args(&[
+            "submit",
+            "-f",
+            "dummy.txt",
+            "-t",
+            "2",
+            "-l",
+            "Java",
+            "--default",
+        ]);
+        cmd.current_dir(&temp);
+        cmd.assert();
+
+        assert_task_config_file_exists(&temp);
+
+        let mut cmd = Command::cargo_bin("baca")?;
+        cmd.arg("submit").arg("clear");
+        cmd.current_dir(&temp);
+        cmd.assert();
+
+        assert_task_config_file_does_not_exist(&temp);
+        temp.close()?;
+        Ok(())
+    }
+
+    #[test]
+    fn clear_on_already_clear_should_do_nothing() -> Result<(), Box<dyn std::error::Error>> {
+        let temp = initialize()?;
+
+        let mut cmd = Command::cargo_bin("baca")?;
+        cmd.arg("submit").arg("clear");
+        cmd.current_dir(&temp);
+        cmd.assert();
+
+        assert_task_config_file_does_not_exist(&temp);
+        assert_config_file_exists(&temp);
         temp.close()?;
         Ok(())
     }
