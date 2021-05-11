@@ -20,7 +20,7 @@ impl GithubReleases {
 impl ReleaseService for GithubReleases {
     fn get_last_release(&self) -> Result<BacaRelease> {
         let client = reqwest::blocking::ClientBuilder::new()
-            .user_agent("baca_cli/0.2.1")
+            .user_agent("baca_cli/0.3.0")
             .build()?;
         let response = client
             .get(format!(
