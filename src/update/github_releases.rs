@@ -29,13 +29,18 @@ impl ReleaseService for GithubReleases {
             ))
             .send();
 
+        debug!("{:?}", response);
         let response = response?.text()?;
+        debug!("{:?}", response);
+
+        if response.contains("API rate limit exceeded") {
+            return Err(Error::ApiRateLimitExceeded);
+        }
 
         if response.contains("Not Found") {
             return Err(Error::FetchingReleaseError);
         }
 
-        debug!("{:?}", response);
         let v: Value = serde_json::from_str(&response)?;
         let ver = &v[0]["tag_name"];
         let link = &v[0]["html_url"];
@@ -54,38 +59,71 @@ impl ReleaseService for GithubReleases {
 mod tests {
     use super::*;
 
+    fn assert_fetching_release_error(actual: Result<BacaRelease>) {
+        let assert_err = |e| match e {
+            Error::ApiRateLimitExceeded => println!("API limit exceeded!"),
+            Error::FetchingReleaseError => assert!(true),
+            _ => assert!(false, "Unexpected error: {:?}", e),
+        };
+
+        assert_error(actual, assert_err);
+    }
+
+    fn assert_no_release_error(actual: Result<BacaRelease>) {
+        let assert_err = |e| match e {
+            Error::ApiRateLimitExceeded => println!("API limit exceeded!"),
+            Error::NoRelease => assert!(true),
+            _ => assert!(false, "Unexpected error: {:?}", e),
+        };
+
+        assert_error(actual, assert_err);
+    }
+
+    fn assert_error(actual: Result<BacaRelease>, assert_err: fn(Error)) {
+        match actual {
+            Ok(r) => {
+                panic!("Unexpected success: {:?}", r)
+            }
+            Err(e) => assert_err(e),
+        }
+    }
+
     #[test]
     fn invalid_repo_should_return_error() {
         let gh = GithubReleases::new("hjaremko", "invalid");
         let actual = gh.get_last_release();
-        assert!(actual.is_err());
+
+        assert_fetching_release_error(actual)
     }
 
     #[test]
     fn invalid_owner_should_return_error() {
         let gh = GithubReleases::new("invalid", "baca-cli");
         let actual = gh.get_last_release();
-        assert!(actual.is_err());
-    }
 
-    #[test]
-    fn correct_repo_no_releases_should_return_error() {
-        let gh = GithubReleases::new("invalid", "baca-cli");
-        let actual = gh.get_last_release();
-        assert!(actual.is_err());
+        assert_fetching_release_error(actual);
     }
 
     #[test]
     fn correct_repo_should_return_latest_release() {
         let gh = GithubReleases::new("hjaremko", "baca-cli");
         let actual = gh.get_last_release();
-        assert!(actual.is_ok());
+
+        if let Err(e) = actual {
+            match e {
+                Error::ApiRateLimitExceeded => {
+                    assert!(true)
+                }
+                _ => assert!(false, "Unexpected error: {:?}", e),
+            }
+        }
     }
 
     #[test]
     fn correct_repo_with_no_releases_should_return_error() {
         let gh = GithubReleases::new("hjaremko", "fi");
         let actual = gh.get_last_release();
-        assert!(actual.is_err());
+
+        assert_no_release_error(actual)
     }
 }
