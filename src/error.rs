@@ -28,6 +28,7 @@ pub enum Error {
     InvalidLoginOrPassword,
     FetchingReleaseError,
     NoRelease,
+    ApiRateLimitExceeded,
     InvalidArgument,
     UnsupportedLanguage(String),
 }
@@ -57,6 +58,7 @@ impl fmt::Display for Error {
             Error::InvalidLoginOrPassword => "Invalid login or password!".to_owned(),
             Error::FetchingReleaseError => "Error fetching releases.".to_owned(),
             Error::NoRelease => "No releases available.".to_owned(),
+            Error::ApiRateLimitExceeded => "GitHub API rate limit exceeded. Try again later.".to_owned(),
             Error::InvalidArgument => "Invalid argument.".to_owned(),
             Error::UnsupportedLanguage(lang) => format!("{} is not yet supported!! Please create an issue at https://github.com/hjaremko/baca-cli/issues", lang),
         };
