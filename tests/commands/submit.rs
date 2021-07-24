@@ -188,7 +188,7 @@ fn default_option_should_save_task() -> Result<(), Box<dyn std::error::Error>> {
     let saved_config = fs::read_to_string(&config_path)?;
     assert!(saved_config.contains("dummy.txt"));
     assert!(saved_config.contains("Java"));
-    assert!(saved_config.contains("2"));
+    assert!(saved_config.contains('2'));
 
     dir.close()?;
     Ok(())

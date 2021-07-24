@@ -18,6 +18,7 @@ fn invalid_password() -> Result<(), Box<dyn std::error::Error>> {
     let mut cmd = Command::cargo_bin("baca")?;
 
     cmd.current_dir(&temp);
+    cmd.arg("-u");
     cmd.arg("init")
         .args(&["--host", "mn2020", "--login", "jaremko", "-p", "invalid"]);
     cmd.assert()
@@ -36,6 +37,7 @@ fn invalid_host() -> Result<(), Box<dyn std::error::Error>> {
     let mut cmd = Command::cargo_bin("baca")?;
 
     cmd.current_dir(&temp);
+    cmd.arg("-u");
     cmd.arg("init")
         .args(&["--host", "invalid", "--login", "jaremko", "-p", &pass]);
     cmd.assert()
@@ -54,6 +56,7 @@ fn host_not_provided() -> Result<(), Box<dyn std::error::Error>> {
     let mut cmd = Command::cargo_bin("baca")?;
 
     cmd.current_dir(&temp);
+    cmd.arg("-u");
     cmd.arg("init").args(&["--login", "jaremko", "-p", &pass]);
     cmd.assert().stderr(predicate::str::contains("--host"));
 
@@ -70,6 +73,7 @@ fn success() -> Result<(), Box<dyn std::error::Error>> {
     let mut cmd = Command::cargo_bin("baca")?;
 
     cmd.current_dir(&temp);
+    cmd.arg("-u");
     cmd.arg("init")
         .args(&["--host", "mn2020", "-p", &pass, "-l", "jaremko"]);
     cmd.assert().code(0);
