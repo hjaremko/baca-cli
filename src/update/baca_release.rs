@@ -25,10 +25,7 @@ mod tests {
 
     #[test]
     fn same_should_return_false() {
-        assert_eq!(
-            BacaRelease::new("0.1.0", "link").is_newer_than("0.1.0"),
-            false
-        );
+        assert!(!BacaRelease::new("0.1.0", "link").is_newer_than("0.1.0"));
     }
 
     #[test]

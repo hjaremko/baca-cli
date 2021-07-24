@@ -6,10 +6,10 @@ extern crate clap;
 extern crate serial_test;
 
 use crate::baca::api::baca_service::BacaService;
-use crate::update::{GithubReleases, UpdateChecker, UpdateStatus};
+use crate::update::{GithubReleases, UpdateCheckTimestamp, UpdateChecker, UpdateStatus};
 
 use crate::workspace::WorkspaceDir;
-use clap::{App, AppSettings};
+use clap::{App, AppSettings, ArgMatches};
 use colored::Colorize;
 use tracing::{error, info, Level};
 
@@ -27,6 +27,17 @@ fn main() {
     let app = App::from_yaml(yaml).setting(AppSettings::ArgRequiredElseHelp);
     let matches = app.get_matches();
 
+    set_logging_level(&matches);
+    try_check_for_updates(&matches);
+
+    if let (command, Some(sub_matches)) = matches.subcommand() {
+        if let Err(e) = command::execute::<WorkspaceDir, BacaService>(command, sub_matches) {
+            println!("{}", format!("{}", e).bright_red());
+        }
+    }
+}
+
+fn set_logging_level(matches: &ArgMatches) {
     let verbose_matches = matches.occurrences_of("verbose");
 
     let log_level = match verbose_matches {
@@ -38,24 +49,30 @@ fn main() {
     if verbose_matches != 0 {
         log::init_logging(log_level);
     }
+}
 
-    check_for_updates();
+fn try_check_for_updates(matches: &ArgMatches) {
+    if matches.is_present("noupdate") {
+        info!("Update check disabled.");
+        return;
+    }
 
-    if let (command, Some(sub_matches)) = matches.subcommand() {
-        if let Err(e) = command::execute::<WorkspaceDir, BacaService>(command, sub_matches) {
-            println!("{}", format!("{}", e).bright_red());
-        }
+    let update_check_timestamp = UpdateCheckTimestamp::new();
+    if update_check_timestamp.is_expired::<WorkspaceDir>() && check_for_updates().is_ok() {
+        update_check_timestamp
+            .save_current_timestamp::<WorkspaceDir>()
+            .unwrap_or_else(|e| info!("Error saving last update check timestamp: {}", e));
     }
 }
 
-fn check_for_updates() {
+fn check_for_updates() -> error::Result<()> {
     let gh_service = GithubReleases::new("hjaremko", "baca-cli");
     let checker = UpdateChecker::new(gh_service, update::CURRENT_VERSION);
     let status = checker.check_for_updates();
 
     if let Err(e) = status {
         error!("Error checking for updates: {}", e);
-        return;
+        return Err(e);
     }
 
     match status.unwrap() {
@@ -71,4 +88,5 @@ fn check_for_updates() {
             )
         }
     };
+    Ok(())
 }

@@ -2,6 +2,7 @@ mod instance_data;
 mod task_config;
 mod zip;
 
+use serde::Serialize;
 use std::fs::{DirBuilder, ReadDir};
 use std::io::ErrorKind;
 use std::{fs, io};
@@ -31,6 +32,8 @@ pub trait Workspace {
     fn save_task(task_id: &str, filepath: &str, to_zip: bool, language: Language) -> Result<()>;
     fn remove_task() -> Result<()>;
     fn remove_workspace() -> Result<()>;
+    fn save_object<T: 'static + Serialize>(filename: &str, content: &T) -> Result<()>;
+    fn read_file(filename: &str) -> Result<String>;
 }
 
 pub struct WorkspaceDir {}
@@ -112,6 +115,22 @@ impl Workspace for WorkspaceDir {
     fn remove_workspace() -> Result<()> {
         info!("Removing Baca workspace.");
         fs::remove_dir_all(BACA_DIR).map_err(as_config_remove_error)
+    }
+
+    fn save_object<T: 'static + Serialize>(filename: &str, content: &T) -> Result<()> {
+        info!("Saving object as {} to {}.", filename, BACA_DIR);
+        let serialized = serde_json::to_string(&content)?;
+        debug!("Serialized: {}", serialized);
+        let path = format!("{}/{}", BACA_DIR, filename);
+        fs::write(path, serialized).map_err(as_task_write_error)?;
+        Ok(())
+    }
+
+    fn read_file(filename: &str) -> Result<String> {
+        info!("Reading file {} from {}.", filename, BACA_DIR);
+        let path = format!("{}/{}", BACA_DIR, filename);
+        let serialized = fs::read_to_string(path).map_err(as_task_read_error)?;
+        Ok(serialized)
     }
 }
 

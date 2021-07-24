@@ -5,6 +5,7 @@ use predicates::prelude::*;
 fn no_verbose_should_not_enable_logs() -> Result<(), Box<dyn std::error::Error>> {
     let mut cmd = Command::cargo_bin("baca")?;
 
+    cmd.arg("-u");
     cmd.arg("tasks");
     cmd.assert()
         .stdout(predicate::str::contains("INFO").not())
@@ -19,6 +20,7 @@ fn no_verbose_should_not_enable_logs() -> Result<(), Box<dyn std::error::Error>>
 fn one_verbose_should_enable_info() -> Result<(), Box<dyn std::error::Error>> {
     let mut cmd = Command::cargo_bin("baca")?;
 
+    cmd.arg("-u");
     cmd.arg("-v").arg("tasks");
     cmd.assert()
         .stdout(predicate::str::contains("INFO"))
@@ -32,6 +34,7 @@ fn one_verbose_should_enable_info() -> Result<(), Box<dyn std::error::Error>> {
 fn two_verbose_should_enable_debug() -> Result<(), Box<dyn std::error::Error>> {
     let mut cmd = Command::cargo_bin("baca")?;
 
+    cmd.arg("-u");
     cmd.arg("-vv").arg("tasks");
     cmd.assert()
         .stdout(predicate::str::contains("INFO"))
@@ -45,6 +48,7 @@ fn two_verbose_should_enable_debug() -> Result<(), Box<dyn std::error::Error>> {
 fn three_verbose_should_enable_trace() -> Result<(), Box<dyn std::error::Error>> {
     let mut cmd = Command::cargo_bin("baca")?;
 
+    cmd.arg("-u");
     cmd.arg("-vvv").arg("tasks");
     cmd.assert()
         .stdout(predicate::str::contains("INFO"))

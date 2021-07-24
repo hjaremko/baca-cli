@@ -7,6 +7,9 @@ args:
       short: v
       multiple: true
       help: Sets the level of verbosity
+  - noupdate:
+      short: u
+      help: Disable update check
 subcommands:
   - init:
       about: Initializes current directory as BaCa workspace
