@@ -10,7 +10,7 @@ pub enum Language {
     Bash = 10,
     CppWithFileSupport = 12,
     // C = ?,
-    // Ada = ?,
+    Ada = 9,
 }
 
 impl Language {
@@ -28,6 +28,7 @@ impl ToString for Language {
             Language::Java => "Java",
             Language::Bash => "Bash",
             Language::CppWithFileSupport => "C++ with file support",
+            Language::Ada => "Ada",
             Language::Unsupported => "Unsupported language",
         }
         .to_string()
@@ -43,6 +44,7 @@ impl FromStr for Language {
             "java" => Language::Java,
             "bash" => Language::Bash,
             "c++ z obsluga plikow" => Language::CppWithFileSupport,
+            "ada" => Language::Ada,
             lang => return Err(Self::Err::UnsupportedLanguage(lang.to_string())),
         };
 
@@ -64,7 +66,7 @@ mod tests {
             Language::from_str("C++ z obsluga plikow").unwrap(),
             Language::CppWithFileSupport
         );
-        assert!(Language::from_str("Ada").is_err());
+        assert_eq!(Language::from_str("Ada").unwrap(), Language::Ada);
         assert!(Language::from_str("C").is_err());
     }
 
@@ -78,6 +80,7 @@ mod tests {
             Language::CppWithFileSupport.to_string(),
             "C++ with file support"
         );
+        assert_eq!(Language::Ada.to_string(), "Ada");
     }
 
     #[test]
@@ -107,5 +110,6 @@ mod tests {
         assert_eq!(Language::Java.code(), "4");
         assert_eq!(Language::Bash.code(), "10");
         assert_eq!(Language::CppWithFileSupport.code(), "12");
+        assert_eq!(Language::Ada.code(), "9");
     }
 }
