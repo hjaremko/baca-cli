@@ -22,11 +22,11 @@ impl TimeProvider for UnixTimeProvider {
     fn now(&self) -> OffsetDateTime {
         let time = OffsetDateTime::now_utc().unix_timestamp();
         debug!("Current unix timestamp: {}", time);
-        OffsetDateTime::from_unix_timestamp(time)
+        OffsetDateTime::from_unix_timestamp(time).unwrap()
     }
 
     fn datetime_from_timestamp(&self, timestamp: &str) -> OffsetDateTime {
-        OffsetDateTime::from_unix_timestamp(timestamp.parse().unwrap())
+        OffsetDateTime::from_unix_timestamp(timestamp.parse().unwrap()).unwrap()
     }
 }
 
