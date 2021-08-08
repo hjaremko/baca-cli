@@ -21,7 +21,7 @@ impl GithubReleases {
 impl ReleaseService for GithubReleases {
     fn get_last_release(&self) -> Result<BacaRelease> {
         let client = reqwest::blocking::ClientBuilder::new()
-            .user_agent("baca_cli/0.3.0")
+            .user_agent(make_user_agent())
             .build()?;
         let mut request_builder = client.get(format!(
             "https://api.github.com/repos/{}/{}/releases",
@@ -62,6 +62,11 @@ impl ReleaseService for GithubReleases {
         let ver = &ver[1..];
         Ok(BacaRelease::new(ver, link.as_str().unwrap()))
     }
+}
+
+fn make_user_agent() -> String {
+    const VERSION: &str = env!("CARGO_PKG_VERSION");
+    format!("baca_cli/{}", VERSION)
 }
 
 #[cfg(test)]

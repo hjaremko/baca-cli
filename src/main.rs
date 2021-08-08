@@ -24,7 +24,9 @@ mod workspace;
 
 fn main() {
     let yaml = load_yaml!("cli.yml");
-    let app = App::from_yaml(yaml).setting(AppSettings::ArgRequiredElseHelp);
+    let app = App::from_yaml(yaml)
+        .version(env!("CARGO_PKG_VERSION"))
+        .setting(AppSettings::ArgRequiredElseHelp);
     let matches = app.get_matches();
 
     set_logging_level(&matches);
