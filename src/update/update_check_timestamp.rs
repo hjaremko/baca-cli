@@ -88,7 +88,7 @@ mod tests {
         let mut mock_time = MockTimeProvider::new();
         mock_time
             .expect_now()
-            .returning(|| OffsetDateTime::from_unix_timestamp(1625126400));
+            .returning(|| OffsetDateTime::from_unix_timestamp(1625126400).unwrap());
 
         let ctx_save = MockWorkspace::save_object_context();
         ctx_save
@@ -124,10 +124,10 @@ mod tests {
         let mut mock_time = MockTimeProvider::new();
         mock_time
             .expect_now()
-            .returning(|| OffsetDateTime::from_unix_timestamp(TIME_2021_07_01_10_00_00));
+            .returning(|| OffsetDateTime::from_unix_timestamp(TIME_2021_07_01_10_00_00).unwrap());
         mock_time
             .expect_datetime_from_timestamp()
-            .returning(|t| OffsetDateTime::from_unix_timestamp(t.parse().unwrap()));
+            .returning(|t| OffsetDateTime::from_unix_timestamp(t.parse().unwrap()).unwrap());
 
         let ctx_read = MockWorkspace::read_file_context();
         ctx_read
@@ -147,10 +147,10 @@ mod tests {
         let mut mock_time = MockTimeProvider::new();
         mock_time
             .expect_now()
-            .returning(|| OffsetDateTime::from_unix_timestamp(TIME_2021_07_01_10_00_00));
+            .returning(|| OffsetDateTime::from_unix_timestamp(TIME_2021_07_01_10_00_00).unwrap());
         mock_time
             .expect_datetime_from_timestamp()
-            .returning(|t| OffsetDateTime::from_unix_timestamp(t.parse().unwrap()));
+            .returning(|t| OffsetDateTime::from_unix_timestamp(t.parse().unwrap()).unwrap());
 
         let ctx_read = MockWorkspace::read_file_context();
         ctx_read
@@ -170,10 +170,10 @@ mod tests {
         let mut mock_time = MockTimeProvider::new();
         mock_time
             .expect_now()
-            .returning(|| OffsetDateTime::from_unix_timestamp(TIME_2021_07_02_10_00_00));
+            .returning(|| OffsetDateTime::from_unix_timestamp(TIME_2021_07_02_10_00_00).unwrap());
         mock_time
             .expect_datetime_from_timestamp()
-            .returning(|t| OffsetDateTime::from_unix_timestamp(t.parse().unwrap()));
+            .returning(|t| OffsetDateTime::from_unix_timestamp(t.parse().unwrap()).unwrap());
 
         let ctx_read = MockWorkspace::read_file_context();
         ctx_read

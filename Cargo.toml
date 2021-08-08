@@ -8,16 +8,16 @@ edition = "2018"
 
 [dependencies]
 clap = { version = "2.33.3", features = ["yaml"] }
-tracing = "0.1.25"
-tracing-subscriber = "0.2.17"
-reqwest = { version = "0.11.2", features = ["blocking", "json", "cookies", "multipart"] }
+tracing = "0.1.26"
+tracing-subscriber = "0.2.19"
+reqwest = { version = "0.11.4", features = ["blocking", "json", "cookies", "multipart"] }
 dyn-fmt = "0.3.0"
 colored = "2.0.0"
-serde = { version = "1.0.125", features = ["derive"] }
-serde_json = "1.0.64"
-zip = "0.5.12"
+serde = { version = "1.0.127", features = ["derive"] }
+serde_json = "1.0.66"
+zip = "0.5.13"
 dialoguer = "0.8.0"
-time = { version = "0.2.27", features = ["serde"] }
+time = { version = "0.3.1", features = ["serde"] }
 
 [dev-dependencies]
 mockall = "0.9.1"
