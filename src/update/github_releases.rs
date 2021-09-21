@@ -1,7 +1,8 @@
 use crate::error::{Error, Result};
 use crate::update::{BacaRelease, ReleaseService};
 use serde_json::Value;
-use tracing::debug;
+use std::env;
+use tracing::{debug, info};
 
 pub struct GithubReleases {
     owner: String,
@@ -22,12 +23,20 @@ impl ReleaseService for GithubReleases {
         let client = reqwest::blocking::ClientBuilder::new()
             .user_agent("baca_cli/0.3.0")
             .build()?;
-        let response = client
-            .get(format!(
-                "https://api.github.com/repos/{}/{}/releases",
-                self.owner, self.repo
-            ))
-            .send();
+        let mut request_builder = client.get(format!(
+            "https://api.github.com/repos/{}/{}/releases",
+            self.owner, self.repo
+        ));
+
+        if let Ok(auth_token) = env::var("AUTH_TOKEN") {
+            info!("Auth token present, setting auth header.");
+            request_builder = request_builder.header(
+                reqwest::header::AUTHORIZATION,
+                format!("token {}", auth_token),
+            );
+        }
+
+        let response = request_builder.send();
 
         debug!("{:?}", response);
         let response = response?.text()?;
@@ -38,7 +47,7 @@ impl ReleaseService for GithubReleases {
         }
 
         if response.contains("Not Found") {
-            return Err(Error::FetchingReleaseError);
+            return Err(Error::FetchingRelease);
         }
 
         let v: Value = serde_json::from_str(&response)?;
@@ -62,7 +71,7 @@ mod tests {
     fn assert_fetching_release_error(actual: Result<BacaRelease>) {
         let assert_err = |e| match e {
             Error::ApiRateLimitExceeded => println!("API limit exceeded!"),
-            Error::FetchingReleaseError => assert!(true),
+            Error::FetchingRelease => assert!(true),
             _ => assert!(false, "Unexpected error: {:?}", e),
         };
 

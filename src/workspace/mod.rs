@@ -142,39 +142,39 @@ fn check_if_initialized() -> Result<ReadDir> {
 fn as_not_init_error(e: io::Error) -> Error {
     match e.kind() {
         ErrorKind::NotFound => Error::WorkspaceNotInitialized,
-        _ => Error::OpeningWorkspaceError(e.into()),
+        _ => Error::OpeningWorkspace(e.into()),
     }
 }
 
 fn as_config_read_error(e: io::Error) -> Error {
     match e.kind() {
         ErrorKind::NotFound => Error::WorkspaceCorrupted,
-        _ => Error::OpeningWorkspaceError(e.into()),
+        _ => Error::OpeningWorkspace(e.into()),
     }
 }
 
 fn as_config_write_error(e: io::Error) -> Error {
-    Error::WritingWorkspaceError(e.into())
+    Error::WritingWorkspace(e.into())
 }
 
 fn as_config_create_error(e: io::Error) -> Error {
-    Error::CreatingWorkspaceError(e.into())
+    Error::CreatingWorkspace(e.into())
 }
 
 fn as_config_remove_error(e: io::Error) -> Error {
-    Error::RemovingWorkspaceError(e.into())
+    Error::RemovingWorkspace(e.into())
 }
 
 fn as_task_remove_error(e: io::Error) -> Error {
-    Error::RemovingTaskError(e.into())
+    Error::RemovingTask(e.into())
 }
 
 fn as_task_read_error(e: io::Error) -> Error {
-    Error::ReadingTaskError(e.into())
+    Error::ReadingTask(e.into())
 }
 
 fn as_task_write_error(e: io::Error) -> Error {
-    Error::ReadingTaskError(e.into())
+    Error::ReadingTask(e.into())
 }
 
 #[cfg(test)]

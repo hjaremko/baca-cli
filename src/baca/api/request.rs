@@ -80,7 +80,7 @@ impl<'a> Request<'a> {
             .text("zadanie", task.id.clone())
             .text("jezyk", task.language.code())
             .file("zrodla", file_path)
-            .map_err(|e| Error::ReadingSourceError(e.into()))?;
+            .map_err(|e| Error::ReadingSource(e.into()))?;
 
         let url = format!(
             "https://baca.ii.uj.edu.pl/{}/sendSubmit",

@@ -1,6 +1,6 @@
 name: Build
 
-on: [ push, pull_request ]
+on: [ push ]
 
 jobs:
   build:
@@ -19,22 +19,15 @@ jobs:
             target
           key: ${{ runner.os }}-cargo-debug-${{ hashFiles('**/Cargo.lock') }}
           restore-keys: ${{ runner.os }}-cargo-debug-
-      - name: Build project
-        run: cargo build --verbose --all --all-targets
-      - name: Upload artifact
-        uses: actions/upload-artifact@v2
-        with:
-          name: baca-${{ runner.os }}
-          path: ./target/debug/baca*
-      - name: Run tests
-        env:
-          BACA_PASSWORD: ${{ secrets.BACA_PASSWORD }}
-        run: cargo test --verbose
-      - name: Add clippy
-        run: rustup component add clippy
       - name: Run linter
-        uses: actions-rs/clippy-check@v1
-        with:
-          token: ${{ secrets.GITHUB_TOKEN }}
-          args: --all-features -- -D warnings
-          name: Clippy
+        run: cargo clippy --all-features -- -D warnings
+
+  formatting:
+    name: Formatting
+    runs-on: macos-latest
+
+    steps:
+      - name: Chceckout code
+        uses: actions/checkout@v2
+      - name: Check formatting
+        run: cargo fmt --all -- --check

@@ -95,7 +95,7 @@ impl Command for Submit<'_> {
 
         let file_to_submit = if to_zip {
             let path = Path::new(&file_path);
-            workspace::zip_file(path).map_err(|e| Error::ZippingError(e.into()))?
+            workspace::zip_file(path).map_err(|e| Error::Zipping(e.into()))?
         } else {
             file_path
         };

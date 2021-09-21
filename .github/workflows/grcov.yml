@@ -1,6 +1,6 @@
 name: Coverage
 
-on: [ push, pull_request ]
+on: [ push ]
 
 jobs:
   grcov:
@@ -31,8 +31,22 @@ jobs:
         with:
           path: |
             ~/.cargo/bin/grcov
-          key: ${{ runner.os }}-grcov
+            ~/.cargo/registry
+            ~/.cargo/git
+            target
+          key: ${{ runner.os }}-grcov-${{ hashFiles('**/Cargo.lock') }}
           restore-keys: ${{ runner.os }}-grcov
+      - name: Run tests
+        uses: actions-rs/cargo@v1
+        with:
+          command: test
+          args: --all --no-fail-fast ${{ matrix.cargo_flags }}
+        env:
+          BACA_PASSWORD: ${{ secrets.BACA_PASSWORD }}
+          AUTH_TOKEN: ${{ secrets.AUTH_TOKEN }}
+          CARGO_INCREMENTAL: "0"
+          RUSTFLAGS: '-Zprofile -Ccodegen-units=1 -Copt-level=0 -Clink-dead-code -Coverflow-checks=off -Zpanic_abort_tests -Cpanic=abort -Cdebug-assertions=off'
+          RUSTDOCFLAGS: '-Zprofile -Ccodegen-units=1 -Copt-level=0 -Clink-dead-code -Coverflow-checks=off -Zpanic_abort_tests -Cpanic=abort -Cdebug-assertions=off'
 
       - name: Install grcov
         if: steps.cache-cargo.outputs.cache-hit != 'true'
@@ -40,19 +54,7 @@ jobs:
         with:
           crate: grcov
           version: latest
-          use-tool-cache: true
-
-      - name: Test
-        uses: actions-rs/cargo@v1
-        with:
-          command: test
-          args: --all --no-fail-fast ${{ matrix.cargo_flags }}
-        env:
-          BACA_PASSWORD: ${{ secrets.BACA_PASSWORD }}
-          CARGO_INCREMENTAL: "0"
-          RUSTFLAGS: '-Zprofile -Ccodegen-units=1 -Copt-level=0 -Clink-dead-code -Coverflow-checks=off -Zpanic_abort_tests -Cpanic=abort -Cdebug-assertions=off'
-          RUSTDOCFLAGS: '-Zprofile -Ccodegen-units=1 -Copt-level=0 -Clink-dead-code -Coverflow-checks=off -Zpanic_abort_tests -Cpanic=abort -Cdebug-assertions=off'
-
+          use-tool-cache: false
       - name: Generate coverage data
         id: grcov
         uses: actions-rs/grcov@v0.1
