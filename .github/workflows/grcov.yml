@@ -30,7 +30,6 @@ jobs:
         uses: actions/cache@v2
         with:
           path: |
-            ~/.cargo/bin/grcov
             ~/.cargo/registry
             ~/.cargo/git
             target
@@ -54,7 +53,7 @@ jobs:
         with:
           crate: grcov
           version: latest
-          use-tool-cache: false
+          use-tool-cache: true
       - name: Generate coverage data
         id: grcov
         uses: actions-rs/grcov@v0.1
