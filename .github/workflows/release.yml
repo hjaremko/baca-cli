@@ -21,7 +21,7 @@ jobs:
       - name: Chceckout code
         uses: actions/checkout@v2
       - name: Build project
-        run: cargo build --verbose --all --all-targets --release
+        run: cargo build --all --all-targets --release
       - name: Upload artifact
         uses: actions/upload-artifact@v2
         with:

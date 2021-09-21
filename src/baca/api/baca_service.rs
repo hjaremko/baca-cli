@@ -67,8 +67,8 @@ impl BacaApi for BacaService {
         debug!("Response: {}", resp);
 
         match resp.as_str() {
-            "Niezalogowany jesteś" => Err(Error::LoggedOutError),
-            "Błąd" => Err(Error::SubmitError),
+            "Niezalogowany jesteś" => Err(Error::LoggedOut),
+            "Błąd" => Err(Error::Submit),
             _ => Ok(()),
         }
     }
@@ -102,7 +102,7 @@ fn check_response_status(response: &Response) -> Result<()> {
 
 fn check_for_empty_response(resp: String) -> Result<String> {
     if resp == EMPTY_RESPONSE {
-        Err(Error::LoggedOutError)
+        Err(Error::LoggedOut)
     } else {
         Ok(resp)
     }
@@ -137,7 +137,7 @@ mod tests {
         match result {
             Ok(actual) => assert_eq!(actual, expected),
             Err(e) => match e {
-                Error::ProtocolError => {}
+                Error::Protocol => {}
                 _ => panic!("Should not fail!"),
             },
         }
@@ -155,7 +155,7 @@ mod tests {
 
     fn check_logged_out(result: Result<String>) {
         let e = result.expect_err("Should fail");
-        assert!(matches!(e, Error::LoggedOutError));
+        assert!(matches!(e, Error::LoggedOut));
     }
 
     #[test]

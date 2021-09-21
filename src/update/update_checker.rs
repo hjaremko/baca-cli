@@ -56,12 +56,12 @@ mod tests {
     fn connection_error_should_return_error() {
         let mut mock = MockReleaseService::new();
         mock.expect_get_last_release()
-            .returning(|| Err(Error::FetchingReleaseError));
+            .returning(|| Err(Error::FetchingRelease));
         let checker = UpdateChecker::new(mock, CURRENT_VERSION);
 
         let actual = checker.check_for_updates();
 
-        if let Some(Error::FetchingReleaseError) = actual.err() {
+        if let Some(Error::FetchingRelease) = actual.err() {
             return;
         }
         panic!();
