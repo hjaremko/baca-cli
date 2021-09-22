@@ -11,6 +11,7 @@ pub struct GithubReleases {
 
 impl GithubReleases {
     pub fn new(owner: &str, repo: &str) -> Self {
+        info!("Creating GitHub API service to repo {}/{}", owner, repo);
         GithubReleases {
             owner: owner.to_string(),
             repo: repo.to_string(),

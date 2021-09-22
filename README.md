@@ -30,6 +30,7 @@ baca [FLAGS] [SUBCOMMAND]
 ```
 FLAGS:
     -h, --help       Prints help information
+    -u               Disable update check
     -v               Sets the level of verbosity
     -V, --version    Prints version information
 
@@ -178,6 +179,13 @@ Example:
 ● 14 - G2 - 2 OK
 ```
 
+## Environment variables
+### Settings for update check
+```
+GITHUB_USER=hjaremko
+GITHUB_REPO=baca-cli
+AUTH_TOKEN=<github token> # auth GitHub API requests (increases API call limit)
+```
 ## Compilation
 
 ```
