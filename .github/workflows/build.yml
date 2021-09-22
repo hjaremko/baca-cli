@@ -21,6 +21,11 @@ jobs:
           restore-keys: ${{ runner.os }}-cargo-debug-
       - name: Run linter
         run: cargo clippy --all-features -- -D warnings
+      - name: Run tests
+        env:
+          BACA_PASSWORD: ${{ secrets.BACA_PASSWORD }}
+          AUTH_TOKEN: ${{ secrets.AUTH_TOKEN }}
+        run: cargo test
 
   formatting:
     name: Formatting
