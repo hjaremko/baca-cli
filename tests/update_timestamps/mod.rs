@@ -1,16 +1,16 @@
+use crate::util::get_baca_credentials;
 use assert_cmd::Command;
 use assert_fs::TempDir;
 use predicates::prelude::*;
-use std::env;
 
 #[test]
 fn update_check_timestamp_should_be_saved_if_no_update() -> Result<(), Box<dyn std::error::Error>> {
-    let pass = env::var("BACA_PASSWORD")?;
+    let (login, pass, host) = get_baca_credentials();
     let temp = assert_fs::TempDir::new()?;
 
     let mut cmd = baca_verbose(&temp)?;
     cmd.arg("init")
-        .args(&["--host", "mn2020", "-p", &pass, "-l", "jaremko"]);
+        .args(&["--host", &host, "-p", &pass, "-l", &login]);
     cmd.assert()
         .stdout(predicate::str::contains("Checking for updates"))
         .success();
@@ -34,12 +34,12 @@ fn update_check_timestamp_should_be_saved_if_no_update() -> Result<(), Box<dyn s
 #[test]
 fn update_check_timestamp_should_not_be_saved_if_update() -> Result<(), Box<dyn std::error::Error>>
 {
-    let pass = env::var("BACA_PASSWORD")?;
+    let (login, pass, host) = get_baca_credentials();
     let temp = assert_fs::TempDir::new()?;
 
     let mut cmd = baca_verbose_dummy_repo(&temp)?;
     cmd.arg("init")
-        .args(&["--host", "mn2020", "-p", &pass, "-l", "jaremko"]);
+        .args(&["--host", &host, "-p", &pass, "-l", &login]);
     cmd.assert()
         .stdout(predicate::str::contains("New version"))
         .success();
