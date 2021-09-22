@@ -1,33 +1,27 @@
 use assert_cmd::Command;
+use assert_fs::TempDir;
 use predicates::prelude::*;
 use std::env;
 
 #[test]
-fn update_check_timestamp_should_be_saved() -> Result<(), Box<dyn std::error::Error>> {
+fn update_check_timestamp_should_be_saved_if_no_update() -> Result<(), Box<dyn std::error::Error>> {
     let pass = env::var("BACA_PASSWORD")?;
     let temp = assert_fs::TempDir::new()?;
 
-    let mut cmd = Command::cargo_bin("baca")?;
-
-    cmd.current_dir(&temp);
-    cmd.arg("-v");
+    let mut cmd = baca_verbose(&temp)?;
     cmd.arg("init")
         .args(&["--host", "mn2020", "-p", &pass, "-l", "jaremko"]);
     cmd.assert()
         .stdout(predicate::str::contains("Checking for updates"))
         .success();
 
-    let mut cmd = Command::cargo_bin("baca")?;
-    cmd.current_dir(&temp);
-    cmd.arg("-v");
+    let mut cmd = baca_verbose(&temp)?;
     cmd.arg("log");
     cmd.assert()
         .stdout(predicate::str::contains("Checking for updates"))
         .success();
 
-    let mut cmd = Command::cargo_bin("baca")?;
-    cmd.current_dir(&temp);
-    cmd.arg("-v");
+    let mut cmd = baca_verbose(&temp)?;
     cmd.arg("log");
     cmd.assert()
         .stdout(predicate::str::contains("Checking for updates").not())
@@ -35,4 +29,60 @@ fn update_check_timestamp_should_be_saved() -> Result<(), Box<dyn std::error::Er
 
     temp.close()?;
     Ok(())
+}
+
+#[test]
+fn update_check_timestamp_should_not_be_saved_if_update() -> Result<(), Box<dyn std::error::Error>>
+{
+    let pass = env::var("BACA_PASSWORD")?;
+    let temp = assert_fs::TempDir::new()?;
+
+    let mut cmd = baca_verbose_dummy_repo(&temp)?;
+    cmd.arg("init")
+        .args(&["--host", "mn2020", "-p", &pass, "-l", "jaremko"]);
+    cmd.assert()
+        .stdout(predicate::str::contains("New version"))
+        .success();
+
+    let mut cmd = baca_verbose_dummy_repo(&temp)?;
+    cmd.arg("log");
+    cmd.assert()
+        .stdout(predicate::str::contains("New version"))
+        .success();
+
+    let mut cmd = baca_verbose_dummy_repo(&temp)?;
+    cmd.arg("log");
+    cmd.assert()
+        .stdout(predicate::str::contains("New version"))
+        .success();
+
+    temp.close()?;
+    Ok(())
+}
+
+#[test]
+fn update_check_error_if_invalid_repo() -> Result<(), Box<dyn std::error::Error>> {
+    let temp = assert_fs::TempDir::new()?;
+    let mut cmd = baca_verbose(&temp)?;
+    cmd.env("GITHUB_REPO", "does_not_exists");
+    cmd.arg("log");
+    cmd.assert()
+        .stdout(predicate::str::contains("Error checking for updates"))
+        .success();
+
+    temp.close()?;
+    Ok(())
+}
+
+fn baca_verbose(temp: &TempDir) -> Result<Command, Box<dyn std::error::Error>> {
+    let mut cmd = Command::cargo_bin("baca")?;
+    cmd.current_dir(&temp);
+    cmd.arg("-v");
+    Ok(cmd)
+}
+
+fn baca_verbose_dummy_repo(temp: &TempDir) -> Result<Command, Box<dyn std::error::Error>> {
+    let mut cmd = baca_verbose(temp)?;
+    cmd.env("GITHUB_REPO", "dummy");
+    Ok(cmd)
 }
