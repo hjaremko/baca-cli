@@ -53,11 +53,11 @@ pub fn assert_fails_if_not_initialized(command: &[&str]) -> Result<(), Box<dyn E
 }
 
 pub fn initialize_correct_workspace() -> Result<TempDir, Box<dyn std::error::Error>> {
-    let pass = env::var("BACA_PASSWORD").expect("No BACA_PASSWORD provided");
+    let (login, pass, host) = get_baca_credentials();
     let (dir, mut cmd) = set_up_with_dir()?;
 
     cmd.arg("init")
-        .args(&["-h", "mn2020", "-p", &pass, "-l", "jaremko"]);
+        .args(&["-h", &host, "-p", &pass, "-l", &login]);
     cmd.assert();
     Ok(dir)
 }
@@ -76,4 +76,11 @@ pub fn make_input_file_cpp(dir: &TempDir) -> Result<ChildPath, Box<dyn std::erro
         "#,
     )?;
     Ok(input_file)
+}
+
+pub fn get_baca_credentials() -> (String, String, String) {
+    let login = env::var("TEST_BACA_LOGIN").expect("No TEST_BACA_LOGIN provided");
+    let pass = env::var("TEST_BACA_PASSWORD").expect("No TEST_BACA_PASSWORD provided");
+    let host = env::var("TEST_BACA_HOST").expect("No TEST_BACA_HOST provided");
+    (login, pass, host)
 }

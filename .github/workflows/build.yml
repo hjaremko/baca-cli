@@ -23,7 +23,9 @@ jobs:
         run: cargo clippy --all-features -- -D warnings
       - name: Run tests
         env:
-          BACA_PASSWORD: ${{ secrets.BACA_PASSWORD }}
+          TEST_BACA_PASSWORD: ${{ secrets.TEST_BACA_PASSWORD }}
+          TEST_BACA_LOGIN: ${{ secrets.TEST_BACA_LOGIN }}
+          TEST_BACA_HOST: ${{ secrets.TEST_BACA_HOST }}
           AUTH_TOKEN: ${{ secrets.AUTH_TOKEN }}
         run: cargo test
 

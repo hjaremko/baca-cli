@@ -197,6 +197,14 @@ cargo build --release
 ```
 sudo apt install pkg-config libssl-dev
 ```
+## Running tests
+Some tests require credentials to actual BaCa server.
+These can be set using environment variables.
+```
+TEST_BACA_LOGIN=<login>
+TEST_BACA_PASSWORD=<password>
+TEST_BACA_HOST=<host>
+```
 
 ## Setting log levels
 

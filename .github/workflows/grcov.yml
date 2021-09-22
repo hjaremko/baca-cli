@@ -1,6 +1,12 @@
 name: Coverage
 
-on: [ pull_request ]
+on:
+  push:
+    branches:
+      - master
+  pull_request:
+    branches:
+      - master
 
 jobs:
   grcov:
@@ -48,7 +54,9 @@ jobs:
           command: test
           args: --all --no-fail-fast ${{ matrix.cargo_flags }}
         env:
-          BACA_PASSWORD: ${{ secrets.BACA_PASSWORD }}
+          TEST_BACA_PASSWORD: ${{ secrets.TEST_BACA_PASSWORD }}
+          TEST_BACA_LOGIN: ${{ secrets.TEST_BACA_LOGIN }}
+          TEST_BACA_HOST: ${{ secrets.TEST_BACA_HOST }}
           AUTH_TOKEN: ${{ secrets.AUTH_TOKEN }}
           CARGO_INCREMENTAL: "0"
           RUSTFLAGS: '-Zprofile -Ccodegen-units=1 -Copt-level=0 -Clink-dead-code -Coverflow-checks=off -Zpanic_abort_tests -Cpanic=abort -Cdebug-assertions=off'
