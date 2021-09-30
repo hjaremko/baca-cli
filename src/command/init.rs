@@ -12,12 +12,12 @@ trait Prompt {
     fn interact(&self) -> error::Result<String>;
 }
 
-struct Input;
+struct Input(&'static str);
 
 impl Prompt for Input {
     fn interact(&self) -> error::Result<String> {
         Ok(dialoguer::Input::<String>::new()
-            .with_prompt("Login")
+            .with_prompt(self.0)
             .interact()?)
     }
 }
@@ -33,48 +33,54 @@ impl Prompt for Password {
 }
 
 pub struct Init {
-    host: String,
+    host: Option<String>,
     login: Option<String>,
     password: Option<String>,
     login_prompt: Box<dyn Prompt>,
     password_prompt: Box<dyn Prompt>,
+    host_prompt: Box<dyn Prompt>,
 }
 
 impl From<&ArgMatches<'_>> for Init {
     fn from(args: &ArgMatches) -> Self {
-        let host = args.value_of("host").unwrap();
+        let host = args.value_of("host").map(|x| x.to_string());
         let login = args.value_of("login").map(|x| x.to_string());
         let password = args.value_of("password").map(|x| x.to_string());
 
         Self {
-            host: host.to_string(),
+            host,
             login,
             password,
-            login_prompt: Box::new(Input {}),
+            login_prompt: Box::new(Input("Login")),
             password_prompt: Box::new(Password {}),
+            host_prompt: Box::new(Input("Host")),
         }
     }
 }
 
 impl Init {
-    fn get_login(&self) -> error::Result<String> {
-        let login = self.login.clone();
-
-        if let Some(login) = login {
-            return Ok(login);
+    fn get_host(&self) -> error::Result<String> {
+        if self.host.as_ref().is_none() {
+            return self.host_prompt.interact();
         }
 
-        self.login_prompt.interact()
+        Ok(self.host.as_ref().unwrap().clone())
+    }
+
+    fn get_login(&self) -> error::Result<String> {
+        if self.login.as_ref().is_none() {
+            return self.login_prompt.interact();
+        }
+
+        Ok(self.login.as_ref().unwrap().clone())
     }
 
     fn get_password(&self) -> error::Result<String> {
-        let pass = self.password.clone();
-
-        if let Some(pass) = pass {
-            return Ok(pass);
+        if self.password.as_ref().is_none() {
+            return self.password_prompt.interact();
         }
 
-        self.password_prompt.interact()
+        Ok(self.password.as_ref().unwrap().clone())
     }
 }
 
@@ -83,15 +89,16 @@ impl Command for Init {
     fn execute<W: Workspace, A: BacaApi>(self) -> error::Result<()> {
         info!("Initializing Baca workspace.");
 
+        let host = self.get_host()?;
         let login = self.get_login()?;
         let password = self.get_password()?;
 
-        debug!("Host: {}", self.host);
+        debug!("Host: {}", host);
         debug!("Login: {}", login);
         debug!("Password: {}", password);
 
         let mut instance = workspace::InstanceData {
-            host: self.host,
+            host,
             login,
             password,
             permutation: baca::details::permutation(),
@@ -130,6 +137,37 @@ mod tests {
         }
     }
 
+    fn make_never_called_prompt_mock() -> MockPrompt {
+        let mut mock = MockPrompt::new();
+        mock.expect_interact().never();
+        mock
+    }
+
+    fn make_prompt_mock(return_val: &'static str) -> MockPrompt {
+        let mut mock = MockPrompt::new();
+        mock.expect_interact()
+            .once()
+            .returning(move || Ok(return_val.to_string()));
+        mock
+    }
+
+    fn make_baca_config(
+        host: &'static str,
+        login: &'static str,
+        password: &'static str,
+    ) -> InstanceData {
+        let host = host.to_string();
+        let login = login.to_string();
+        let password = password.to_string();
+        InstanceData {
+            host,
+            login,
+            password,
+            permutation: baca::details::permutation(),
+            cookie: "ok_cookie".to_string(),
+        }
+    }
+
     #[test]
     #[serial]
     fn success_test() {
@@ -154,11 +192,12 @@ mod tests {
             .returning(|_| Ok("ok_cookie".to_string()));
 
         let init = Init {
-            host: "host".to_string(),
+            host: Some("host".to_string()),
             login: Some("login".to_string()),
             password: Some("pass".to_string()),
-            login_prompt: Box::new(Input {}),
+            login_prompt: Box::new(Input("Login")),
             password_prompt: Box::new(Password {}),
+            host_prompt: Box::new(Input("Host")),
         };
         let result = init.execute::<MockWorkspace, MockBacaApi>();
         assert!(result.is_ok())
@@ -167,38 +206,33 @@ mod tests {
     #[test]
     #[serial]
     fn no_provided_login_should_invoke_prompt() {
-        let mut input_prompt_mock = MockPrompt::new();
-        input_prompt_mock
-            .expect_interact()
-            .once()
-            .returning(|| Ok("prompt_login".to_string()));
+        let login_prompt_mock = make_prompt_mock("prompt_login");
+        let password_prompt_mock = make_never_called_prompt_mock();
+        let host_prompt_mock = make_never_called_prompt_mock();
 
         let ctx_init = MockWorkspace::initialize_context();
         ctx_init.expect().once().returning(|| Ok(()));
 
+        let expected_config = make_baca_config("host", "prompt_login", "pass");
+        let expected_cookie = expected_config.cookie.clone();
         let ctx_save = MockWorkspace::save_instance_context();
         ctx_save
             .expect()
-            .withf(|x| {
-                *x == InstanceData {
-                    host: "host".to_string(),
-                    login: "prompt_login".to_string(),
-                    password: "pass".to_string(),
-                    permutation: baca::details::permutation(),
-                    cookie: "ok_cookie".to_string(),
-                }
-            })
+            .withf(move |x| *x == expected_config)
             .returning(|_| Ok(()));
 
         let ctx_api = MockBacaApi::get_cookie_context();
-        ctx_api.expect().returning(|_| Ok("ok_cookie".to_string()));
+        ctx_api
+            .expect()
+            .returning(move |_| Ok(expected_cookie.clone()));
 
         let init = Init {
-            host: "host".to_string(),
+            host: Some("host".to_string()),
             login: None,
             password: Some("pass".to_string()),
-            login_prompt: Box::new(input_prompt_mock),
-            password_prompt: Box::new(Password {}),
+            login_prompt: Box::new(login_prompt_mock),
+            password_prompt: Box::new(password_prompt_mock),
+            host_prompt: Box::new(host_prompt_mock),
         };
 
         let result = init.execute::<MockWorkspace, MockBacaApi>();
@@ -208,38 +242,33 @@ mod tests {
     #[test]
     #[serial]
     fn no_provided_password_should_invoke_prompt() {
-        let mut input_prompt_mock = MockPrompt::new();
-        input_prompt_mock
-            .expect_interact()
-            .once()
-            .returning(|| Ok("prompt_password".to_string()));
+        let login_prompt_mock = make_never_called_prompt_mock();
+        let password_prompt_mock = make_prompt_mock("prompt_password");
+        let host_prompt_mock = make_never_called_prompt_mock();
 
         let ctx_init = MockWorkspace::initialize_context();
         ctx_init.expect().once().returning(|| Ok(()));
 
+        let expected_config = make_baca_config("host", "login", "prompt_password");
+        let expected_cookie = expected_config.cookie.clone();
         let ctx_save = MockWorkspace::save_instance_context();
         ctx_save
             .expect()
-            .withf(|x| {
-                *x == InstanceData {
-                    host: "host".to_string(),
-                    login: "login".to_string(),
-                    password: "prompt_password".to_string(),
-                    permutation: baca::details::permutation(),
-                    cookie: "ok_cookie".to_string(),
-                }
-            })
+            .withf(move |x| *x == expected_config)
             .returning(|_| Ok(()));
 
         let ctx_api = MockBacaApi::get_cookie_context();
-        ctx_api.expect().returning(|_| Ok("ok_cookie".to_string()));
+        ctx_api
+            .expect()
+            .returning(move |_| Ok(expected_cookie.clone()));
 
         let init = Init {
-            host: "host".to_string(),
+            host: Some("host".to_string()),
             login: Some("login".to_string()),
             password: None,
-            login_prompt: Box::new(Input {}),
-            password_prompt: Box::new(input_prompt_mock),
+            login_prompt: Box::new(login_prompt_mock),
+            password_prompt: Box::new(password_prompt_mock),
+            host_prompt: Box::new(host_prompt_mock),
         };
 
         let result = init.execute::<MockWorkspace, MockBacaApi>();
@@ -249,50 +278,72 @@ mod tests {
     #[test]
     #[serial]
     fn no_provided_login_and_password_should_invoke_prompt() {
-        let mut input_prompt_mock = MockPrompt::new();
-        input_prompt_mock
-            .expect_interact()
-            .once()
-            .returning(|| Ok("prompt_login".to_string()));
+        let login_prompt_mock = make_prompt_mock("prompt_login");
+        let password_prompt_mock = make_prompt_mock("prompt_password");
+        let host_prompt_mock = make_never_called_prompt_mock();
 
-        let mut password_prompt_mock = MockPrompt::new();
-        password_prompt_mock
-            .expect_interact()
-            .once()
-            .returning(|| Ok("prompt_password".to_string()));
+        let ctx_init = MockWorkspace::initialize_context();
+        ctx_init.expect().once().returning(|| Ok(()));
+
+        let expected_config = make_baca_config("host", "prompt_login", "prompt_password");
+        let expected_cookie = expected_config.cookie.clone();
+        let ctx_save = MockWorkspace::save_instance_context();
+        ctx_save
+            .expect()
+            .withf(move |x| *x == expected_config)
+            .returning(|_| Ok(()));
+
+        let ctx_api = MockBacaApi::get_cookie_context();
+        ctx_api
+            .expect()
+            .returning(move |_| Ok(expected_cookie.clone()));
+
+        let init = Init {
+            host: Some("host".to_string()),
+            login: None,
+            password: None,
+            login_prompt: Box::new(login_prompt_mock),
+            password_prompt: Box::new(password_prompt_mock),
+            host_prompt: Box::new(host_prompt_mock),
+        };
+
+        let result = init.execute::<MockWorkspace, MockBacaApi>();
+        assert!(result.is_ok())
+    }
+
+    #[test]
+    #[serial]
+    fn no_provided_host_should_invoke_prompt() {
+        let input_prompt_mock = make_never_called_prompt_mock();
+        let password_prompt_mock = make_never_called_prompt_mock();
+        let host_prompt_mock = make_prompt_mock("prompt_host");
 
         let ctx_init = MockWorkspace::initialize_context();
         ctx_init.expect().once().returning(|| Ok(()));
 
         let ctx_save = MockWorkspace::save_instance_context();
+        let expected_config = make_baca_config("prompt_host", "login", "pass");
+        let expected_cookie = expected_config.cookie.clone();
         ctx_save
             .expect()
-            .withf(|x| {
-                *x == InstanceData {
-                    host: "host".to_string(),
-                    login: "prompt_login".to_string(),
-                    password: "prompt_password".to_string(),
-                    permutation: baca::details::permutation(),
-                    cookie: "ok_cookie".to_string(),
-                }
-            })
+            .withf(move |x| *x == expected_config)
             .returning(|_| Ok(()));
 
         let ctx_api = MockBacaApi::get_cookie_context();
-        ctx_api.expect().returning(|_| Ok("ok_cookie".to_string()));
+        ctx_api
+            .expect()
+            .returning(move |_| Ok(expected_cookie.clone()));
 
         let init = Init {
-            host: "host".to_string(),
-            login: None,
-            password: None,
+            host: None,
+            login: Some("login".to_string()),
+            password: Some("pass".to_string()),
             login_prompt: Box::new(input_prompt_mock),
             password_prompt: Box::new(password_prompt_mock),
+            host_prompt: Box::new(host_prompt_mock),
         };
 
         let result = init.execute::<MockWorkspace, MockBacaApi>();
         assert!(result.is_ok())
     }
 }
-
-//todo: fail cases
-//todo: refactor tests
