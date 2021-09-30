@@ -17,7 +17,6 @@ subcommands:
             short: h
             long: host
             help: BaCa hostname, ex. mn2020
-            required: true
             takes_value: true
         - login:
             short: l

@@ -49,23 +49,6 @@ fn invalid_host() -> Result<(), Box<dyn std::error::Error>> {
 }
 
 #[test]
-fn host_not_provided() -> Result<(), Box<dyn std::error::Error>> {
-    let (login, pass, _) = get_baca_credentials();
-    let temp = assert_fs::TempDir::new()?;
-
-    let mut cmd = Command::cargo_bin("baca")?;
-
-    cmd.current_dir(&temp);
-    cmd.arg("-u");
-    cmd.arg("init").args(&["--login", &login, "-p", &pass]);
-    cmd.assert().stderr(predicate::str::contains("--host"));
-
-    assert!(!baca_dir_exists(&temp));
-    temp.close()?;
-    Ok(())
-}
-
-#[test]
 fn success() -> Result<(), Box<dyn std::error::Error>> {
     let (login, pass, host) = get_baca_credentials();
     let temp = assert_fs::TempDir::new()?;
