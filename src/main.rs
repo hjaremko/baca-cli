@@ -61,7 +61,7 @@ fn check_for_updates(matches: &ArgMatches) {
     }
 
     let update_check_timestamp = UpdateCheckTimestamp::new();
-    if update_check_timestamp.is_expired::<WorkspaceDir>() {
+    if matches.is_present("force-update") || update_check_timestamp.is_expired::<WorkspaceDir>() {
         let updates = fetch_updates();
 
         if let Err(e) = updates {

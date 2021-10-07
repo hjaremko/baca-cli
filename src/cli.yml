@@ -4,11 +4,17 @@ about: CLI client for the Jagiellonian University's BaCa online judge
 args:
   - verbose:
       short: v
+      long: verbose
       multiple: true
       help: Sets the level of verbosity
   - noupdate:
       short: u
+      long: no-update
       help: Disable update check
+  - force-update:
+      short: U
+      long: force-update
+      help: Force update check
 subcommands:
   - init:
       about: Initializes current directory as BaCa workspace
