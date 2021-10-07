@@ -35,6 +35,11 @@ impl Submit {
             SubmitStatus::TimeExceeded => submit_info.yellow().bold(),
             SubmitStatus::CompileError => submit_info.yellow().bold(),
             SubmitStatus::NoHeader => submit_info.blue().bold(),
+            SubmitStatus::RealTimeExceeded => submit_info.yellow().bold(),
+            SubmitStatus::ManuallyRejected => submit_info.magenta().bold(),
+            SubmitStatus::RuntimeError => submit_info.yellow().bold(),
+            SubmitStatus::InternalError => submit_info.red().bold(),
+            SubmitStatus::OutputSizeExceeded => submit_info.yellow().bold(),
         };
 
         match self.max_points {
