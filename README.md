@@ -39,6 +39,7 @@ SUBCOMMANDS:
     details    Gets submit details
     help       Prints this message or the help of the given subcommand(s)
     init       Initializes current directory as BaCa workspace
+    last       Prints details of the last submit
     log        Prints last (default 3) submits
     refresh    Refreshes session, use in case of cookie expiration
     submit     Submits file
@@ -133,7 +134,29 @@ Example:
 └─── https://baca.ii.uj.edu.pl/mn2020/#SubmitDetails/4326
 ```
 
-### Submit details: `details`
+### Last submit details: `last`
+
+Prints details of last submit. Requires workspace to be initialized.
+
+```
+baca last
+```
+
+Example:
+
+```
+> baca last
+
+● [G] Funkcje sklejane - C++ - 2020-05-17 18:53:09 - submit 4334
+├─── 100% - 4/4 pts - Ok
+└─── https://baca.ii.uj.edu.pl/mn2020/#SubmitDetails/4334
+ ✔️ ── test0/0 - Ok
+ ✔️ ── test1/0 - Ok
+ ✔️ ── test2/0 - Ok
+ ✔️ ── test3/0 - Ok
+```
+
+### Any submit details: `details`
 
 Prints details of given submit. Requires workspace to be initialized.
 
@@ -144,11 +167,30 @@ baca details <id>
 Example:
 
 ```
-> baca details 4334
+> baca details 2904
 
-● [G] Funkcje sklejane - C++ - 2020-05-17 18:53:09 - submit 4334
-├─── 100% - 4 pts - Ok
-└─── https://baca.ii.uj.edu.pl/mn2020/#SubmitDetails/4334
+● [D] Skalowany Gauss - C++ - 2020-04-22 19:20:07 - submit 2904
+├─── 89% - 3.58/4 pts - TimeExceeded
+└─── https://baca.ii.uj.edu.pl/mn2020/#SubmitDetails/2904
+ ✔️ ── testy_jawne/test1 - Ok
+ ✔️ ── testy_jawne/test2 - Ok
+ ✔️ ── testy_jawne/test3 - Ok
+ ✔️ ── testy_jawne/test4 - Ok
+ ✔️ ── testy_jawne/test5 - Ok
+ ✔️ ── testy_jawne/test6 - Ok
+ ✔️ ── testy_jawne/test8 - Ok
+ ✔️ ── testy/test0 - Ok
+ ✔️ ── testy/test1 - Ok
+ ❌  ── testy/test10 - TimeExceeded
+ ❌  ── testy/test11 - TimeExceeded
+ ✔️ ── testy/test2 - Ok
+ ✔️ ── testy/test3 - Ok
+ ✔️ ── testy/test4 - Ok
+ ✔️ ── testy/test5 - Ok
+ ✔️ ── testy/test6 - Ok
+ ✔️ ── testy/test7 - Ok
+ ✔️ ── testy/test8 - Ok
+ ✔️ ── testy/test9 - Ok
 ```
 
 ### All tasks: `tasks`

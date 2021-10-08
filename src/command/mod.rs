@@ -1,6 +1,7 @@
 use crate::baca::api::baca_service::BacaApi;
 use crate::command::details::Details;
 use crate::command::init::Init;
+use crate::command::last::Last;
 use crate::command::log::Log;
 use crate::command::refresh::Refresh;
 use crate::error;
@@ -9,6 +10,7 @@ use clap::ArgMatches;
 
 mod details;
 mod init;
+mod last;
 mod log;
 mod refresh;
 mod submit;
@@ -30,8 +32,7 @@ where
         "log" => Log::from(matches).execute::<W, Api>(workspace),
         "tasks" => tasks::Tasks::new().execute::<W, Api>(workspace),
         "submit" => submit::Submit::from(matches).execute::<W, Api>(workspace),
-        _ => {
-            panic!("error!")
-        }
+        "last" => Last::new().execute::<W, Api>(workspace),
+        _ => panic!("error!"),
     }
 }

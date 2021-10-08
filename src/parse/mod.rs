@@ -3,8 +3,13 @@ pub mod submit;
 pub mod tasks;
 
 // todo: deserializable trait
+// todo: document this
 
 fn deserialize(data: &str) -> Vec<String> {
+    if data.len() < 18 {
+        return Vec::new();
+    }
+
     let data = remove_outer_layer(data);
     let data = split_raw(data);
     let keys = get_keys(&data);
@@ -46,4 +51,14 @@ fn get_keys(data: &[String]) -> Vec<String> {
         .take_while(is_number)
         .map(|x| x.to_owned())
         .collect()
+}
+
+#[cfg(test)]
+mod tests {
+    use crate::parse::deserialize;
+
+    #[test]
+    fn deserialize_empty_string() {
+        assert_eq!(deserialize(""), Vec::<String>::new());
+    }
 }

@@ -1,4 +1,5 @@
 use crate::model::submit_status::SubmitStatus;
+use crate::model::TestResults;
 use colored::*;
 
 #[derive(Debug, PartialEq)]
@@ -15,41 +16,53 @@ pub struct Submit {
     pub max_points: Option<i32>,
     pub problem_name: String,
     pub link: String,
+    pub test_results: Option<Vec<TestResults>>,
 }
 
 impl Submit {
     // todo: ctor
-    // todo: print_extended with tests
+    pub fn print_with_tests(&self) {
+        self.print();
+
+        if self.test_results.is_none() {
+            return;
+        }
+
+        let first = self.test_results.as_ref().unwrap().first().unwrap();
+        let first_str = format!(" ── {} - {:?}", first.name, first.status);
+        let first_str = add_emoji(&first_str, &first.status);
+        let first_str = apply_color_according_to_status(&first_str, &first.status);
+        println!("{}", first_str);
+
+        let mid = self.test_results.as_ref().unwrap();
+        let mid = &mid[1..mid.len() - 1];
+        for test in mid {
+            let test_str = format!(" ── {} - {:?}", test.name, test.status);
+            let test_str = add_emoji(&test_str, &test.status);
+            let test_str = apply_color_according_to_status(&test_str, &test.status);
+            println!("{}", test_str);
+        }
+
+        let last = self.test_results.as_ref().unwrap().last().unwrap();
+        let last_str = format!(" ── {} - {:?}", last.name, last.status);
+        let last_str = add_emoji(&last_str, &last.status);
+        let last_str = apply_color_according_to_status(&last_str, &last.status);
+        println!("{}", last_str);
+    }
+
     pub fn print(&self) {
         let header_line = self.make_header_line();
         let status_line = self.make_status_line();
         let link_line = self.make_link_line();
 
         let submit_info = format!("{}\n{}\n{}", header_line, status_line, link_line);
-        let submit_info = self.apply_color_according_to_status(submit_info);
+        let submit_info = apply_color_according_to_status(&submit_info, &self.status);
 
         println!("{}", submit_info);
     }
 
-    fn apply_color_according_to_status(&self, submit_info: String) -> ColoredString {
-        match self.status {
-            SubmitStatus::Ok => submit_info.green().bold(),
-            SubmitStatus::Processing => submit_info.bright_yellow().bold(),
-            SubmitStatus::InQueue => submit_info.bright_yellow().bold(),
-            SubmitStatus::WrongAnswer => submit_info.yellow().bold(),
-            SubmitStatus::TimeExceeded => submit_info.yellow().bold(),
-            SubmitStatus::CompileError => submit_info.yellow().bold(),
-            SubmitStatus::NoHeader => submit_info.blue().bold(),
-            SubmitStatus::RealTimeExceeded => submit_info.yellow().bold(),
-            SubmitStatus::ManuallyRejected => submit_info.magenta().bold(),
-            SubmitStatus::RuntimeError => submit_info.yellow().bold(),
-            SubmitStatus::InternalError => submit_info.red().bold(),
-            SubmitStatus::OutputSizeExceeded => submit_info.yellow().bold(),
-        }
-    }
-
     fn make_link_line(&self) -> String {
-        format!("└─── {}\n", self.link)
+        format!("└─── {}", self.link)
     }
 
     fn make_status_line(&self) -> String {
@@ -70,6 +83,30 @@ impl Submit {
             "● {} - {} - {} - submit {}",
             self.problem_name, self.language, self.timestamp, self.id
         )
+    }
+}
+
+fn add_emoji(str: &str, status: &SubmitStatus) -> String {
+    match status {
+        SubmitStatus::Ok => format!(" ✔️{}", str),
+        _ => format!(" ❌ {}", str),
+    }
+}
+
+fn apply_color_according_to_status(str: &str, status: &SubmitStatus) -> ColoredString {
+    match status {
+        SubmitStatus::Ok => str.green().bold(),
+        SubmitStatus::Processing => str.bright_yellow().bold(),
+        SubmitStatus::InQueue => str.bright_yellow().bold(),
+        SubmitStatus::WrongAnswer => str.yellow().bold(),
+        SubmitStatus::TimeExceeded => str.yellow().bold(),
+        SubmitStatus::CompileError => str.yellow().bold(),
+        SubmitStatus::NoHeader => str.blue().bold(),
+        SubmitStatus::RealTimeExceeded => str.yellow().bold(),
+        SubmitStatus::ManuallyRejected => str.magenta().bold(),
+        SubmitStatus::RuntimeError => str.yellow().bold(),
+        SubmitStatus::InternalError => str.red().bold(),
+        SubmitStatus::OutputSizeExceeded => str.yellow().bold(),
     }
 }
 

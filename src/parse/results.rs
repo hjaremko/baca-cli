@@ -33,6 +33,7 @@ impl Results {
                 max_points: None,
                 problem_name: raw[7].to_string(),
                 link: instance.make_url() + "/#SubmitDetails/" + raw[8].as_str(),
+                test_results: None,
             })
             .collect();
 
@@ -73,6 +74,7 @@ mod results_tests {
             max_points: None,
             problem_name: "[G] Funkcje sklejane".to_string(),
             link: "https://baca.ii.uj.edu.pl/mn/#SubmitDetails/4334".to_string(),
+            test_results: None,
         };
 
         actual.print(5);

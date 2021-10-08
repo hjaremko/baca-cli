@@ -10,5 +10,5 @@ impl Results {
         self.submits.iter().take(amount).for_each(|s| s.print());
     }
 
-    // todo: filter
+    // todo: filter results
 }
