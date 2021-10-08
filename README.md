@@ -10,7 +10,7 @@ The latest release can be downloaded **[here](https://github.com/hjaremko/baca-c
 
 - **Windows** users can use convenient installer or download raw binary.
 - **Linux** and **macOS** users should rename binary to `baca` and copy it to `~/.local/bin` or whatever your `PATH` is.
-- **Cargo** users can clone the repo, then install with command  `cargo install --path .`.
+- **Cargo** users can clone the repo, then install with command  `cargo install --path .`
 
 ### Arch Linux
 You can download the latest release from [AUR](https://aur.archlinux.org/packages/baca-cli) and install it using your favourite AUR helper or directly from source:
@@ -29,10 +29,11 @@ baca [FLAGS] [SUBCOMMAND]
 
 ```
 FLAGS:
-    -h, --help       Prints help information
-    -u               Disable update check
-    -v               Sets the level of verbosity
-    -V, --version    Prints version information
+    -U, --force-update    Force update check
+    -h, --help            Prints help information
+    -u, --no-update       Disable update check
+    -V, --version         Prints version information
+    -v, --verbose         Sets the level of verbosity
 
 SUBCOMMANDS:
     details    Gets submit details
@@ -48,9 +49,9 @@ SUBCOMMANDS:
 
 Initializes current directory as BaCa workspace, similar to `git init`. Currently, passwords are stored in **plain
 text.**
-
+User will be asked for credentials, if not provided.
 ```
-baca init --host <host>
+baca init
 ```
 
 ```
@@ -76,7 +77,7 @@ baca refresh
 ### Submit: `submit`
 
 Submit file to task given by its id. Use `baca tasks` to see what ids are available.  
-Passing optional parameter `--zip` will zip given file before submitting.  
+Passing optional parameter `--zip` will zip given file before submitting. The archive is saved as **`source.zip`**.  
 **Currently a correct language string needs to be provided as well.**
 
 ```
@@ -134,7 +135,7 @@ Example:
 
 ### Submit details: `details`
 
-Prints details of given submit. Requires initialized workspace.
+Prints details of given submit. Requires workspace to be initialized.
 
 ```
 baca details <id>
