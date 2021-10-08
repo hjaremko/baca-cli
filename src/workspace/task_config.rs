@@ -1,7 +1,7 @@
 use crate::baca::details::Language;
 use serde::{Deserialize, Serialize};
 
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Debug, Serialize, Deserialize, PartialEq)]
 pub struct TaskConfig {
     pub id: String,
     pub file: String, // todo: save absolute path

@@ -14,9 +14,9 @@ impl Tasks {
 }
 
 impl Command for Tasks {
-    fn execute<W: Workspace, A: BacaApi>(self) -> Result<()> {
+    fn execute<W: Workspace, A: BacaApi>(self, workspace: &W) -> Result<()> {
         info!("Getting all tasks.");
-        let instance = W::read_instance()?;
+        let instance = workspace.read_instance()?;
         let tasks = A::get_tasks(&instance)?;
         let tasks = model::Tasks::parse(&tasks);
 
@@ -45,8 +45,10 @@ mod tests {
     #[test]
     #[serial]
     fn success_test() {
-        let ctx_read = MockWorkspace::read_instance_context();
-        ctx_read.expect().returning(|| Ok(make_mock_instance()));
+        let mut mock_workspace = MockWorkspace::new();
+        mock_workspace
+            .expect_read_instance()
+            .returning(|| Ok(make_mock_instance()));
 
         let ctx_api = MockBacaApi::get_tasks_context();
         ctx_api
@@ -56,7 +58,7 @@ mod tests {
             .returning(|_| Ok(r#"//OK[0,12,11,10,3,3,9,8,7,3,3,6,5,4,3,3,2,2,1,["testerka.gwt.client.tools.DataSource/1474249525","[[Ljava.lang.String;/4182515373","[Ljava.lang.String;/2600011424","1","Metoda parametryzacji","12","2","Metoda parametryzacji torusów","4","id","nazwa","liczba OK"],0,7]"#.to_string()));
 
         let tasks = Tasks::new();
-        let result = tasks.execute::<MockWorkspace, MockBacaApi>();
+        let result = tasks.execute::<MockWorkspace, MockBacaApi>(&mock_workspace);
         assert!(result.is_ok())
     }
 }

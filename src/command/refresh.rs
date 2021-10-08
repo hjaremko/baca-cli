@@ -13,11 +13,11 @@ impl Refresh {
 }
 
 impl Command for Refresh {
-    fn execute<W: Workspace, A: BacaApi>(self) -> error::Result<()> {
+    fn execute<W: Workspace, A: BacaApi>(self, workspace: &W) -> error::Result<()> {
         info!("Refreshing Baca session.");
-        let mut instance = W::read_instance()?;
+        let mut instance = workspace.read_instance()?;
         instance.cookie = A::get_cookie(&instance)?;
-        W::save_instance(&instance)?;
+        workspace.save_instance(&instance)?;
 
         println!("New session obtained.");
         Ok(())
@@ -43,12 +43,12 @@ mod tests {
     #[test]
     #[serial]
     fn refresh_success_test() {
-        let ctx_read = MockWorkspace::read_instance_context();
-        ctx_read.expect().returning(|| Ok(make_mock_instance()));
-
-        let ctx_save = MockWorkspace::save_instance_context();
-        ctx_save
-            .expect()
+        let mut mock_workspace = MockWorkspace::new();
+        mock_workspace
+            .expect_read_instance()
+            .returning(|| Ok(make_mock_instance()));
+        mock_workspace
+            .expect_save_instance()
             .once()
             .withf(|x| {
                 let mut expected = make_mock_instance();
@@ -65,7 +65,7 @@ mod tests {
             .returning(|_| Ok("ok_cookie".to_string()));
 
         let refresh = Refresh::new();
-        let result = refresh.execute::<MockWorkspace, MockBacaApi>();
+        let result = refresh.execute::<MockWorkspace, MockBacaApi>(&mock_workspace);
         assert!(result.is_ok())
     }
 }

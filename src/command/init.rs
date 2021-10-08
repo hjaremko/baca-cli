@@ -86,7 +86,7 @@ impl Init {
 
 impl Command for Init {
     // todo: -r to override current config
-    fn execute<W: Workspace, A: BacaApi>(self) -> error::Result<()> {
+    fn execute<W: Workspace, A: BacaApi>(self, workspace: &W) -> error::Result<()> {
         info!("Initializing Baca workspace.");
 
         let host = self.get_host()?;
@@ -108,15 +108,18 @@ impl Command for Init {
         let cleanup_directory = |e| match e {
             error::Error::WorkspaceAlreadyInitialized => e,
             _ => {
-                W::remove_workspace().expect("Cannot cleanup baca directory");
+                workspace
+                    .remove_workspace()
+                    .expect("Cannot cleanup baca directory");
                 e
             }
         };
 
-        W::initialize().map_err(cleanup_directory)?;
+        workspace.initialize().map_err(cleanup_directory)?;
         instance.cookie = A::get_cookie(&instance).map_err(cleanup_directory)?;
-        W::save_instance(&instance).map_err(cleanup_directory)?;
-        Ok(())
+        workspace
+            .save_instance(&instance)
+            .map_err(cleanup_directory)
     }
 }
 
@@ -171,12 +174,14 @@ mod tests {
     #[test]
     #[serial]
     fn success_test() {
-        let ctx_init = MockWorkspace::initialize_context();
-        ctx_init.expect().once().returning(|| Ok(()));
+        let mut mock_workspace = MockWorkspace::new();
+        mock_workspace
+            .expect_initialize()
+            .once()
+            .returning(|| Ok(()));
 
-        let ctx_save = MockWorkspace::save_instance_context();
-        ctx_save
-            .expect()
+        mock_workspace
+            .expect_save_instance()
             .withf(|x| {
                 let mut expected = make_mock_instance();
                 expected.cookie = "ok_cookie".to_string();
@@ -199,7 +204,7 @@ mod tests {
             password_prompt: Box::new(Password {}),
             host_prompt: Box::new(Input("Host")),
         };
-        let result = init.execute::<MockWorkspace, MockBacaApi>();
+        let result = init.execute::<MockWorkspace, MockBacaApi>(&mock_workspace);
         assert!(result.is_ok())
     }
 
@@ -210,14 +215,17 @@ mod tests {
         let password_prompt_mock = make_never_called_prompt_mock();
         let host_prompt_mock = make_never_called_prompt_mock();
 
-        let ctx_init = MockWorkspace::initialize_context();
-        ctx_init.expect().once().returning(|| Ok(()));
+        let mut mock_workspace = MockWorkspace::new();
+        mock_workspace
+            .expect_initialize()
+            .once()
+            .returning(|| Ok(()));
 
         let expected_config = make_baca_config("host", "prompt_login", "pass");
         let expected_cookie = expected_config.cookie.clone();
-        let ctx_save = MockWorkspace::save_instance_context();
-        ctx_save
-            .expect()
+
+        mock_workspace
+            .expect_save_instance()
             .withf(move |x| *x == expected_config)
             .returning(|_| Ok(()));
 
@@ -235,7 +243,7 @@ mod tests {
             host_prompt: Box::new(host_prompt_mock),
         };
 
-        let result = init.execute::<MockWorkspace, MockBacaApi>();
+        let result = init.execute::<MockWorkspace, MockBacaApi>(&mock_workspace);
         assert!(result.is_ok())
     }
 
@@ -246,14 +254,16 @@ mod tests {
         let password_prompt_mock = make_prompt_mock("prompt_password");
         let host_prompt_mock = make_never_called_prompt_mock();
 
-        let ctx_init = MockWorkspace::initialize_context();
-        ctx_init.expect().once().returning(|| Ok(()));
+        let mut mock_workspace = MockWorkspace::new();
+        mock_workspace
+            .expect_initialize()
+            .once()
+            .returning(|| Ok(()));
 
         let expected_config = make_baca_config("host", "login", "prompt_password");
         let expected_cookie = expected_config.cookie.clone();
-        let ctx_save = MockWorkspace::save_instance_context();
-        ctx_save
-            .expect()
+        mock_workspace
+            .expect_save_instance()
             .withf(move |x| *x == expected_config)
             .returning(|_| Ok(()));
 
@@ -271,7 +281,7 @@ mod tests {
             host_prompt: Box::new(host_prompt_mock),
         };
 
-        let result = init.execute::<MockWorkspace, MockBacaApi>();
+        let result = init.execute::<MockWorkspace, MockBacaApi>(&mock_workspace);
         assert!(result.is_ok())
     }
 
@@ -282,14 +292,16 @@ mod tests {
         let password_prompt_mock = make_prompt_mock("prompt_password");
         let host_prompt_mock = make_never_called_prompt_mock();
 
-        let ctx_init = MockWorkspace::initialize_context();
-        ctx_init.expect().once().returning(|| Ok(()));
+        let mut mock_workspace = MockWorkspace::new();
+        mock_workspace
+            .expect_initialize()
+            .once()
+            .returning(|| Ok(()));
 
         let expected_config = make_baca_config("host", "prompt_login", "prompt_password");
         let expected_cookie = expected_config.cookie.clone();
-        let ctx_save = MockWorkspace::save_instance_context();
-        ctx_save
-            .expect()
+        mock_workspace
+            .expect_save_instance()
             .withf(move |x| *x == expected_config)
             .returning(|_| Ok(()));
 
@@ -307,7 +319,7 @@ mod tests {
             host_prompt: Box::new(host_prompt_mock),
         };
 
-        let result = init.execute::<MockWorkspace, MockBacaApi>();
+        let result = init.execute::<MockWorkspace, MockBacaApi>(&mock_workspace);
         assert!(result.is_ok())
     }
 
@@ -318,14 +330,16 @@ mod tests {
         let password_prompt_mock = make_never_called_prompt_mock();
         let host_prompt_mock = make_prompt_mock("prompt_host");
 
-        let ctx_init = MockWorkspace::initialize_context();
-        ctx_init.expect().once().returning(|| Ok(()));
+        let mut mock_workspace = MockWorkspace::new();
+        mock_workspace
+            .expect_initialize()
+            .once()
+            .returning(|| Ok(()));
 
-        let ctx_save = MockWorkspace::save_instance_context();
         let expected_config = make_baca_config("prompt_host", "login", "pass");
         let expected_cookie = expected_config.cookie.clone();
-        ctx_save
-            .expect()
+        mock_workspace
+            .expect_save_instance()
             .withf(move |x| *x == expected_config)
             .returning(|_| Ok(()));
 
@@ -343,7 +357,7 @@ mod tests {
             host_prompt: Box::new(host_prompt_mock),
         };
 
-        let result = init.execute::<MockWorkspace, MockBacaApi>();
+        let result = init.execute::<MockWorkspace, MockBacaApi>(&mock_workspace);
         assert!(result.is_ok())
     }
 }

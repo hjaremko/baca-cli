@@ -8,9 +8,7 @@ impl BacaRelease {
     pub fn is_newer_than(&self, other: &str) -> bool {
         self.version.as_str() > other
     }
-}
 
-impl BacaRelease {
     pub fn new(version: &str, link: &str) -> Self {
         BacaRelease {
             version: version.to_string(),

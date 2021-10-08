@@ -29,12 +29,15 @@ fn main() {
         .version(env!("CARGO_PKG_VERSION"))
         .setting(AppSettings::ArgRequiredElseHelp);
     let matches = app.get_matches();
+    let workspace = WorkspaceDir::new();
 
     set_logging_level(&matches);
-    check_for_updates(&matches);
+    check_for_updates(&workspace, &matches);
 
     if let (command, Some(sub_matches)) = matches.subcommand() {
-        if let Err(e) = command::execute::<WorkspaceDir, BacaService>(command, sub_matches) {
+        if let Err(e) =
+            command::execute::<WorkspaceDir, BacaService>(&workspace, command, sub_matches)
+        {
             println!("{}", format!("{}", e).bright_red());
         }
     }
@@ -54,14 +57,14 @@ fn set_logging_level(matches: &ArgMatches) {
     }
 }
 
-fn check_for_updates(matches: &ArgMatches) {
+fn check_for_updates(workspace: &WorkspaceDir, matches: &ArgMatches) {
     if matches.is_present("noupdate") {
         info!("Update check disabled.");
         return;
     }
 
     let update_check_timestamp = UpdateCheckTimestamp::new();
-    if matches.is_present("force-update") || update_check_timestamp.is_expired::<WorkspaceDir>() {
+    if matches.is_present("force-update") || update_check_timestamp.is_expired(workspace) {
         let updates = fetch_updates();
 
         if let Err(e) = updates {
@@ -74,7 +77,7 @@ fn check_for_updates(matches: &ArgMatches) {
                 info!("No updates available.");
 
                 update_check_timestamp
-                    .save_current_timestamp::<WorkspaceDir>()
+                    .save_current_timestamp(workspace)
                     .unwrap_or_else(|e| warn!("Error saving last update check timestamp: {}", e));
             }
             UpdateStatus::Update(new_rel) => {
