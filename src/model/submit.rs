@@ -1,4 +1,5 @@
 use crate::model::submit_status::SubmitStatus;
+use colored::*;
 
 #[derive(Debug, PartialEq)]
 pub struct Submit {
@@ -20,14 +21,18 @@ impl Submit {
     // todo: ctor
     // todo: print_extended with tests
     pub fn print(&self) {
-        use colored::*;
+        let header_line = self.make_header_line();
+        let status_line = self.make_status_line();
+        let link_line = self.make_link_line();
 
-        let submit_info = format!(
-            "● {} - {} - {} - submit {}",
-            self.problem_name, self.language, self.timestamp, self.id
-        );
+        let submit_info = format!("{}\n{}\n{}", header_line, status_line, link_line);
+        let submit_info = self.apply_color_according_to_status(submit_info);
 
-        let submit_info = match self.status {
+        println!("{}", submit_info);
+    }
+
+    fn apply_color_according_to_status(&self, submit_info: String) -> ColoredString {
+        match self.status {
             SubmitStatus::Ok => submit_info.green().bold(),
             SubmitStatus::Processing => submit_info.bright_yellow().bold(),
             SubmitStatus::InQueue => submit_info.bright_yellow().bold(),
@@ -40,19 +45,31 @@ impl Submit {
             SubmitStatus::RuntimeError => submit_info.yellow().bold(),
             SubmitStatus::InternalError => submit_info.red().bold(),
             SubmitStatus::OutputSizeExceeded => submit_info.yellow().bold(),
-        };
+        }
+    }
 
+    fn make_link_line(&self) -> String {
+        format!("└─── {}\n", self.link)
+    }
+
+    fn make_status_line(&self) -> String {
         match self.max_points {
-            None => println!(
-                "{}\n├─── {}% - {} pts - {:?}",
-                submit_info, self.accepted, self.points, self.status
+            None => format!(
+                "├─── {}% - {} pts - {:?}",
+                self.accepted, self.points, self.status
             ),
-            Some(max) => println!(
-                "{}\n├─── {}% - {}/{} pts - {:?}",
-                submit_info, self.accepted, self.points, max, self.status
+            Some(max) => format!(
+                "├─── {}% - {}/{} pts - {:?}",
+                self.accepted, self.points, max, self.status
             ),
-        };
-        println!("└─── {}\n", self.link);
+        }
+    }
+
+    fn make_header_line(&self) -> String {
+        format!(
+            "● {} - {} - {} - submit {}",
+            self.problem_name, self.language, self.timestamp, self.id
+        )
     }
 }
 
