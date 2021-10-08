@@ -475,4 +475,76 @@ mod submit_parser_tests {
         actual.print_with_tests();
         assert_eq!(actual, expected);
     }
+
+    #[test]
+    fn one_testcase_no_file_provided() {
+        let baca = InstanceData {
+            host: "so2018".to_string(),
+            login: "".to_string(),
+            password: "".to_string(),
+            permutation: "permutation".to_string(),
+            cookie: "cookie".to_string(),
+        };
+        let raw = r#"//OK[0,9,43,2,5,7,42,2,5,1,4,3,0,41,40,39,38,37,36,35,34,8,5,7,33,32,6,6,31,30,29,8,5,1,4,3,28,0,27,26,25,24,23,22,21,20,19,9,5,18,17,16,15,14,13,12,11,10,9,5,1,4,3,0,0,9,8,2,5,7,6,2,5,1,4,3,2,1,["testerka.gwt.client.submits.SubmitDetailsModel/2564112456","brak pliku","testerka.gwt.client.tools.DataSource/1474249525","[[Ljava.lang.String;/4182515373","[Ljava.lang.String;/2600011424","0","brak nagĹ\x82Ăłwka","czas","status","Kupcy i piraci","7","2018-06-06 08:00:00","2018-06-21 21:00:00","2018-06-28 21:00:00","122","30","1024","125","Nazwa zdania","Liczba punktow do zdobycia","Start zadania","Termin oddania","Koniec zdania","Limit pamieci (MB)","Limit czasu kompilacji (s)","Limit pamieci na kompilacje (MB)","Limit kodu zrodlowego (kB)","","1964","Java","2018-06-20 12:50:51","100","0.00","id","język","czas zgłoszenia","rozmiar (b)","zaliczone (%)","spoznienie (%)","punkty","nazwa statusu","1/test","test"],0,7]"#;
+        let actual = Submit::parse(&baca, raw);
+        let expected = Submit {
+            status: SubmitStatus::NoHeader,
+            points: 0.0,
+            lateness: Some(100),
+            accepted: 0,
+            size: 0,
+            timestamp: "2018-06-20 12:50:51".to_string(),
+            language: "Java".to_string(),
+            id: "1964".to_string(),
+            max_points: Some(7),
+            problem_name: "Kupcy i piraci".to_string(),
+            link: "https://baca.ii.uj.edu.pl/so2018/#SubmitDetails/1964".to_string(),
+            test_results: Some(vec![TestResults {
+                name: "1/test".to_string(),
+                status: SubmitStatus::NoHeader,
+            }]),
+        };
+
+        actual.print_with_tests();
+        assert_eq!(actual, expected);
+    }
+
+    #[test]
+    fn two_testcases() {
+        let baca = InstanceData {
+            host: "p1".to_string(),
+            login: "".to_string(),
+            password: "".to_string(),
+            permutation: "permutation".to_string(),
+            cookie: "cookie".to_string(),
+        };
+        let raw = r#"//OK[0,9,45,2,5,7,44,2,5,7,43,2,5,2,4,3,0,42,41,40,39,38,37,36,35,8,5,7,34,33,33,32,31,30,29,8,5,1,4,3,28,0,27,26,25,24,23,22,21,20,19,9,5,18,17,16,15,14,13,12,11,10,9,5,1,4,3,0,0,9,8,2,5,7,6,2,5,1,4,3,2,1,["testerka.gwt.client.submits.SubmitDetailsModel/2564112456","","testerka.gwt.client.tools.DataSource/1474249525","[[Ljava.lang.String;/4182515373","[Ljava.lang.String;/2600011424","184","program zaakceptowany","czas","status","Treningowe 2","0","2018-10-25 17:00:00","2018-11-01 17:00:00","2018-11-08 17:00:00","122","30","1024","125","Nazwa zdania","Liczba punktow do zdobycia","Start zadania","Termin oddania","Koniec zdania","Limit pamieci (MB)","Limit czasu kompilacji (s)","Limit pamieci na kompilacje (MB)","Limit kodu zrodlowego (kB)","//Hubert Jaremko\r\n#include \x3Ciostream\x3E\r\n\r\nusing namespace std;\r\n\r\nint main()\r\n{\r\n    int dataAmount \x3D 0;\r\n    int id \x3D 0;\r\n    int labPercent \x3D 0;\r\n    int bacaPercent \x3D 0;\r\n    int sum \x3D 0;\r\n\r\n    cin \x3E\x3E dataAmount;\r\n\r\n    while ( dataAmount-- )\r\n    {\r\n        cin \x3E\x3E id \x3E\x3E labPercent \x3E\x3E bacaPercent;\r\n        sum \x3D labPercent + bacaPercent;\r\n\r\n        cout \x3C\x3C id \x3C\x3C \x27 \x27 \x3C\x3C sum \x3C\x3C \"% \";\r\n\r\n        if( sum \x3E\x3D 90 )\r\n            cout \x3C\x3C \"bardzo dobry (5.0)\";\r\n        else if( sum \x3E\x3D 80 )\r\n            cout \x3C\x3C \"dobry plus (4.5)\";\r\n        else if( sum \x3E\x3D 70 )\r\n            cout \x3C\x3C \"dobry (4.0)\";\r\n        else if( sum \x3E\x3D 60 )\r\n            cout \x3C\x3C \"dostateczny plus (3.5)\";\r\n        else if( sum \x3E\x3D 50 )\r\n            cout \x3C\x3C \"dostateczny (3.0)\";\r\n        else\r\n            cout \x3C\x3C \"niedostateczny (2.0)\";\r\n\r\n        cout \x3C\x3C endl;\r\n    }\r\n\r\n    return 0;\r\n}\r\n","57","C++","2018-10-26 00:55:00","856","100","0.00","id","język","czas zgłoszenia","rozmiar (b)","zaliczone (%)","spoznienie (%)","punkty","nazwa statusu","test_0","test_1","test"],0,7]"#;
+        let actual = Submit::parse(&baca, raw);
+        let expected = Submit {
+            status: SubmitStatus::Ok,
+            points: 0.0,
+            lateness: Some(100),
+            accepted: 100,
+            size: 856,
+            timestamp: "2018-10-26 00:55:00".to_string(),
+            language: "C++".to_string(),
+            id: "57".to_string(),
+            max_points: Some(0),
+            problem_name: "Treningowe 2".to_string(),
+            link: "https://baca.ii.uj.edu.pl/p1/#SubmitDetails/57".to_string(),
+            test_results: Some(vec![
+                TestResults {
+                    name: "test_0".to_string(),
+                    status: SubmitStatus::Ok,
+                },
+                TestResults {
+                    name: "test_1".to_string(),
+                    status: SubmitStatus::Ok,
+                },
+            ]),
+        };
+
+        actual.print_with_tests();
+        assert_eq!(actual, expected);
+    }
 }

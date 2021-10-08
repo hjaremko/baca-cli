@@ -28,26 +28,32 @@ impl Submit {
             return;
         }
 
-        let first = self.test_results.as_ref().unwrap().first().unwrap();
+        let test_results = self.test_results.as_ref().unwrap();
+
+        let first = test_results.first().unwrap();
         let first_str = format!(" ── {} - {:?}", first.name, first.status);
         let first_str = add_emoji(&first_str, &first.status);
         let first_str = apply_color_according_to_status(&first_str, &first.status);
         println!("{}", first_str);
 
-        let mid = self.test_results.as_ref().unwrap();
-        let mid = &mid[1..mid.len() - 1];
-        for test in mid {
-            let test_str = format!(" ── {} - {:?}", test.name, test.status);
-            let test_str = add_emoji(&test_str, &test.status);
-            let test_str = apply_color_according_to_status(&test_str, &test.status);
-            println!("{}", test_str);
+        if test_results.len() > 2 {
+            let mid = test_results;
+            let mid = &mid[1..mid.len() - 1];
+            for test in mid {
+                let test_str = format!(" ── {} - {:?}", test.name, test.status);
+                let test_str = add_emoji(&test_str, &test.status);
+                let test_str = apply_color_according_to_status(&test_str, &test.status);
+                println!("{}", test_str);
+            }
         }
 
-        let last = self.test_results.as_ref().unwrap().last().unwrap();
-        let last_str = format!(" ── {} - {:?}", last.name, last.status);
-        let last_str = add_emoji(&last_str, &last.status);
-        let last_str = apply_color_according_to_status(&last_str, &last.status);
-        println!("{}", last_str);
+        if test_results.len() > 3 {
+            let last = test_results.last().unwrap();
+            let last_str = format!(" ── {} - {:?}", last.name, last.status);
+            let last_str = add_emoji(&last_str, &last.status);
+            let last_str = apply_color_according_to_status(&last_str, &last.status);
+            println!("{}", last_str);
+        }
     }
 
     pub fn print(&self) {
@@ -89,7 +95,7 @@ impl Submit {
 fn add_emoji(str: &str, status: &SubmitStatus) -> String {
     match status {
         SubmitStatus::Ok => format!(" ✔️{}", str),
-        _ => format!(" ❌ {}", str),
+        _ => format!(" ❌{}", str),
     }
 }
 
