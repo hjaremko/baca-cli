@@ -22,10 +22,10 @@ impl From<&ArgMatches<'_>> for Details {
 
 impl Command for Details {
     // todo: print test logs as well
-    fn execute<W: Workspace, A: BacaApi>(self) -> Result<()> {
+    fn execute<W: Workspace, A: BacaApi>(self, workspace: &W) -> Result<()> {
         info!("Printing details for submit: {}", self.submit_id);
 
-        let instance = W::read_instance()?;
+        let instance = workspace.read_instance()?;
         let submit = A::get_submit_details(&instance, &self.submit_id)?;
         let submit = Submit::parse(&instance, &submit);
 
@@ -53,8 +53,10 @@ mod tests {
     #[test]
     #[serial]
     fn success_test() {
-        let ctx_read = MockWorkspace::read_instance_context();
-        ctx_read.expect().returning(|| Ok(make_mock_instance()));
+        let mut mock_workspace = MockWorkspace::new();
+        mock_workspace
+            .expect_read_instance()
+            .returning(|| Ok(make_mock_instance()));
 
         let ctx_api = MockBacaApi::get_submit_details_context();
         ctx_api
@@ -66,7 +68,7 @@ mod tests {
         let details = Details {
             submit_id: "2888".to_string(),
         };
-        let result = details.execute::<MockWorkspace, MockBacaApi>();
+        let result = details.execute::<MockWorkspace, MockBacaApi>(&mock_workspace);
         assert!(result.is_ok())
     }
 }

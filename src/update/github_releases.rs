@@ -74,6 +74,7 @@ fn make_user_agent() -> String {
 mod tests {
     use super::*;
 
+    //noinspection ALL
     fn assert_fetching_release_error(actual: Result<BacaRelease>) {
         let assert_err = |e| match e {
             Error::ApiRateLimitExceeded => println!("API limit exceeded!"),
@@ -84,6 +85,7 @@ mod tests {
         assert_error(actual, assert_err);
     }
 
+    //noinspection ALL
     fn assert_no_release_error(actual: Result<BacaRelease>) {
         let assert_err = |e| match e {
             Error::ApiRateLimitExceeded => println!("API limit exceeded!"),
@@ -119,6 +121,7 @@ mod tests {
         assert_fetching_release_error(actual);
     }
 
+    //noinspection ALL
     #[test]
     fn correct_repo_should_return_latest_release() {
         let gh = GithubReleases::new("hjaremko", "baca-cli");

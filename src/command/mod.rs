@@ -15,17 +15,21 @@ mod submit;
 mod tasks;
 
 trait Command {
-    fn execute<W: Workspace, A: BacaApi>(self) -> error::Result<()>;
+    fn execute<W: Workspace, A: BacaApi>(self, workspace: &W) -> error::Result<()>;
 }
 
-pub fn execute<T: Workspace, U: BacaApi>(command: &str, matches: &ArgMatches) -> error::Result<()> {
+pub fn execute<W, Api>(workspace: &W, command: &str, matches: &ArgMatches) -> error::Result<()>
+where
+    W: Workspace,
+    Api: BacaApi,
+{
     match command {
-        "init" => Init::from(matches).execute::<T, U>(),
-        "details" => Details::from(matches).execute::<T, U>(),
-        "refresh" => Refresh::new().execute::<T, U>(),
-        "log" => Log::from(matches).execute::<T, U>(),
-        "tasks" => tasks::Tasks::new().execute::<T, U>(),
-        "submit" => submit::Submit::from(matches).execute::<T, U>(),
+        "init" => Init::from(matches).execute::<W, Api>(workspace),
+        "details" => Details::from(matches).execute::<W, Api>(workspace),
+        "refresh" => Refresh::new().execute::<W, Api>(workspace),
+        "log" => Log::from(matches).execute::<W, Api>(workspace),
+        "tasks" => tasks::Tasks::new().execute::<W, Api>(workspace),
+        "submit" => submit::Submit::from(matches).execute::<W, Api>(workspace),
         _ => {
             panic!("error!")
         }

@@ -22,16 +22,16 @@ impl<'a> From<&'a ArgMatches<'a>> for Submit<'a> {
 }
 
 impl Command for Submit<'_> {
-    fn execute<W: Workspace, A: BacaApi>(self) -> Result<()> {
+    fn execute<W: Workspace, A: BacaApi>(self, workspace: &W) -> Result<()> {
         if self.args.subcommand_matches("clear").is_some() {
-            return W::remove_task();
+            return workspace.remove_task();
         }
 
         let task_id = self.args.value_of("task_id");
         let file_path = self.args.value_of("file");
         let to_zip = self.args.is_present("zip");
         let lang = self.args.value_of("language");
-        let saved = W::read_task();
+        let saved = workspace.read_task();
 
         if let Some(lang) = lang {
             Language::from_str(lang)?;
@@ -90,7 +90,7 @@ impl Command for Submit<'_> {
         };
 
         if self.args.is_present("default") {
-            W::save_task(&task_id, &file_path, to_zip, lang)?;
+            workspace.save_task(&task_id, &file_path, to_zip, lang)?;
         }
 
         let file_to_submit = if to_zip {
@@ -100,16 +100,17 @@ impl Command for Submit<'_> {
             file_path
         };
 
-        submit::<W, A>(&task_id, file_to_submit.as_str(), &lang)
+        submit::<W, A>(workspace, &task_id, file_to_submit.as_str(), &lang)
     }
 }
 
 fn submit<W: Workspace, A: BacaApi>(
+    workspace: &W,
     task_id: &str,
     file_path: &str,
     lang: &Language,
 ) -> error::Result<()> {
-    let instance = W::read_instance()?;
+    let instance = workspace.read_instance()?;
     let tasks = A::get_tasks(&instance)?;
     let tasks = Tasks::parse(&tasks);
     let mut task = tasks
@@ -127,7 +128,5 @@ fn submit<W: Workspace, A: BacaApi>(
 
     A::submit(&instance, &task, file_path)?;
     println!();
-    Log::new("1").execute::<W, A>()?;
-
-    Ok(())
+    Log::new("1").execute::<W, A>(workspace)
 }

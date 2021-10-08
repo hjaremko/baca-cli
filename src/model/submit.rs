@@ -32,7 +32,7 @@ impl Submit {
             SubmitStatus::Processing => submit_info.bright_yellow().bold(),
             SubmitStatus::InQueue => submit_info.bright_yellow().bold(),
             SubmitStatus::WrongAnswer => submit_info.yellow().bold(),
-            SubmitStatus::TimeExceeded => submit_info.cyan().bold(),
+            SubmitStatus::TimeExceeded => submit_info.yellow().bold(),
             SubmitStatus::CompileError => submit_info.yellow().bold(),
             SubmitStatus::NoHeader => submit_info.blue().bold(),
         };
