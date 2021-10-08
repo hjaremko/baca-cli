@@ -11,6 +11,14 @@ pub struct Details {
     submit_id: String,
 }
 
+impl Details {
+    pub fn new(submit_id: &str) -> Self {
+        Details {
+            submit_id: submit_id.to_string(),
+        }
+    }
+}
+
 impl From<&ArgMatches<'_>> for Details {
     fn from(args: &ArgMatches) -> Self {
         let submit_id = args.value_of("id").unwrap();
@@ -21,7 +29,6 @@ impl From<&ArgMatches<'_>> for Details {
 }
 
 impl Command for Details {
-    // todo: print test logs as well
     fn execute<W: Workspace, A: BacaApi>(self, workspace: &W) -> Result<()> {
         info!("Printing details for submit: {}", self.submit_id);
 
@@ -29,7 +36,7 @@ impl Command for Details {
         let submit = A::get_submit_details(&instance, &self.submit_id)?;
         let submit = Submit::parse(&instance, &submit);
 
-        submit.print();
+        submit.print_with_tests();
         Ok(())
     }
 }

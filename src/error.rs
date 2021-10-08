@@ -31,6 +31,7 @@ pub enum Error {
     ApiRateLimitExceeded,
     InvalidArgument,
     UnsupportedLanguage(String),
+    NoSubmitsYet,
     // InputFileDoesNotExist,
 }
 
@@ -62,6 +63,7 @@ impl fmt::Display for Error {
             Error::ApiRateLimitExceeded => "GitHub API rate limit exceeded. Try again later.".to_owned(),
             Error::InvalidArgument => "Invalid argument.".to_owned(),
             Error::UnsupportedLanguage(lang) => format!("{} is not yet supported!! Please create an issue at https://github.com/hjaremko/baca-cli/issues", lang),
+            Error::NoSubmitsYet => "No submits yet!".to_owned(),
             // Error::InputFileDoesNotExist => "Provided input file does not exist!".to_owned(),
         };
 

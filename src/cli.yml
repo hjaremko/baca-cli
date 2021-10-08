@@ -79,3 +79,5 @@ subcommands:
         - clear:
             long: clear
             about: Clears saved task config
+  - last:
+      about: Prints details of the last submit
