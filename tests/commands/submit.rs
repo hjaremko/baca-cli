@@ -118,6 +118,7 @@ fn invalid_filename_should_report_error() -> Result<(), Box<dyn std::error::Erro
 fn invalid_language_should_report_error() -> Result<(), Box<dyn std::error::Error>> {
     let dir = initialize_correct_workspace()?;
     let mut cmd = set_up_command(&dir)?;
+    make_input_file_dummy(&dir).unwrap();
 
     cmd.args(&["submit", "-f", "dummy.txt", "-t", "2", "-l", "CPlusPlus"]);
 
@@ -357,8 +358,6 @@ fn given_absolute_path_should_be_saved() -> Result<(), Box<dyn std::error::Error
     let task_config_contents = fs::read_to_string(dir.baca_task_config_file_path()).unwrap();
     let input_path = input_file.path().canonicalize().unwrap();
     let input_path = input_path.to_str().unwrap().replace("\\", "\\\\");
-    println!("{}", task_config_contents);
-    println!("{}", input_path);
 
     assert!(predicate::str::contains(input_path).eval(&task_config_contents));
     dir.close()?;
@@ -397,6 +396,88 @@ fn given_relative_path_absolute_should_be_saved() -> Result<(), Box<dyn std::err
     let input_path = input_path.to_str().unwrap().replace("\\", "\\\\");
 
     assert!(predicate::str::contains(input_path).eval(&task_config_contents));
+    dir.close()?;
+    Ok(())
+}
+
+#[test]
+fn when_rename_option_then_submit_renamed_file() -> Result<(), Box<dyn std::error::Error>> {
+    let dir = initialize_correct_workspace()?;
+    let mut cmd = set_up_command(&dir)?;
+    let input_file = make_input_file_cpp(&dir)?;
+
+    cmd.args(&[
+        "submit",
+        "-t",
+        "1",
+        "-l",
+        "C++",
+        "-f",
+        input_file.path().to_str().unwrap(),
+        "--rename",
+        "hello.cxx",
+    ]);
+
+    cmd.assert()
+        .stdout(predicate::str::contains("source.cpp as hello.cxx"))
+        .stdout(predicate::str::contains("Is the task still active?"));
+
+    dir.close()?;
+    Ok(())
+}
+
+#[test]
+fn when_rename_as_same_name_then_do_not_rename() -> Result<(), Box<dyn std::error::Error>> {
+    let dir = initialize_correct_workspace()?;
+    let mut cmd = set_up_command(&dir)?;
+    let input_file = make_input_file_cpp(&dir)?;
+
+    cmd.args(&[
+        "submit",
+        "-t",
+        "1",
+        "-l",
+        "C++",
+        "-f",
+        input_file.path().to_str().unwrap(),
+        "--rename",
+        "source.cpp",
+    ]);
+
+    cmd.assert()
+        .stdout(predicate::str::contains("Submitting source.cpp to task"))
+        .stdout(predicate::str::contains("Is the task still active?"));
+
+    dir.close()?;
+    Ok(())
+}
+
+#[test]
+fn when_zipping_renamed_then_zip_renamed() -> Result<(), Box<dyn std::error::Error>> {
+    let dir = initialize_correct_workspace()?;
+    let mut cmd = set_up_command(&dir)?;
+    let input_file = make_input_file_cpp(&dir)?;
+
+    cmd.args(&[
+        "submit",
+        "-t",
+        "1",
+        "-l",
+        "C++",
+        "-f",
+        input_file.path().to_str().unwrap(),
+        "--rename",
+        "rename.haa",
+        "--zip",
+    ]);
+
+    cmd.assert()
+        .stdout(predicate::str::contains(
+            "Submitting source.cpp as rename.haa to task",
+        ))
+        .stdout(predicate::str::contains("Zipping rename.haa"))
+        .stdout(predicate::str::contains("Is the task still active?"));
+
     dir.close()?;
     Ok(())
 }

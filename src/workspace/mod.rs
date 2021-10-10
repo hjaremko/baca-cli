@@ -11,7 +11,7 @@ use tracing::{debug, info};
 pub use self::instance_data::InstanceData;
 pub use self::task_config::TaskConfig;
 pub use self::zip::zip_file;
-use crate::baca::details::Language;
+
 use crate::error::Error;
 use crate::error::Result;
 
@@ -57,13 +57,7 @@ pub trait Workspace {
     fn save_instance(&self, instance: &InstanceData) -> Result<()>;
     fn read_instance(&self) -> Result<InstanceData>;
     fn read_task(&self) -> Result<TaskConfig>;
-    fn save_task(
-        &self,
-        task_id: &str,
-        filepath: &Path,
-        to_zip: bool,
-        language: Language,
-    ) -> Result<()>;
+    fn save_task(&self, task_config: &TaskConfig) -> Result<()>;
     fn remove_task(&self) -> Result<()>;
     fn remove_workspace(&self) -> Result<()>;
     fn save_object<T: 'static + Serialize>(&self, filename: &str, content: &T) -> Result<()>;
@@ -163,13 +157,7 @@ impl Workspace for WorkspaceDir {
     // todo: prompt for override
     // todo: refactor to_zip
     // todo: get struct as argument
-    fn save_task(
-        &self,
-        task_id: &str,
-        filepath: &Path,
-        to_zip: bool,
-        language: Language,
-    ) -> Result<()> {
+    fn save_task(&self, task_config: &TaskConfig) -> Result<()> {
         self.check_if_initialized()?;
         // todo: check correctness of other fields (TaskValidator?)
         // let input_file_path = Path::new(filepath);
@@ -183,8 +171,7 @@ impl Workspace for WorkspaceDir {
             self.paths.task_path().to_str().unwrap()
         );
 
-        let task = TaskConfig::new(task_id, filepath, to_zip, language);
-        let serialized = serde_json::to_string(&task)?;
+        let serialized = serde_json::to_string(&task_config)?;
         debug!("Serialized: {}", serialized);
 
         fs::write(self.paths.task_path(), serialized).map_err(as_task_write_error)?;
@@ -264,6 +251,7 @@ fn as_task_write_error(e: io::Error) -> Error {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::baca::details::Language;
     use assert_fs::fixture::ChildPath;
     use assert_fs::prelude::*;
     use assert_fs::TempDir;
@@ -365,17 +353,11 @@ mod tests {
         let (temp_dir, mock_paths, workspace) = make_temp_workspace().unwrap();
         let input_file = temp_dir.child("foo.sh");
         input_file.touch().unwrap();
-        let expected_task_config = TaskConfig {
-            id: "2".to_string(),
-            file: input_file.path().to_path_buf(),
-            to_zip: false,
-            language: Language::Bash,
-        };
+        let expected_task_config =
+            TaskConfig::new("2", input_file.path(), false, Language::Bash, None);
 
         workspace.initialize().unwrap();
-        workspace
-            .save_task("2", input_file.as_ref(), false, Language::Bash)
-            .unwrap();
+        workspace.save_task(&expected_task_config).unwrap();
 
         assert_eq!(workspace.read_task().unwrap(), expected_task_config);
         assert!(predicate::path::exists().eval(mock_paths.task_path().as_path()));
@@ -418,7 +400,13 @@ mod tests {
     fn save_task_not_initialized() {
         let (temp_dir, mock_paths, workspace) = make_temp_workspace().unwrap();
 
-        let result = workspace.save_task("2", Path::new("foo.txt"), true, Language::Bash);
+        let result = workspace.save_task(&TaskConfig::new(
+            "2",
+            Path::new("foo.txt"),
+            true,
+            Language::Bash,
+            None,
+        ));
 
         assert!(result.is_err());
         if let Err(e) = result {
@@ -433,38 +421,15 @@ mod tests {
         let (temp_dir, mock_paths, workspace) = make_temp_workspace().unwrap();
         let input_file = temp_dir.child("foo.sh");
         input_file.touch().unwrap();
-        let task_config_first = TaskConfig {
-            id: "2".to_string(),
-            file: input_file.path().to_owned(),
-            to_zip: false,
-            language: Language::Bash,
-        };
-
-        let task_config_second = TaskConfig {
-            id: "3".to_string(),
-            file: PathBuf::from("bar.cpp"),
-            to_zip: true,
-            language: Language::Cpp,
-        };
+        let task_config_first =
+            TaskConfig::new("2", input_file.path(), false, Language::Bash, None);
+        let task_config_second =
+            TaskConfig::new("3", Path::new("bar.cpp"), false, Language::Cpp, None);
 
         workspace.initialize().unwrap();
-        workspace
-            .save_task(
-                task_config_first.id.as_str(),
-                &*task_config_first.file,
-                task_config_first.to_zip,
-                task_config_first.language,
-            )
-            .unwrap();
+        workspace.save_task(&task_config_first).unwrap();
 
-        workspace
-            .save_task(
-                task_config_second.id.as_str(),
-                &*task_config_second.file,
-                task_config_second.to_zip,
-                task_config_second.language,
-            )
-            .unwrap();
+        workspace.save_task(&task_config_second).unwrap();
 
         assert_eq!(workspace.read_task().unwrap(), task_config_second);
         assert!(predicate::path::exists().eval(mock_paths.task_path().as_path()));

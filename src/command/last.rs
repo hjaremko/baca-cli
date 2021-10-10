@@ -31,28 +31,18 @@ mod tests {
     use crate::baca::api::baca_service::MockBacaApi;
     use crate::workspace::{InstanceData, MockWorkspace};
 
-    fn make_mock_instance() -> InstanceData {
-        InstanceData {
-            host: "host".to_string(),
-            login: "login".to_string(),
-            password: "pass".to_string(),
-            permutation: "perm".to_string(),
-            cookie: "invalid".to_string(),
-        }
-    }
-
     #[test]
     #[serial]
     fn no_submits() {
         let mut mock_workspace = MockWorkspace::new();
         mock_workspace
             .expect_read_instance()
-            .returning(|| Ok(make_mock_instance()));
+            .returning(|| Ok(InstanceData::default()));
 
         let ctx_api = MockBacaApi::get_results_context();
         ctx_api
             .expect()
-            .withf(|x| *x == make_mock_instance())
+            .withf(|x| *x == InstanceData::default())
             .returning(|_| Ok(r#"//OK[0,[],0,7]"#.to_string()));
 
         let last = Last::new();
