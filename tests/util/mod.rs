@@ -78,6 +78,18 @@ pub fn make_input_file_cpp(dir: &TempDir) -> Result<ChildPath, Box<dyn std::erro
     Ok(input_file)
 }
 
+pub fn make_input_file_dummy(dir: &TempDir) -> Result<ChildPath, Box<dyn std::error::Error>> {
+    let input_file = dir.child("dummy.txt");
+    input_file.touch()?;
+    input_file.write_str(
+        r#"
+        \\ Hubert Jaremko
+        Dummy text file
+        "#,
+    )?;
+    Ok(input_file)
+}
+
 pub fn get_baca_credentials() -> (String, String, String) {
     let login = env::var("TEST_BACA_LOGIN").expect("No TEST_BACA_LOGIN provided");
     let pass = env::var("TEST_BACA_PASSWORD").expect("No TEST_BACA_PASSWORD provided");
