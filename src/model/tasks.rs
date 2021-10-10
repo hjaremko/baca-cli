@@ -1,4 +1,5 @@
 use crate::baca::details::Language;
+use crate::error::Error;
 use colored::Colorize;
 
 pub struct Tasks {
@@ -21,8 +22,11 @@ impl Tasks {
         }
     }
 
-    pub fn get_by_id(&self, task_id: &str) -> Option<&Task> {
-        self.tasks.iter().find(|x| x.id == task_id)
+    pub fn get_by_id(&self, task_id: &str) -> Result<&Task, Error> {
+        self.tasks
+            .iter()
+            .find(|x| x.id == task_id)
+            .ok_or_else(|| Error::InvalidTaskId(task_id.to_string()))
     }
 }
 

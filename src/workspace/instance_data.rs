@@ -37,3 +37,15 @@ impl InstanceData {
         format!("JSESSIONID={};", self.cookie)
     }
 }
+
+impl Default for InstanceData {
+    fn default() -> Self {
+        InstanceData {
+            host: String::default(),
+            login: String::default(),
+            password: String::default(),
+            permutation: String::default(),
+            cookie: String::default(),
+        }
+    }
+}

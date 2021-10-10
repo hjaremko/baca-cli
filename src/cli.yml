@@ -75,6 +75,11 @@ subcommands:
         - default:
             long: default
             help: Saves task config, if provided, future 'submit' calls won't require providing task config
+        - rename:
+            long: rename
+            short: r
+            takes_value: true
+            help: Submit input file under different name
       subcommands:
         - clear:
             long: clear

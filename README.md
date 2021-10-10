@@ -78,11 +78,12 @@ baca refresh
 ### Submit: `submit`
 
 Submit file to task given by its id. Use `baca tasks` to see what ids are available.  
-Passing optional parameter `--zip` will zip given file before submitting. The archive is saved as **`source.zip`**.  
-**Currently a correct language string needs to be provided as well.**
+ - Optional parameter `--zip` will zip given file before submitting. The archive is saved as **`source.zip`**.  
+ - Optional parameter `--rename` will rename file before submitting and zipping.  
+ - **Currently a correct language string needs to be provided as well.**
 
 ```
-baca submit -t <task_id> -f <filename> [optional --zip]
+baca submit -t <task_id> -f <filename> -l <language> [optional --zip] [optional --rename or -r]
 ```
 
 Example:
