@@ -2,7 +2,7 @@ use std::fs::{read, File};
 use std::io::{Error, ErrorKind, Write};
 use std::path::Path;
 
-pub fn zip_file(path: &Path) -> Result<String, Error> {
+pub fn zip_file(path: &Path) -> Result<&Path, Error> {
     let filename = path.file_name().unwrap().to_str().ok_or(ErrorKind::Other)?;
     let path = path.to_str().ok_or(ErrorKind::Other)?;
 
@@ -19,5 +19,5 @@ pub fn zip_file(path: &Path) -> Result<String, Error> {
     zip.write_all(source.as_ref())?;
     zip.finish()?;
 
-    Ok("source.zip".to_string())
+    Ok(Path::new("source.zip"))
 }

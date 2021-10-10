@@ -8,7 +8,8 @@ use crate::workspace::{TaskConfig, Workspace};
 use crate::{error, workspace};
 use clap::ArgMatches;
 use colored::Colorize;
-use std::path::Path;
+use std::fs;
+use std::path::{Path, PathBuf};
 use std::str::FromStr;
 
 pub struct Submit<'a> {
@@ -64,7 +65,7 @@ impl Command for Submit<'_> {
         // todo: default()
         let saved = saved.unwrap_or(TaskConfig {
             id: "".to_string(),
-            file: "".to_string(),
+            file: PathBuf::new(),
             to_zip: false,
             language: Language::Unsupported,
         });
@@ -75,8 +76,8 @@ impl Command for Submit<'_> {
         };
 
         let file_path = match file_path {
-            None => saved.file.clone(),
-            Some(file) => file.to_string(),
+            None => saved.file.as_path(),
+            Some(file) => Path::new(file),
         };
 
         let lang = match lang {
@@ -89,25 +90,26 @@ impl Command for Submit<'_> {
             false => saved.to_zip,
         };
 
+        let file_path = fs::canonicalize(file_path)?;
+
         if self.args.is_present("default") {
             workspace.save_task(&task_id, &file_path, to_zip, lang)?;
         }
 
-        let file_to_submit = if to_zip {
-            let path = Path::new(&file_path);
-            workspace::zip_file(path).map_err(|e| Error::Zipping(e.into()))?
+        let file_path = if to_zip {
+            workspace::zip_file(file_path.as_ref()).map_err(|e| Error::Zipping(e.into()))?
         } else {
-            file_path
+            file_path.as_path()
         };
 
-        submit::<W, A>(workspace, &task_id, file_to_submit.as_str(), &lang)
+        submit::<W, A>(workspace, &task_id, file_path, &lang)
     }
 }
 
 fn submit<W: Workspace, A: BacaApi>(
     workspace: &W,
     task_id: &str,
-    file_path: &str,
+    file_path: &Path,
     lang: &Language,
 ) -> error::Result<()> {
     let instance = workspace.read_instance()?;
@@ -118,15 +120,19 @@ fn submit<W: Workspace, A: BacaApi>(
         .ok_or_else(|| error::Error::InvalidTaskId(task_id.to_string()))?
         .clone();
     task.language = *lang;
-
     println!(
         "Submitting {} to task {} ({}).",
-        file_path.bright_yellow(),
+        file_path
+            .file_name()
+            .unwrap()
+            .to_str()
+            .unwrap()
+            .bright_yellow(),
         task.problem_name.bright_green(),
         task.language.to_string()
     );
 
-    A::submit(&instance, &task, file_path)?;
+    A::submit(&instance, &task, file_path.to_str().unwrap())?;
     println!();
     Log::new("1").execute::<W, A>(workspace)
 }

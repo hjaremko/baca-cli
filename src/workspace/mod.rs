@@ -60,7 +60,7 @@ pub trait Workspace {
     fn save_task(
         &self,
         task_id: &str,
-        filepath: &str,
+        filepath: &Path,
         to_zip: bool,
         language: Language,
     ) -> Result<()>;
@@ -166,13 +166,12 @@ impl Workspace for WorkspaceDir {
     fn save_task(
         &self,
         task_id: &str,
-        filepath: &str,
+        filepath: &Path,
         to_zip: bool,
         language: Language,
     ) -> Result<()> {
         self.check_if_initialized()?;
         // todo: check correctness of other fields (TaskValidator?)
-        // todo: save absolute path
         // let input_file_path = Path::new(filepath);
         //
         // if !input_file_path.exists() {
@@ -184,12 +183,7 @@ impl Workspace for WorkspaceDir {
             self.paths.task_path().to_str().unwrap()
         );
 
-        let task = TaskConfig {
-            id: task_id.to_string(),
-            file: filepath.to_string(),
-            language,
-            to_zip,
-        };
+        let task = TaskConfig::new(task_id, filepath, to_zip, language);
         let serialized = serde_json::to_string(&task)?;
         debug!("Serialized: {}", serialized);
 
@@ -373,19 +367,14 @@ mod tests {
         input_file.touch().unwrap();
         let expected_task_config = TaskConfig {
             id: "2".to_string(),
-            file: "foo.sh".to_string(),
+            file: input_file.path().to_path_buf(),
             to_zip: false,
             language: Language::Bash,
         };
 
         workspace.initialize().unwrap();
         workspace
-            .save_task(
-                "2",
-                input_file.file_name().unwrap().to_str().unwrap(),
-                false,
-                Language::Bash,
-            )
+            .save_task("2", input_file.as_ref(), false, Language::Bash)
             .unwrap();
 
         assert_eq!(workspace.read_task().unwrap(), expected_task_config);
@@ -429,7 +418,7 @@ mod tests {
     fn save_task_not_initialized() {
         let (temp_dir, mock_paths, workspace) = make_temp_workspace().unwrap();
 
-        let result = workspace.save_task("2", "foo.txt", true, Language::Bash);
+        let result = workspace.save_task("2", Path::new("foo.txt"), true, Language::Bash);
 
         assert!(result.is_err());
         if let Err(e) = result {
@@ -446,14 +435,14 @@ mod tests {
         input_file.touch().unwrap();
         let task_config_first = TaskConfig {
             id: "2".to_string(),
-            file: "foo.sh".to_string(),
+            file: input_file.path().to_owned(),
             to_zip: false,
             language: Language::Bash,
         };
 
         let task_config_second = TaskConfig {
             id: "3".to_string(),
-            file: "bar.cpp".to_string(),
+            file: PathBuf::from("bar.cpp"),
             to_zip: true,
             language: Language::Cpp,
         };
@@ -462,7 +451,7 @@ mod tests {
         workspace
             .save_task(
                 task_config_first.id.as_str(),
-                task_config_first.file.as_str(),
+                &*task_config_first.file,
                 task_config_first.to_zip,
                 task_config_first.language,
             )
@@ -471,7 +460,7 @@ mod tests {
         workspace
             .save_task(
                 task_config_second.id.as_str(),
-                task_config_second.file.as_str(),
+                &*task_config_second.file,
                 task_config_second.to_zip,
                 task_config_second.language,
             )
@@ -481,31 +470,5 @@ mod tests {
         assert!(predicate::path::exists().eval(mock_paths.task_path().as_path()));
         temp_dir.close().unwrap();
     }
-
-    // todo: enable when validation is done
-    // #[test]
-    // fn save_task_invalid_filepath_should_return_error() {
-    //     let (temp_dir, mock_paths, workspace) = make_temp_workspace().unwrap();
-    //     let input_file = temp_dir.child("foo.sh");
-    //     input_file.touch().unwrap();
-    //
-    //     workspace.initialize().unwrap();
-    //     let result = workspace
-    //         .save_task(
-    //             "2",
-    //             "invalid_filename.foo",
-    //             false,
-    //             Language::Bash,
-    //         );
-    //
-    //
-    //     assert!(result.is_err());
-    //     if let Err(e) = result {
-    //         assert!(matches!(e, Error::InputFileDoesNotExist));
-    //     }
-    //     assert!(predicate::path::missing().eval(mock_paths.task_path().as_path()));
-    //     temp_dir.close().unwrap();
-    // }
-
     // todo: tests for removing and saving objects
 }
