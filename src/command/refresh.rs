@@ -1,4 +1,4 @@
-use crate::baca::api::baca_service::BacaApi;
+use crate::baca::api::baca_api::BacaApi;
 use crate::command::Command;
 use crate::error;
 use crate::workspace::Workspace;
@@ -13,10 +13,14 @@ impl Refresh {
 }
 
 impl Command for Refresh {
-    fn execute<W: Workspace, A: BacaApi>(self, workspace: &W) -> error::Result<()> {
+    fn execute<W, A>(self, workspace: &W, api: &A) -> error::Result<()>
+    where
+        W: Workspace,
+        A: BacaApi,
+    {
         info!("Refreshing Baca session.");
         let mut instance = workspace.read_instance()?;
-        instance.cookie = A::get_cookie(&instance)?;
+        instance.cookie = api.get_cookie(&instance)?;
         workspace.save_instance(&instance)?;
 
         println!("New session obtained.");
@@ -27,45 +31,34 @@ impl Command for Refresh {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::baca::api::baca_service::MockBacaApi;
+    use crate::baca::api::baca_api::MockBacaApi;
     use crate::workspace::{InstanceData, MockWorkspace};
 
-    fn make_mock_instance() -> InstanceData {
-        InstanceData {
-            host: "host".to_string(),
-            login: "login".to_string(),
-            password: "pass".to_string(),
-            permutation: "perm".to_string(),
-            cookie: "invalid".to_string(),
-        }
-    }
-
     #[test]
-    #[serial]
     fn refresh_success_test() {
         let mut mock_workspace = MockWorkspace::new();
         mock_workspace
             .expect_read_instance()
-            .returning(|| Ok(make_mock_instance()));
+            .returning(|| Ok(InstanceData::default()));
         mock_workspace
             .expect_save_instance()
             .once()
             .withf(|x| {
-                let mut expected = make_mock_instance();
+                let mut expected = InstanceData::default();
                 expected.cookie = "ok_cookie".to_string();
 
                 *x == expected
             })
             .returning(|_| Ok(()));
 
-        let ctx_api = MockBacaApi::get_cookie_context();
-        ctx_api
-            .expect()
-            .withf(|x| *x == make_mock_instance())
+        let mut mock_api = MockBacaApi::new();
+        mock_api
+            .expect_get_cookie()
+            .withf(|x| *x == InstanceData::default())
             .returning(|_| Ok("ok_cookie".to_string()));
 
         let refresh = Refresh::new();
-        let result = refresh.execute::<MockWorkspace, MockBacaApi>(&mock_workspace);
+        let result = refresh.execute(&mock_workspace, &mock_api);
         assert!(result.is_ok())
     }
 }

@@ -1,3 +1,4 @@
+pub mod baca_api;
 pub mod baca_service;
 mod request;
 mod request_type;

@@ -1,4 +1,4 @@
-use crate::baca::api::baca_service::BacaApi;
+use crate::baca::api::baca_api::BacaApi;
 use crate::command::Command;
 use crate::error::Result;
 use crate::model;
@@ -14,10 +14,14 @@ impl Tasks {
 }
 
 impl Command for Tasks {
-    fn execute<W: Workspace, A: BacaApi>(self, workspace: &W) -> Result<()> {
+    fn execute<W, A>(self, workspace: &W, api: &A) -> Result<()>
+    where
+        W: Workspace,
+        A: BacaApi,
+    {
         info!("Getting all tasks.");
         let instance = workspace.read_instance()?;
-        let tasks = A::get_tasks(&instance)?;
+        let tasks = api.get_tasks(&instance)?;
         let tasks = model::Tasks::parse(&tasks);
 
         tasks.print();
@@ -28,37 +32,25 @@ impl Command for Tasks {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::baca::api::baca_service::MockBacaApi;
+    use crate::baca::api::baca_api::MockBacaApi;
     use crate::workspace::{InstanceData, MockWorkspace};
 
-    // todo: tests::utils
-    fn make_mock_instance() -> InstanceData {
-        InstanceData {
-            host: "host".to_string(),
-            login: "login".to_string(),
-            password: "pass".to_string(),
-            permutation: "perm".to_string(),
-            cookie: "invalid".to_string(),
-        }
-    }
-
     #[test]
-    #[serial]
     fn success_test() {
         let mut mock_workspace = MockWorkspace::new();
         mock_workspace
             .expect_read_instance()
-            .returning(|| Ok(make_mock_instance()));
+            .returning(|| Ok(InstanceData::default()));
 
-        let ctx_api = MockBacaApi::get_tasks_context();
-        ctx_api
-            .expect()
+        let mut mock_api = MockBacaApi::new();
+        mock_api
+            .expect_get_tasks()
             .once()
-            .withf(|x| *x == make_mock_instance())
+            .withf(|x| *x == InstanceData::default())
             .returning(|_| Ok(r#"//OK[0,12,11,10,3,3,9,8,7,3,3,6,5,4,3,3,2,2,1,["testerka.gwt.client.tools.DataSource/1474249525","[[Ljava.lang.String;/4182515373","[Ljava.lang.String;/2600011424","1","Metoda parametryzacji","12","2","Metoda parametryzacji torusów","4","id","nazwa","liczba OK"],0,7]"#.to_string()));
 
         let tasks = Tasks::new();
-        let result = tasks.execute::<MockWorkspace, MockBacaApi>(&mock_workspace);
+        let result = tasks.execute(&mock_workspace, &mock_api);
         assert!(result.is_ok())
     }
 }

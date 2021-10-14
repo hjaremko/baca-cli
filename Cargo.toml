@@ -21,7 +21,6 @@ time = { version = "0.3.1", features = ["serde"] }
 
 [dev-dependencies]
 mockall = "0.10.2"
-serial_test = "0.5.1"
 assert_cmd = "2.0.0"
 predicates = "2.0.1"
 assert_fs = "1.0.3"

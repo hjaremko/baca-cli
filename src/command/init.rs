@@ -1,4 +1,4 @@
-use crate::baca::api::baca_service::BacaApi;
+use crate::baca::api::baca_api::BacaApi;
 use crate::command::Command;
 use crate::workspace::Workspace;
 use crate::{baca, error, workspace};
@@ -86,7 +86,11 @@ impl Init {
 
 impl Command for Init {
     // todo: -r to override current config
-    fn execute<W: Workspace, A: BacaApi>(self, workspace: &W) -> error::Result<()> {
+    fn execute<W, A>(self, workspace: &W, api: &A) -> error::Result<()>
+    where
+        W: Workspace,
+        A: BacaApi,
+    {
         info!("Initializing Baca workspace.");
 
         let host = self.get_host()?;
@@ -116,7 +120,7 @@ impl Command for Init {
         };
 
         workspace.initialize().map_err(cleanup_directory)?;
-        instance.cookie = A::get_cookie(&instance).map_err(cleanup_directory)?;
+        instance.cookie = api.get_cookie(&instance).map_err(cleanup_directory)?;
         workspace
             .save_instance(&instance)
             .map_err(cleanup_directory)
@@ -126,7 +130,7 @@ impl Command for Init {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::baca::api::baca_service::MockBacaApi;
+    use crate::baca::api::baca_api::MockBacaApi;
     use crate::workspace::{InstanceData, MockWorkspace};
 
     // todo: tests::utils
@@ -172,7 +176,6 @@ mod tests {
     }
 
     #[test]
-    #[serial]
     fn success_test() {
         let mut mock_workspace = MockWorkspace::new();
         mock_workspace
@@ -190,9 +193,9 @@ mod tests {
             })
             .returning(|_| Ok(()));
 
-        let ctx_api = MockBacaApi::get_cookie_context();
-        ctx_api
-            .expect()
+        let mut mock_api = MockBacaApi::new();
+        mock_api
+            .expect_get_cookie()
             .withf(|x| *x == make_mock_instance())
             .returning(|_| Ok("ok_cookie".to_string()));
 
@@ -204,12 +207,11 @@ mod tests {
             password_prompt: Box::new(Password {}),
             host_prompt: Box::new(Input("Host")),
         };
-        let result = init.execute::<MockWorkspace, MockBacaApi>(&mock_workspace);
+        let result = init.execute(&mock_workspace, &mock_api);
         assert!(result.is_ok())
     }
 
     #[test]
-    #[serial]
     fn no_provided_login_should_invoke_prompt() {
         let login_prompt_mock = make_prompt_mock("prompt_login");
         let password_prompt_mock = make_never_called_prompt_mock();
@@ -229,9 +231,9 @@ mod tests {
             .withf(move |x| *x == expected_config)
             .returning(|_| Ok(()));
 
-        let ctx_api = MockBacaApi::get_cookie_context();
-        ctx_api
-            .expect()
+        let mut mock_api = MockBacaApi::new();
+        mock_api
+            .expect_get_cookie()
             .returning(move |_| Ok(expected_cookie.clone()));
 
         let init = Init {
@@ -243,12 +245,11 @@ mod tests {
             host_prompt: Box::new(host_prompt_mock),
         };
 
-        let result = init.execute::<MockWorkspace, MockBacaApi>(&mock_workspace);
+        let result = init.execute(&mock_workspace, &mock_api);
         assert!(result.is_ok())
     }
 
     #[test]
-    #[serial]
     fn no_provided_password_should_invoke_prompt() {
         let login_prompt_mock = make_never_called_prompt_mock();
         let password_prompt_mock = make_prompt_mock("prompt_password");
@@ -267,9 +268,9 @@ mod tests {
             .withf(move |x| *x == expected_config)
             .returning(|_| Ok(()));
 
-        let ctx_api = MockBacaApi::get_cookie_context();
-        ctx_api
-            .expect()
+        let mut mock_api = MockBacaApi::new();
+        mock_api
+            .expect_get_cookie()
             .returning(move |_| Ok(expected_cookie.clone()));
 
         let init = Init {
@@ -281,12 +282,11 @@ mod tests {
             host_prompt: Box::new(host_prompt_mock),
         };
 
-        let result = init.execute::<MockWorkspace, MockBacaApi>(&mock_workspace);
+        let result = init.execute(&mock_workspace, &mock_api);
         assert!(result.is_ok())
     }
 
     #[test]
-    #[serial]
     fn no_provided_login_and_password_should_invoke_prompt() {
         let login_prompt_mock = make_prompt_mock("prompt_login");
         let password_prompt_mock = make_prompt_mock("prompt_password");
@@ -305,9 +305,9 @@ mod tests {
             .withf(move |x| *x == expected_config)
             .returning(|_| Ok(()));
 
-        let ctx_api = MockBacaApi::get_cookie_context();
-        ctx_api
-            .expect()
+        let mut mock_api = MockBacaApi::new();
+        mock_api
+            .expect_get_cookie()
             .returning(move |_| Ok(expected_cookie.clone()));
 
         let init = Init {
@@ -319,12 +319,11 @@ mod tests {
             host_prompt: Box::new(host_prompt_mock),
         };
 
-        let result = init.execute::<MockWorkspace, MockBacaApi>(&mock_workspace);
+        let result = init.execute(&mock_workspace, &mock_api);
         assert!(result.is_ok())
     }
 
     #[test]
-    #[serial]
     fn no_provided_host_should_invoke_prompt() {
         let input_prompt_mock = make_never_called_prompt_mock();
         let password_prompt_mock = make_never_called_prompt_mock();
@@ -343,9 +342,9 @@ mod tests {
             .withf(move |x| *x == expected_config)
             .returning(|_| Ok(()));
 
-        let ctx_api = MockBacaApi::get_cookie_context();
-        ctx_api
-            .expect()
+        let mut mock_api = MockBacaApi::new();
+        mock_api
+            .expect_get_cookie()
             .returning(move |_| Ok(expected_cookie.clone()));
 
         let init = Init {
@@ -357,7 +356,7 @@ mod tests {
             host_prompt: Box::new(host_prompt_mock),
         };
 
-        let result = init.execute::<MockWorkspace, MockBacaApi>(&mock_workspace);
+        let result = init.execute(&mock_workspace, &mock_api);
         assert!(result.is_ok())
     }
 }

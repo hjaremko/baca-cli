@@ -1,34 +1,30 @@
+use reqwest::blocking::Response;
+use tracing::debug;
+
+use crate::baca::api::baca_api::BacaApi;
 use crate::baca::api::Request;
 use crate::baca::details::EMPTY_RESPONSE;
 use crate::error::{Error, Result};
 use crate::model::Task;
 use crate::workspace::InstanceData;
-use reqwest::blocking::Response;
-use tracing::debug;
-
-#[cfg(test)]
-use mockall::{automock, predicate::*};
-
-#[cfg_attr(test, automock)]
-pub trait BacaApi {
-    fn get_cookie(instance: &InstanceData) -> Result<String>;
-    fn get_submit_details(instance: &InstanceData, submit_id: &str) -> Result<String>;
-    fn get_results(instance: &InstanceData) -> Result<String>;
-    fn get_tasks(instance: &InstanceData) -> Result<String>;
-    fn submit(instance: &InstanceData, task: &Task, file_path: &str) -> Result<()>;
-}
 
 pub struct BacaService {}
 
+impl Default for BacaService {
+    fn default() -> Self {
+        Self {}
+    }
+}
+
 impl BacaApi for BacaService {
-    fn get_cookie(instance: &InstanceData) -> Result<String> {
+    fn get_cookie(&self, instance: &InstanceData) -> Result<String> {
         let login_response = Request::new(instance).login()?;
         log_response_details(&login_response);
         check_response_status(&login_response)?;
         extract_cookie(&login_response)
     }
 
-    fn get_submit_details(instance: &InstanceData, submit_id: &str) -> Result<String> {
+    fn get_submit_details(&self, instance: &InstanceData, submit_id: &str) -> Result<String> {
         let resp = Request::new(instance).details(submit_id)?;
         check_response_status(&resp)?;
         let resp = resp.text()?;
@@ -41,7 +37,7 @@ impl BacaApi for BacaService {
         check_for_empty_response(resp)
     }
 
-    fn get_results(instance: &InstanceData) -> Result<String> {
+    fn get_results(&self, instance: &InstanceData) -> Result<String> {
         let resp = Request::new(instance).results()?;
         check_response_status(&resp)?;
         let resp = resp.text().expect("Invalid submit data");
@@ -50,7 +46,7 @@ impl BacaApi for BacaService {
         check_for_empty_response(resp)
     }
 
-    fn get_tasks(instance: &InstanceData) -> Result<String> {
+    fn get_tasks(&self, instance: &InstanceData) -> Result<String> {
         let resp = Request::new(instance).tasks()?;
         check_response_status(&resp)?;
 
@@ -60,7 +56,7 @@ impl BacaApi for BacaService {
         check_for_empty_response(resp)
     }
 
-    fn submit(instance: &InstanceData, task: &Task, file_path: &str) -> Result<()> {
+    fn submit(&self, instance: &InstanceData, task: &Task, file_path: &str) -> Result<()> {
         debug!("{:?}", task);
         let resp = Request::new(instance).submit(task, file_path)?;
         let resp = resp.text()?;
@@ -161,7 +157,8 @@ mod tests {
     #[test]
     fn get_cookie_on_correct_host_should_fail_login() {
         let baca = make_correct_baca_invalid_session();
-        let result = BacaService::get_cookie(&baca);
+        let api = BacaService::default();
+        let result = api.get_cookie(&baca);
 
         check_invalid_login(result)
     }
@@ -169,7 +166,8 @@ mod tests {
     #[test]
     fn get_cookie_on_incorrect_host_should_fail() {
         let baca = make_incorrect_baca();
-        let result = BacaService::get_cookie(&baca);
+        let api = BacaService::default();
+        let result = api.get_cookie(&baca);
 
         check_invalid_host(result);
     }
@@ -177,7 +175,8 @@ mod tests {
     #[test]
     fn get_task_on_correct_host_should_succeed() {
         let baca = make_correct_baca_invalid_session();
-        let result = BacaService::get_tasks(&baca);
+        let api = BacaService::default();
+        let result = api.get_tasks(&baca);
 
         let expected = r#"//OK[0,41,40,39,3,3,7,38,37,3,3,10,36,35,3,3,4,34,33,3,3,7,32,31,3,3,4,30,29,3,3,7,28,27,3,3,4,26,25,3,3,24,23,22,3,3,21,20,19,3,3,18,17,16,3,3,15,14,13,3,3,12,11,10,3,3,9,8,7,3,3,6,5,4,3,3,14,2,1,["testerka.gwt.client.tools.DataSource/1474249525","[[Ljava.lang.String;/4182515373","[Ljava.lang.String;/2600011424","1","[A] Zera funkcji","69","2","[B] Metoda Newtona","58","3","[C] FAD\x3Csup\x3E2\x3C/sup\x3E - Pochodne mieszane","62","4","[D] Skalowany Gauss","52","5","[E] Metoda SOR","64","6","[F] Interpolacja","63","7","[G] Funkcje sklejane","59","8","A2","9","B2","10","C2","11","D2","12","E2","13","F2","14","G2","id","nazwa","liczba OK"],0,7]"#;
         check_result(result, expected);
@@ -186,7 +185,8 @@ mod tests {
     #[test]
     fn get_task_on_incorrect_host_should_fail() {
         let baca = make_incorrect_baca();
-        let result = BacaService::get_tasks(&baca);
+        let api = BacaService::default();
+        let result = api.get_tasks(&baca);
 
         check_invalid_host(result);
     }
@@ -194,7 +194,8 @@ mod tests {
     #[test]
     fn get_details_on_incorrect_host_should_fail() {
         let baca = make_incorrect_baca();
-        let result = BacaService::get_submit_details(&baca, "123");
+        let api = BacaService::default();
+        let result = api.get_submit_details(&baca, "123");
 
         check_invalid_host(result);
     }
@@ -202,7 +203,8 @@ mod tests {
     #[test]
     fn get_details_on_incorrect_session_should_fail() {
         let baca = make_correct_baca_invalid_session();
-        let result = BacaService::get_submit_details(&baca, "123");
+        let api = BacaService::default();
+        let result = api.get_submit_details(&baca, "123");
 
         check_logged_out(result);
     }
@@ -210,7 +212,8 @@ mod tests {
     #[test]
     fn get_results_on_incorrect_host_should_fail() {
         let baca = make_incorrect_baca();
-        let result = BacaService::get_results(&baca);
+        let api = BacaService::default();
+        let result = api.get_results(&baca);
 
         check_invalid_host(result);
     }
@@ -218,7 +221,8 @@ mod tests {
     #[test]
     fn get_results_on_incorrect_session_should_fail() {
         let baca = make_correct_baca_invalid_session();
-        let result = BacaService::get_results(&baca);
+        let api = BacaService::default();
+        let result = api.get_results(&baca);
 
         check_logged_out(result);
     }
