@@ -1,10 +1,6 @@
 #[macro_use]
 extern crate clap;
 
-#[cfg(test)]
-#[macro_use]
-extern crate serial_test;
-
 use crate::baca::api::baca_service::BacaService;
 use crate::update::{GithubReleases, UpdateCheckTimestamp, UpdateChecker, UpdateStatus};
 
@@ -30,14 +26,13 @@ fn main() {
         .setting(AppSettings::ArgRequiredElseHelp);
     let matches = app.get_matches();
     let workspace = WorkspaceDir::new();
+    let baca_api = BacaService::default();
 
     set_logging_level(&matches);
     check_for_updates(&workspace, &matches);
 
     if let (command, Some(sub_matches)) = matches.subcommand() {
-        if let Err(e) =
-            command::execute::<WorkspaceDir, BacaService>(&workspace, command, sub_matches)
-        {
+        if let Err(e) = command::execute(&workspace, &baca_api, command, sub_matches) {
             println!("{}", format!("{}", e).bright_red());
         }
     }

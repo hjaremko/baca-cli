@@ -1,9 +1,11 @@
-use crate::baca::api::baca_service::BacaApi;
+use crate::baca::api::baca_api::BacaApi;
 use crate::command::details::Details;
 use crate::command::init::Init;
 use crate::command::last::Last;
 use crate::command::log::Log;
 use crate::command::refresh::Refresh;
+use crate::command::submit::Submit;
+use crate::command::tasks::Tasks;
 use crate::error;
 use crate::workspace::Workspace;
 use clap::ArgMatches;
@@ -17,22 +19,27 @@ mod submit;
 mod tasks;
 
 trait Command {
-    fn execute<W: Workspace, A: BacaApi>(self, workspace: &W) -> error::Result<()>;
+    fn execute<W: Workspace, A: BacaApi>(self, workspace: &W, api: &A) -> error::Result<()>;
 }
 
-pub fn execute<W, Api>(workspace: &W, command: &str, matches: &ArgMatches) -> error::Result<()>
+pub fn execute<W, Api>(
+    workspace: &W,
+    api: &Api,
+    command: &str,
+    matches: &ArgMatches,
+) -> error::Result<()>
 where
     W: Workspace,
     Api: BacaApi,
 {
     match command {
-        "init" => Init::from(matches).execute::<W, Api>(workspace),
-        "details" => Details::from(matches).execute::<W, Api>(workspace),
-        "refresh" => Refresh::new().execute::<W, Api>(workspace),
-        "log" => Log::from(matches).execute::<W, Api>(workspace),
-        "tasks" => tasks::Tasks::new().execute::<W, Api>(workspace),
-        "submit" => submit::Submit::from(matches).execute::<W, Api>(workspace),
-        "last" => Last::new().execute::<W, Api>(workspace),
+        "init" => Init::from(matches).execute(workspace, api),
+        "details" => Details::from(matches).execute(workspace, api),
+        "refresh" => Refresh::new().execute(workspace, api),
+        "log" => Log::from(matches).execute(workspace, api),
+        "tasks" => Tasks::new().execute(workspace, api),
+        "submit" => Submit::from(matches).execute(workspace, api),
+        "last" => Last::new().execute(workspace, api),
         _ => panic!("error!"),
     }
 }
