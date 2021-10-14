@@ -96,14 +96,14 @@ Submitting hello.cpp to task [E] Metoda SOR (C++ with file support).
 
 #### Saving task info
 
-If you don't want to type task info (id and filename) every time you submit, you can use `--default` flag to save it.
-Keep in mind, that config provided though parameters will override saved data. To completely remove saved data
-use `baca submit clear`.
+If you don't want to type task info (id and filename) every time you submit, you can use `--save` flag to save it.
+Keep in mind, that config provided through parameters will override saved data. To completely remove saved data
+use `baca submit clear`. To disable automatic prompt for save, use `--no-save`.
 
 Example:
 
 ```
-> baca submit -f hello.cpp -t 5 --default
+> baca submit -f hello.cpp -t 5 --save
 Submitting hello.cpp to task [E] Metoda SOR.
 > baca submit
 Submitting hello.cpp to task [E] Metoda SOR.

@@ -26,7 +26,16 @@ fn not_initialized() {
     let (dir, mut cmd) = set_up_with_dir().unwrap();
     make_input_file_cpp(&dir).unwrap();
 
-    cmd.args(&["submit", "-t", "1", "-l", "C++", "-f", "source.cpp"]);
+    cmd.args(&[
+        "submit",
+        "-t",
+        "1",
+        "-l",
+        "C++",
+        "-f",
+        "source.cpp",
+        "--no-save",
+    ]);
     cmd.assert()
         .stdout(predicate::str::contains("not initialized"));
 
@@ -47,6 +56,7 @@ fn inactive_task_should_report_error() -> Result<(), Box<dyn std::error::Error>>
         "C++",
         "-f",
         input_file.path().to_str().unwrap(),
+        "--no-save",
     ]);
 
     cmd.assert()
@@ -135,7 +145,16 @@ fn invalid_task_should_report_error() -> Result<(), Box<dyn std::error::Error>> 
     let mut cmd = set_up_command(&dir)?;
     make_input_file_dummy(&dir).unwrap();
 
-    cmd.args(&["submit", "-f", "dummy.txt", "-t", "2123123", "-l", "C++"]);
+    cmd.args(&[
+        "submit",
+        "-f",
+        "dummy.txt",
+        "-t",
+        "2123123",
+        "-l",
+        "C++",
+        "--no-save",
+    ]);
 
     cmd.assert()
         .stdout(predicate::str::contains("Task no. 2123123 does not exist"));
@@ -159,6 +178,7 @@ fn zip_should_zip() -> Result<(), Box<dyn std::error::Error>> {
         "-f",
         input_file.path().to_str().unwrap(),
         "--zip",
+        "--no-save",
     ]);
 
     cmd.assert()
@@ -182,7 +202,7 @@ fn default_option_should_save_task() -> Result<(), Box<dyn std::error::Error>> {
         "2",
         "-l",
         "Java",
-        "--default",
+        "--save",
     ]);
 
     cmd.assert()
@@ -217,7 +237,7 @@ fn saved_task_should_be_used() -> Result<(), Box<dyn std::error::Error>> {
         "2",
         "-l",
         "Java",
-        "--default",
+        "--save",
     ]);
     cmd.assert();
 
@@ -247,12 +267,12 @@ fn cmd_options_should_override_saved_task() -> Result<(), Box<dyn std::error::Er
         "2",
         "-l",
         "Java",
-        "--default",
+        "--save",
     ]);
     cmd.assert();
 
     let mut cmd = set_up_command(&dir)?;
-    cmd.args(&["submit", "-f", "source.cpp", "-l", "C++"]);
+    cmd.args(&["submit", "-f", "source.cpp", "-l", "C++", "--no-save"]);
     cmd.assert()
         .stdout(predicate::str::contains("Submitting source.cpp"))
         .stdout(predicate::str::contains("C++"))
@@ -276,7 +296,7 @@ fn clear_should_remove_saved_task() -> Result<(), Box<dyn std::error::Error>> {
         "2",
         "-l",
         "Java",
-        "--default",
+        "--save",
     ]);
     cmd.assert();
 
@@ -319,7 +339,7 @@ fn given_just_filename_absolute_path_should_be_saved() -> Result<(), Box<dyn std
         "C++",
         "-f",
         "source.cpp",
-        "--default",
+        "--save",
     ]);
 
     cmd.assert().stdout(predicate::str::contains("source.cpp"));
@@ -349,7 +369,7 @@ fn given_absolute_path_should_be_saved() -> Result<(), Box<dyn std::error::Error
         "C++",
         "-f",
         input_file.path().to_str().unwrap(),
-        "--default",
+        "--save",
     ]);
 
     cmd.assert();
@@ -384,7 +404,7 @@ fn given_relative_path_absolute_should_be_saved() -> Result<(), Box<dyn std::err
         "C++",
         "-f",
         "./test_nested_dir/source.cpp",
-        "--default",
+        "--save",
     ]);
 
     cmd.assert().stdout(predicate::str::contains("source.cpp"));
@@ -416,6 +436,7 @@ fn when_rename_option_then_submit_renamed_file() -> Result<(), Box<dyn std::erro
         input_file.path().to_str().unwrap(),
         "--rename",
         "hello.cxx",
+        "--no-save",
     ]);
 
     cmd.assert()
@@ -442,6 +463,7 @@ fn when_rename_as_same_name_then_do_not_rename() -> Result<(), Box<dyn std::erro
         input_file.path().to_str().unwrap(),
         "--rename",
         "source.cpp",
+        "--no-save",
     ]);
 
     cmd.assert()
@@ -469,6 +491,7 @@ fn when_zipping_renamed_then_zip_renamed() -> Result<(), Box<dyn std::error::Err
         "--rename",
         "rename.haa",
         "--zip",
+        "--no-save",
     ]);
 
     cmd.assert()
@@ -477,6 +500,34 @@ fn when_zipping_renamed_then_zip_renamed() -> Result<(), Box<dyn std::error::Err
         ))
         .stdout(predicate::str::contains("Zipping rename.haa"))
         .stdout(predicate::str::contains("Is the task still active?"));
+
+    dir.close()?;
+    Ok(())
+}
+
+#[test]
+fn given_already_saved_when_submit_then_do_not_ask_for_save(
+) -> Result<(), Box<dyn std::error::Error>> {
+    let dir = initialize_correct_workspace()?;
+    let mut cmd = set_up_command(&dir)?;
+    let input_file = make_input_file_cpp(&dir)?;
+
+    cmd.args(&[
+        "submit",
+        "-t",
+        "1",
+        "-l",
+        "C++",
+        "-f",
+        input_file.path().to_str().unwrap(),
+        "--save",
+    ]);
+    cmd.assert();
+
+    let mut cmd = set_up_command(&dir)?;
+    cmd.args(&["submit"]);
+    cmd.assert()
+        .stdout(predicate::str::contains("Save submit configuration? [Y/n]").not());
 
     dir.close()?;
     Ok(())
