@@ -10,6 +10,7 @@ use clap::ArgMatches;
 use colored::Colorize;
 use std::fs;
 
+use dialoguer::Confirm;
 use std::path::PathBuf;
 
 pub struct Submit<'a> {
@@ -50,28 +51,43 @@ impl Command for Submit<'_> {
             return Ok(());
         }
 
+        let mut ask_for_save = saved_task_config.is_err();
         let mut task_config = saved_task_config.unwrap_or_default();
 
         if let Some(id) = provided_task_id {
             task_config.id = id.to_string();
+            ask_for_save = true;
         }
 
         if let Some(file) = provided_file_path {
             task_config.file = PathBuf::from(file).canonicalize()?;
+            ask_for_save = true;
         }
 
         if let Some(lang) = provided_lang {
             task_config.language = lang.parse()?;
+            ask_for_save = true;
         }
 
         if let Some(new_name) = provided_rename {
             task_config.rename_as = Some(new_name.to_string());
+            ask_for_save = true;
         }
 
         task_config.to_zip |= provided_to_zip;
+        ask_for_save |= provided_to_zip;
 
-        if self.args.is_present("default") {
+        if self.args.is_present("save") {
             workspace.save_task(&task_config)?;
+        } else if !self.args.is_present("no_save") && ask_for_save {
+            let proceed = Confirm::new()
+                .with_prompt("Save submit configuration?")
+                .default(true)
+                .interact()?;
+
+            if proceed {
+                workspace.save_task(&task_config)?;
+            }
         }
 
         submit::<W, A>(workspace, task_config)

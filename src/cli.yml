@@ -72,9 +72,13 @@ subcommands:
             short: l
             help: Task language. Please type exacly as it is displayed on Baca.
             takes_value: true
-        - default:
-            long: default
+        - save:
+            long: save
+            short: s
             help: Saves task config, if provided, future 'submit' calls won't require providing task config
+        - no_save:
+            long: no-save
+            help: Does not ask for save
         - rename:
             long: rename
             short: r
