@@ -2,18 +2,16 @@ mod instance_data;
 mod task_config;
 mod zip;
 
+pub use self::instance_data::InstanceData;
+pub use self::task_config::TaskConfig;
+pub use self::zip::zip_file;
+use crate::error::Error;
+use crate::error::Result;
 use serde::Serialize;
 use std::fs::DirBuilder;
 use std::io::ErrorKind;
 use std::{fs, io};
 use tracing::{debug, info};
-
-pub use self::instance_data::InstanceData;
-pub use self::task_config::TaskConfig;
-pub use self::zip::zip_file;
-
-use crate::error::Error;
-use crate::error::Result;
 
 // todo: walk up dir tree until found
 #[derive(Clone)]
@@ -251,7 +249,7 @@ fn as_task_write_error(e: io::Error) -> Error {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::baca::details::Language;
+    use crate::model::Language;
     use assert_fs::fixture::ChildPath;
     use assert_fs::prelude::*;
     use assert_fs::TempDir;

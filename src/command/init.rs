@@ -1,12 +1,13 @@
-use crate::baca::api::baca_api::BacaApi;
+use crate::api;
+use crate::api::baca_api::BacaApi;
 use crate::command::Command;
 use crate::workspace::Workspace;
-use crate::{baca, error, workspace};
+use crate::{error, workspace};
 use clap::ArgMatches;
-use tracing::{debug, info};
-
 #[cfg(test)]
 use mockall::{automock, predicate::*};
+use tracing::{debug, info};
+
 #[cfg_attr(test, automock)]
 trait Prompt {
     fn interact(&self) -> error::Result<String>;
@@ -105,7 +106,7 @@ impl Command for Init {
             host,
             login,
             password,
-            permutation: baca::details::permutation(),
+            permutation: api::details::permutation(),
             cookie: "".to_string(),
         };
 
@@ -129,9 +130,11 @@ impl Command for Init {
 
 #[cfg(test)]
 mod tests {
-    use super::*;
-    use crate::baca::api::baca_api::MockBacaApi;
+    use crate::api;
+    use crate::api::baca_api::MockBacaApi;
     use crate::workspace::{InstanceData, MockWorkspace};
+
+    use super::*;
 
     // todo: tests::utils
     fn make_mock_instance() -> InstanceData {
@@ -139,7 +142,7 @@ mod tests {
             host: "host".to_string(),
             login: "login".to_string(),
             password: "pass".to_string(),
-            permutation: baca::details::permutation(),
+            permutation: api::details::permutation(),
             cookie: "".to_string(),
         }
     }
@@ -170,7 +173,7 @@ mod tests {
             host,
             login,
             password,
-            permutation: baca::details::permutation(),
+            permutation: api::details::permutation(),
             cookie: "ok_cookie".to_string(),
         }
     }

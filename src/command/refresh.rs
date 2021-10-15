@@ -1,4 +1,4 @@
-use crate::baca::api::baca_api::BacaApi;
+use crate::api::baca_api::BacaApi;
 use crate::command::Command;
 use crate::error;
 use crate::workspace::Workspace;
@@ -31,7 +31,7 @@ impl Command for Refresh {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::baca::api::baca_api::MockBacaApi;
+    use crate::api::baca_api::MockBacaApi;
     use crate::workspace::{InstanceData, MockWorkspace};
 
     #[test]

@@ -1,4 +1,4 @@
-use crate::baca::api::baca_api::BacaApi;
+use crate::api::baca_api::BacaApi;
 use crate::command::Command;
 use crate::error::Result;
 use crate::workspace::Workspace;
@@ -30,10 +30,9 @@ impl Command for Tasks {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::baca::api::baca_api::MockBacaApi;
-    use crate::baca::details::Language;
+    use crate::api::baca_api::MockBacaApi;
     use crate::model;
-    use crate::model::Task;
+    use crate::model::{Language, Task};
     use crate::workspace::{InstanceData, MockWorkspace};
 
     #[test]

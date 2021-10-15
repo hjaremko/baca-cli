@@ -1,4 +1,4 @@
-use crate::baca::details::Language;
+use crate::model::Language;
 
 #[derive(Debug, Clone, PartialEq)]
 pub struct Task {

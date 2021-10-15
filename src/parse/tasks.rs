@@ -1,5 +1,4 @@
-use crate::baca::details::Language;
-use crate::model::{Task, Tasks};
+use crate::model::{Language, Task, Tasks};
 use crate::parse::deserialize;
 use std::str::FromStr;
 use tracing::debug;
@@ -34,7 +33,7 @@ impl FromStr for Tasks {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::baca::details::language::Language::Unsupported;
+    use crate::model::Language::Unsupported;
 
     #[test]
     fn real_data() {
@@ -50,7 +49,7 @@ mod tests {
 
     #[test]
     fn empty_data() {
-        let raw_data = crate::baca::details::EMPTY_RESPONSE;
+        let raw_data = crate::api::details::EMPTY_RESPONSE;
         let actual = raw_data.parse::<Tasks>().unwrap();
         let expected = Tasks::new(Vec::new());
 

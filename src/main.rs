@@ -1,16 +1,15 @@
 #[macro_use]
 extern crate clap;
 
-use crate::baca::api::baca_service::BacaService;
 use crate::update::{GithubReleases, UpdateCheckTimestamp, UpdateChecker, UpdateStatus};
-
 use crate::workspace::WorkspaceDir;
+use api::baca_service::BacaService;
 use clap::{App, AppSettings, ArgMatches};
 use colored::Colorize;
 use std::env;
 use tracing::{error, info, warn, Level};
 
-mod baca;
+mod api;
 mod command;
 mod error;
 mod log;
