@@ -2,7 +2,7 @@ use crate::model::submit_status::SubmitStatus;
 use crate::model::TestResults;
 use colored::*;
 
-#[derive(Debug, PartialEq)]
+#[derive(Debug, PartialEq, Clone)]
 pub struct Submit {
     // problem: Problem,
     pub status: SubmitStatus,

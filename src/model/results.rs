@@ -1,6 +1,6 @@
 use crate::model::Submit;
 
-#[derive(Debug, PartialEq)]
+#[derive(Debug, PartialEq, Clone)]
 pub struct Results {
     pub submits: Vec<Submit>,
 }

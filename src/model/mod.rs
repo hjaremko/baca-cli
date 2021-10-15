@@ -8,8 +8,10 @@ mod submit;
 pub use self::submit::Submit;
 
 mod tasks;
-pub use self::tasks::Task;
 pub use self::tasks::Tasks;
+
+mod task;
+pub use self::task::Task;
 
 mod test_results;
 pub use self::test_results::TestResults;

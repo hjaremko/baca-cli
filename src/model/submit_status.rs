@@ -1,6 +1,6 @@
 use std::str::FromStr;
 
-#[derive(Debug, PartialEq)]
+#[derive(Debug, PartialEq, Clone)]
 pub enum SubmitStatus {
     Ok,
     InQueue,

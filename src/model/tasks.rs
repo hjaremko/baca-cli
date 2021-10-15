@@ -1,9 +1,10 @@
-use crate::baca::details::Language;
 use crate::error::Error;
+use crate::model::Task;
 use colored::Colorize;
 
+#[derive(Debug, PartialEq)]
 pub struct Tasks {
-    tasks: Vec<Task>,
+    pub tasks: Vec<Task>,
 }
 
 impl Tasks {
@@ -28,13 +29,4 @@ impl Tasks {
             .find(|x| x.id == task_id)
             .ok_or_else(|| Error::InvalidTaskId(task_id.to_string()))
     }
-}
-
-// todo: fetch all data
-#[derive(Debug, Clone)]
-pub struct Task {
-    pub id: String,
-    pub language: Language,
-    pub problem_name: String,
-    pub overall_oks: i32,
 }

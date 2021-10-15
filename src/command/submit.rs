@@ -1,9 +1,7 @@
 use crate::baca::api::baca_api::BacaApi;
-
 use crate::command::log::Log;
 use crate::command::Command;
 use crate::error::Result;
-use crate::model::Tasks;
 use crate::workspace::{TaskConfig, Workspace};
 use crate::{error, workspace};
 use clap::ArgMatches;
@@ -116,7 +114,6 @@ where
 {
     let instance = workspace.read_instance()?;
     let tasks = api.get_tasks(&instance)?;
-    let tasks = Tasks::parse(&tasks); // todo: no tasks yet
     let mut task = tasks.get_by_id(task_config.id.as_str())?.clone();
     task.language = task_config.language;
 
@@ -165,7 +162,9 @@ where
 mod tests {
     use super::*;
     use crate::baca::api::baca_api::MockBacaApi;
-    use crate::baca::details::{Language, EMPTY_RESPONSE};
+    use crate::baca::details::language::Language::Unsupported;
+    use crate::baca::details::Language;
+    use crate::model::{Results, Task, Tasks};
     use crate::workspace::{InstanceData, MockWorkspace};
     use assert_fs::fixture::ChildPath;
     use assert_fs::prelude::*;
@@ -200,12 +199,17 @@ mod tests {
         let mut mock_api = MockBacaApi::new();
         mock_api
             .expect_get_results()
-            .returning(|_| Ok(EMPTY_RESPONSE.to_string()));
+            .returning(|_| Ok(Results { submits: vec![] }));
 
         mock_api
             .expect_get_tasks()
             .withf(|x| *x == InstanceData::default())
-            .returning(|_| Ok(r#"//OK[0,12,11,10,3,3,9,8,7,3,3,6,5,4,3,3,2,2,1,["testerka.gwt.client.tools.DataSource/1474249525","[[Ljava.lang.String;/4182515373","[Ljava.lang.String;/2600011424","1","Metoda parametryzacji","12","2","Metoda parametryzacji torusów","4","id","nazwa","liczba OK"],0,7]"#.to_string()));
+            .returning(|_| {
+                Ok(Tasks::new(vec![
+                    Task::new("1", Unsupported, "Metoda parametryzacji", 12),
+                    Task::new("2", Unsupported, "Metoda parametryzacji torusów", 4),
+                ]))
+            });
 
         let dir = assert_fs::TempDir::new().unwrap();
         let original_input = make_input_file_cpp(&dir);
