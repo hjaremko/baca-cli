@@ -1,9 +1,8 @@
-use crate::baca::details::Language;
+use crate::model::Language;
 use serde::{Deserialize, Serialize};
-use std::path::PathBuf;
-
 #[cfg(test)]
 use std::path::Path;
+use std::path::PathBuf;
 
 #[derive(Debug, Serialize, Deserialize, PartialEq)]
 pub struct TaskConfig {

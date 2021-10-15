@@ -1,4 +1,4 @@
-use crate::baca;
+use crate::api;
 use serde::{Deserialize, Serialize};
 
 #[derive(Serialize, Deserialize, Debug, Clone, PartialEq)]
@@ -16,14 +16,14 @@ impl InstanceData {
     }
 
     pub fn make_url(&self) -> String {
-        format!("https://{}/{}", baca::details::SERVER_URL, self.host)
+        format!("https://{}/{}", api::details::SERVER_URL, self.host)
     }
 
     pub fn make_module_base(&self) -> String {
         format!("{}/testerka_gwt/", self.make_url())
     }
 
-    pub fn make_payload(&self, req_type: &baca::api::RequestType) -> String {
+    pub fn make_payload(&self, req_type: &api::RequestType) -> String {
         use dyn_fmt::AsStrFormatExt;
 
         req_type.payload_template().format(&[

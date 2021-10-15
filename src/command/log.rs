@@ -1,8 +1,7 @@
-use crate::baca::api::baca_api::BacaApi;
+use crate::api::baca_api::BacaApi;
 use crate::command::Command;
 use crate::error::{Error, Result};
 use crate::workspace::Workspace;
-
 use clap::ArgMatches;
 use tracing::info;
 
@@ -53,7 +52,7 @@ fn to_int(n: String) -> Result<usize> {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::baca::api::baca_api::MockBacaApi;
+    use crate::api::baca_api::MockBacaApi;
     use crate::model::Results;
     use crate::workspace::{InstanceData, MockWorkspace};
 

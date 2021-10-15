@@ -1,4 +1,4 @@
-use crate::baca::api::baca_api::BacaApi;
+use crate::api::baca_api::BacaApi;
 use crate::command::log::Log;
 use crate::command::Command;
 use crate::error::Result;
@@ -6,9 +6,8 @@ use crate::workspace::{TaskConfig, Workspace};
 use crate::{error, workspace};
 use clap::ArgMatches;
 use colored::Colorize;
-use std::fs;
-
 use dialoguer::Confirm;
+use std::fs;
 use std::path::PathBuf;
 
 pub struct Submit<'a> {
@@ -161,10 +160,9 @@ where
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::baca::api::baca_api::MockBacaApi;
-    use crate::baca::details::language::Language::Unsupported;
-    use crate::baca::details::Language;
-    use crate::model::{Results, Task, Tasks};
+    use crate::api::baca_api::MockBacaApi;
+    use crate::model::Language::Unsupported;
+    use crate::model::{Language, Results, Task, Tasks};
     use crate::workspace::{InstanceData, MockWorkspace};
     use assert_fs::fixture::ChildPath;
     use assert_fs::prelude::*;

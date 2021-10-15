@@ -1,6 +1,6 @@
-use crate::baca::api::baca_api::BacaApi;
-use crate::baca::api::Request;
-use crate::baca::details::EMPTY_RESPONSE;
+use crate::api::baca_api::BacaApi;
+use crate::api::details::EMPTY_RESPONSE;
+use crate::api::Request;
 use crate::error::{Error, Result};
 use crate::model::{Results, Submit, Task, Tasks};
 use crate::parse::from_baca_output::FromBacaOutput;
@@ -111,8 +111,8 @@ fn check_for_empty_response(resp: String) -> Result<String> {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::baca;
-    use crate::baca::details::language::Language::Unsupported;
+    use crate::api;
+    use crate::model::Language::Unsupported;
     use std::fmt::Debug;
 
     fn make_correct_baca_invalid_session() -> InstanceData {
@@ -120,7 +120,7 @@ mod tests {
             host: "mn2020".to_string(),
             login: "login".to_string(),
             password: "pass".to_string(),
-            permutation: baca::details::permutation(),
+            permutation: api::details::permutation(),
             cookie: "invalid".to_string(),
         }
     }
