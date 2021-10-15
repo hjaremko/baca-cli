@@ -1,12 +1,13 @@
-use reqwest::blocking::Response;
-use tracing::debug;
-
 use crate::baca::api::baca_api::BacaApi;
 use crate::baca::api::Request;
 use crate::baca::details::EMPTY_RESPONSE;
 use crate::error::{Error, Result};
-use crate::model::Task;
+use crate::model::{Results, Submit, Task, Tasks};
+use crate::parse::from_baca_output::FromBacaOutput;
 use crate::workspace::InstanceData;
+use reqwest::blocking::Response;
+use std::str::FromStr;
+use tracing::debug;
 
 pub struct BacaService {}
 
@@ -24,7 +25,7 @@ impl BacaApi for BacaService {
         extract_cookie(&login_response)
     }
 
-    fn get_submit_details(&self, instance: &InstanceData, submit_id: &str) -> Result<String> {
+    fn get_submit_details(&self, instance: &InstanceData, submit_id: &str) -> Result<Submit> {
         let resp = Request::new(instance).details(submit_id)?;
         check_response_status(&resp)?;
         let resp = resp.text()?;
@@ -34,26 +35,29 @@ impl BacaApi for BacaService {
             return Err(Error::InvalidSubmitId);
         }
 
-        check_for_empty_response(resp)
+        Ok(Submit::parse(instance, &check_for_empty_response(resp)?))
     }
 
-    fn get_results(&self, instance: &InstanceData) -> Result<String> {
+    fn get_results(&self, instance: &InstanceData) -> Result<Results> {
         let resp = Request::new(instance).results()?;
         check_response_status(&resp)?;
         let resp = resp.text().expect("Invalid submit data");
         debug!("Received raw results: {}", resp);
 
-        check_for_empty_response(resp)
+        Ok(Results::from_baca_output(
+            instance,
+            &check_for_empty_response(resp)?,
+        ))
     }
 
-    fn get_tasks(&self, instance: &InstanceData) -> Result<String> {
+    fn get_tasks(&self, instance: &InstanceData) -> Result<Tasks> {
         let resp = Request::new(instance).tasks()?;
         check_response_status(&resp)?;
 
         let resp = resp.text().expect("Invalid submit data");
         debug!("Received raw tasks: {}", resp);
 
-        check_for_empty_response(resp)
+        Tasks::from_str(&check_for_empty_response(resp)?)
     }
 
     fn submit(&self, instance: &InstanceData, task: &Task, file_path: &str) -> Result<()> {
@@ -108,6 +112,8 @@ fn check_for_empty_response(resp: String) -> Result<String> {
 mod tests {
     use super::*;
     use crate::baca;
+    use crate::baca::details::language::Language::Unsupported;
+    use std::fmt::Debug;
 
     fn make_correct_baca_invalid_session() -> InstanceData {
         InstanceData {
@@ -129,27 +135,26 @@ mod tests {
         }
     }
 
-    fn check_result(result: Result<String>, expected: &str) {
-        match result {
-            Ok(actual) => assert_eq!(actual, expected),
-            Err(e) => match e {
-                Error::Protocol => {}
-                _ => panic!("Should not fail!"),
-            },
-        }
-    }
-
-    fn check_invalid_host(result: Result<String>) {
+    fn check_invalid_host<T>(result: Result<T>)
+    where
+        T: Debug,
+    {
         let e = result.expect_err("Should fail");
         assert!(matches!(e, Error::InvalidHost));
     }
 
-    fn check_invalid_login(result: Result<String>) {
+    fn check_invalid_login<T>(result: Result<T>)
+    where
+        T: Debug,
+    {
         let e = result.expect_err("Should fail");
         assert!(matches!(e, Error::InvalidLoginOrPassword));
     }
 
-    fn check_logged_out(result: Result<String>) {
+    fn check_logged_out<T>(result: Result<T>)
+    where
+        T: Debug,
+    {
         let e = result.expect_err("Should fail");
         assert!(matches!(e, Error::LoggedOut));
     }
@@ -176,10 +181,31 @@ mod tests {
     fn get_task_on_correct_host_should_succeed() {
         let baca = make_correct_baca_invalid_session();
         let api = BacaService::default();
-        let result = api.get_tasks(&baca);
-
-        let expected = r#"//OK[0,41,40,39,3,3,7,38,37,3,3,10,36,35,3,3,4,34,33,3,3,7,32,31,3,3,4,30,29,3,3,7,28,27,3,3,4,26,25,3,3,24,23,22,3,3,21,20,19,3,3,18,17,16,3,3,15,14,13,3,3,12,11,10,3,3,9,8,7,3,3,6,5,4,3,3,14,2,1,["testerka.gwt.client.tools.DataSource/1474249525","[[Ljava.lang.String;/4182515373","[Ljava.lang.String;/2600011424","1","[A] Zera funkcji","69","2","[B] Metoda Newtona","58","3","[C] FAD\x3Csup\x3E2\x3C/sup\x3E - Pochodne mieszane","62","4","[D] Skalowany Gauss","52","5","[E] Metoda SOR","64","6","[F] Interpolacja","63","7","[G] Funkcje sklejane","59","8","A2","9","B2","10","C2","11","D2","12","E2","13","F2","14","G2","id","nazwa","liczba OK"],0,7]"#;
-        check_result(result, expected);
+        let actual = api.get_tasks(&baca).unwrap();
+        let expected = Tasks {
+            tasks: vec![
+                Task::new("1", Unsupported, "[A] Zera funkcji", 69),
+                Task::new("2", Unsupported, "[B] Metoda Newtona", 58),
+                Task::new(
+                    "3",
+                    Unsupported,
+                    "[C] FAD\\x3Csup\\x3E2\\x3C/sup\\x3E - Pochodne mieszane",
+                    62,
+                ),
+                Task::new("4", Unsupported, "[D] Skalowany Gauss", 52),
+                Task::new("5", Unsupported, "[E] Metoda SOR", 64),
+                Task::new("6", Unsupported, "[F] Interpolacja", 63),
+                Task::new("7", Unsupported, "[G] Funkcje sklejane", 59),
+                Task::new("8", Unsupported, "A2", 1),
+                Task::new("9", Unsupported, "B2", 2),
+                Task::new("10", Unsupported, "C2", 1),
+                Task::new("11", Unsupported, "D2", 2),
+                Task::new("12", Unsupported, "E2", 1),
+                Task::new("13", Unsupported, "F2", 3),
+                Task::new("14", Unsupported, "G2", 2),
+            ],
+        };
+        assert_eq!(actual, expected);
     }
 
     #[test]

@@ -1,7 +1,6 @@
 use crate::baca::api::baca_api::BacaApi;
 use crate::command::Command;
 use crate::error::Result;
-use crate::model;
 use crate::workspace::Workspace;
 use tracing::info;
 
@@ -22,7 +21,6 @@ impl Command for Tasks {
         info!("Getting all tasks.");
         let instance = workspace.read_instance()?;
         let tasks = api.get_tasks(&instance)?;
-        let tasks = model::Tasks::parse(&tasks);
 
         tasks.print();
         Ok(())
@@ -33,6 +31,9 @@ impl Command for Tasks {
 mod tests {
     use super::*;
     use crate::baca::api::baca_api::MockBacaApi;
+    use crate::baca::details::Language;
+    use crate::model;
+    use crate::model::Task;
     use crate::workspace::{InstanceData, MockWorkspace};
 
     #[test]
@@ -47,7 +48,42 @@ mod tests {
             .expect_get_tasks()
             .once()
             .withf(|x| *x == InstanceData::default())
-            .returning(|_| Ok(r#"//OK[0,12,11,10,3,3,9,8,7,3,3,6,5,4,3,3,2,2,1,["testerka.gwt.client.tools.DataSource/1474249525","[[Ljava.lang.String;/4182515373","[Ljava.lang.String;/2600011424","1","Metoda parametryzacji","12","2","Metoda parametryzacji torusów","4","id","nazwa","liczba OK"],0,7]"#.to_string()));
+            .returning(|_| {
+                Ok(model::Tasks {
+                    tasks: vec![
+                        Task {
+                            id: "1".to_string(),
+                            language: Language::Unsupported,
+                            problem_name: "Test 1".to_string(),
+                            overall_oks: 5,
+                        },
+                        Task {
+                            id: "2".to_string(),
+                            language: Language::CppWithFileSupport,
+                            problem_name: "Test 2".to_string(),
+                            overall_oks: 4,
+                        },
+                        Task {
+                            id: "3".to_string(),
+                            language: Language::Cpp,
+                            problem_name: "Test 3".to_string(),
+                            overall_oks: 3,
+                        },
+                        Task {
+                            id: "4".to_string(),
+                            language: Language::Ada,
+                            problem_name: "Test 4".to_string(),
+                            overall_oks: 2,
+                        },
+                        Task {
+                            id: "5".to_string(),
+                            language: Language::Bash,
+                            problem_name: "Test 5".to_string(),
+                            overall_oks: 1,
+                        },
+                    ],
+                })
+            });
 
         let tasks = Tasks::new();
         let result = tasks.execute(&mock_workspace, &mock_api);
