@@ -39,7 +39,7 @@ where
         "log" => Log::from(matches).execute(workspace, api),
         "tasks" => Tasks::new().execute(workspace, api),
         "submit" => Submit::from(matches).execute(workspace, api),
-        "last" => Last::new().execute(workspace, api),
+        "last" => Last::from(matches).execute(workspace, api),
         _ => panic!("error!"),
     }
 }

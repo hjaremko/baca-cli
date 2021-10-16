@@ -112,7 +112,7 @@ Submitting hello.cpp to task [E] Metoda SOR.
 ### Recent submits: `log`
 
 Prints statuses of a couple of recent submits (default 3).
-Parameter `-t <task_id>` lets you print logs for specific task. Task ID is found by `baca tasks`.
+Parameter `-t <task_id>` lets you print logs for specific task. Task ID can be found by `baca tasks`.
 
 ```
 baca log [optional: number] [optional: -t <task_id>]
@@ -139,9 +139,10 @@ Example:
 ### Last submit details: `last`
 
 Prints details of last submit. Requires workspace to be initialized.
+Parameter `-t <task_id>` lets you print logs for specific task. Task ID can be found by `baca tasks`.
 
 ```
-baca last
+baca last [optional: -t <task_id>]
 ```
 
 Example:

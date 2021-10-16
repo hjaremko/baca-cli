@@ -51,7 +51,7 @@ subcommands:
         - task:
             long: task
             short: t
-            help: Print only spiecified task logs
+            help: Print only spiecified task logs, type 'baca tasks' to see what ids are available
             takes_value: true
   - tasks:
       about: Prints available tasks
@@ -95,3 +95,9 @@ subcommands:
             about: Clears saved task config
   - last:
       about: Prints details of the last submit
+      args:
+        - task:
+            long: task
+            short: t
+            help: Print spiecified task logs, type 'baca tasks' to see what ids are available
+            takes_value: true

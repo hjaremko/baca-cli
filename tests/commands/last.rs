@@ -43,3 +43,39 @@ fn on_corrupted_repo_should_report_error() -> Result<(), Box<dyn std::error::Err
     dir.close()?;
     Ok(())
 }
+
+#[test]
+fn filter() -> Result<(), Box<dyn std::error::Error>> {
+    let dir = initialize_correct_workspace()?;
+    let mut cmd = set_up_command(&dir)?;
+
+    cmd.arg("last").arg("-t").arg("1");
+    cmd.assert()
+        .stdout(predicate::str::contains("[A] Zera funkcji"));
+    dir.close()?;
+    Ok(())
+}
+
+#[test]
+fn filter_given_invalid_task_id_should_print_error() -> Result<(), Box<dyn std::error::Error>> {
+    let dir = initialize_correct_workspace()?;
+    let mut cmd = set_up_command(&dir)?;
+
+    cmd.arg("last").arg("-t").arg("1123");
+    cmd.assert()
+        .stdout(predicate::str::contains("1123 does not exist"));
+    dir.close()?;
+    Ok(())
+}
+
+#[test]
+fn filter_given_invalid_argument_should_print_error() -> Result<(), Box<dyn std::error::Error>> {
+    let dir = initialize_correct_workspace()?;
+    let mut cmd = set_up_command(&dir)?;
+
+    cmd.arg("last").arg("-t").arg("asd");
+    cmd.assert()
+        .stdout(predicate::str::contains("asd does not exist"));
+    dir.close()?;
+    Ok(())
+}
