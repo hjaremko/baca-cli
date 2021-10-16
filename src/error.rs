@@ -74,6 +74,13 @@ impl fmt::Display for Error {
 impl From<serde_json::Error> for Error {
     fn from(e: serde_json::Error) -> Self {
         error!("{}", e);
+        Other(e.into())
+    }
+}
+
+impl From<serde_yaml::Error> for Error {
+    fn from(e: serde_yaml::Error) -> Self {
+        error!("{}", e);
         WorkspaceCorrupted
     }
 }

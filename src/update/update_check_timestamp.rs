@@ -44,7 +44,10 @@ impl UpdateCheckTimestamp {
         }
 
         let timestamp = timestamp.unwrap();
-
+        let timestamp = timestamp
+            .chars()
+            .filter(|x| x.is_ascii_digit())
+            .collect::<String>();
         Some(self.clock.datetime_from_timestamp(&timestamp))
     }
 
