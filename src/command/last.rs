@@ -1,29 +1,60 @@
 use crate::api::baca_api::BacaApi;
 use crate::command::details::Details;
 use crate::command::Command;
-use crate::error;
-use crate::error::Error;
-use crate::workspace::Workspace;
+use crate::error::{Error, Result};
+use crate::model::Submit;
+use crate::workspace::{InstanceData, Workspace};
+use clap::ArgMatches;
 
-pub struct Last {}
+pub struct Last {
+    task_id: Option<String>,
+}
 
 impl Last {
     pub fn new() -> Self {
-        Self {}
+        Self { task_id: None }
+    }
+
+    pub fn with_filter(task_id: &str) -> Self {
+        Self {
+            task_id: Some(task_id.to_string()),
+        }
+    }
+
+    fn get_last_submit<A>(&self, instance: &InstanceData, api: &A) -> Result<Submit>
+    where
+        A: BacaApi,
+    {
+        let results = if let Some(task_id) = &self.task_id {
+            api.get_results_by_task(instance, task_id)?
+        } else {
+            api.get_results(instance)?
+        };
+
+        Ok(results.submits.first().ok_or(Error::NoSubmitsYet)?.clone())
     }
 }
 
 impl Command for Last {
-    fn execute<W, A>(self, workspace: &W, api: &A) -> error::Result<()>
+    fn execute<W, A>(self, workspace: &W, api: &A) -> Result<()>
     where
         W: Workspace,
         A: BacaApi,
     {
         let instance = workspace.read_instance()?;
-        let results = api.get_results(&instance)?;
-        let last = results.submits.first().ok_or(Error::NoSubmitsYet)?;
+        let last = self.get_last_submit(&instance, api)?;
 
         Details::new(&last.id).execute(workspace, api)
+    }
+}
+
+impl From<&ArgMatches<'_>> for Last {
+    fn from(args: &ArgMatches) -> Self {
+        if let Some(task_id) = args.value_of("task") {
+            return Last::with_filter(task_id);
+        }
+
+        Last::new()
     }
 }
 
