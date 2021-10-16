@@ -119,7 +119,7 @@ impl Workspace for WorkspaceDir {
         self.check_if_initialized()?;
 
         info!("Saving instance to the workspace.");
-        let serialized = serde_json::to_string(instance).expect("Instance serialization error");
+        let serialized = serde_yaml::to_string(instance).expect("Instance serialization error");
         debug!("Serialized: {}", serialized);
 
         fs::write(self.paths.instance_path(), serialized).map_err(as_config_write_error)?;
@@ -134,7 +134,7 @@ impl Workspace for WorkspaceDir {
             fs::read_to_string(self.paths.instance_path()).map_err(as_config_read_error)?;
         debug!("Serialized: {}", serialized);
 
-        let deserialized: InstanceData = serde_json::from_str(&serialized)?;
+        let deserialized: InstanceData = serde_yaml::from_str(&serialized)?;
         debug!("Deserialized: {:?}", deserialized);
         Ok(deserialized)
     }
@@ -145,7 +145,7 @@ impl Workspace for WorkspaceDir {
         let serialized = fs::read_to_string(self.paths.task_path()).map_err(as_task_read_error)?;
         debug!("Serialized: {}", serialized);
 
-        let deserialized: TaskConfig = serde_json::from_str(&serialized)?;
+        let deserialized: TaskConfig = serde_yaml::from_str(&serialized)?;
         debug!("Deserialized: {:?}", deserialized);
 
         info!("Read task successfully.");
@@ -169,7 +169,7 @@ impl Workspace for WorkspaceDir {
             self.paths.task_path().to_str().unwrap()
         );
 
-        let serialized = serde_json::to_string(&task_config)?;
+        let serialized = serde_yaml::to_string(&task_config)?;
         debug!("Serialized: {}", serialized);
 
         fs::write(self.paths.task_path(), serialized).map_err(as_task_write_error)?;
@@ -196,13 +196,14 @@ impl Workspace for WorkspaceDir {
             filename,
             self.paths.baca_dir().to_str().unwrap()
         );
-        let serialized = serde_json::to_string(&content)?;
+        let serialized = serde_yaml::to_string(&content)?;
         debug!("Serialized: {}", serialized);
         let path = self.paths.baca_dir().join(filename);
         fs::write(path, serialized).map_err(as_task_write_error)?;
         Ok(())
     }
 
+    // todo: read object
     fn read_file(&self, filename: &str) -> Result<String> {
         info!(
             "Reading file {} from {}.",
