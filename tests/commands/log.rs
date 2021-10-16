@@ -101,3 +101,23 @@ fn on_corrupted_repo_should_report_error() -> Result<(), Box<dyn std::error::Err
     dir.close()?;
     Ok(())
 }
+
+#[test]
+fn filter() -> Result<(), Box<dyn std::error::Error>> {
+    let dir = initialize_correct_workspace()?;
+    let mut cmd = set_up_command(&dir)?;
+
+    cmd.arg("log").arg("100").arg("-t").arg("2");
+    cmd.assert()
+        .stdout(predicate::str::contains("[A] Zera funkcji").not())
+        .stdout(predicate::str::contains("[B] Metoda Newtona"))
+        .stdout(
+            predicate::str::contains(r#"[C] FAD\x3Csup\x3E2\x3C/sup\x3E - Pochodne mieszane"#)
+                .not(),
+        )
+        .stdout(predicate::str::contains("[D] Skalowany Gauss").not())
+        .stdout(predicate::str::contains("[E] Metoda SOR").not())
+        .stdout(predicate::str::contains("[G] Funkcje sklejane").not());
+    dir.close()?;
+    Ok(())
+}

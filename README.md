@@ -10,7 +10,7 @@ The latest release can be downloaded **[here](https://github.com/hjaremko/baca-c
 
 - **Windows** users can use convenient installer or download raw binary.
 - **Linux** and **macOS** users should rename binary to `baca` and copy it to `~/.local/bin` or whatever your `PATH` is.
-- **Cargo** users can clone the repo, then install with command  `cargo install --path .`
+- **Cargo** users can install with command `cargo install --git https://github.com/hjaremko/baca-cli.git`
 
 ### Arch Linux
 You can download the latest release from [AUR](https://aur.archlinux.org/packages/baca-cli) and install it using your favourite AUR helper or directly from source:
@@ -112,9 +112,10 @@ Submitting hello.cpp to task [E] Metoda SOR.
 ### Recent submits: `log`
 
 Prints statuses of a couple of recent submits (default 3).
+Parameter `-t <task_id>` lets you print logs for specific task. Task ID is found by `baca tasks`.
 
 ```
-baca log [optional: number]
+baca log [optional: number] [optional: -t <task_id>]
 ```
 
 Example:

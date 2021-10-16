@@ -40,7 +40,7 @@ impl FromBacaOutput for Results {
             .collect();
 
         debug!("Parsed submits: {:?}", submits);
-        Results { submits }
+        Results::new(submits)
     }
 }
 
