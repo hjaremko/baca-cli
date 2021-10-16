@@ -2,9 +2,9 @@ use crate::model::submit_status::SubmitStatus;
 use crate::model::TestResults;
 use colored::*;
 
-#[derive(Debug, PartialEq, Clone)]
+#[derive(Debug, PartialEq, Clone, Default)]
 pub struct Submit {
-    // problem: Problem,
+    // problem: Problem, // todo: Task here
     pub status: SubmitStatus,
     pub points: f32,
     pub lateness: Option<i32>,
@@ -64,7 +64,7 @@ impl Submit {
         let submit_info = format!("{}\n{}\n{}", header_line, status_line, link_line);
         let submit_info = apply_color_according_to_status(&submit_info, &self.status);
 
-        println!("{}", submit_info);
+        println!("\n{}", submit_info);
     }
 
     fn make_link_line(&self) -> String {
@@ -115,33 +115,3 @@ fn apply_color_according_to_status(str: &str, status: &SubmitStatus) -> ColoredS
         SubmitStatus::OutputSizeExceeded => str.yellow().bold(),
     }
 }
-
-// todo: enable when ctor is done
-// #[cfg(test)]
-// mod submit_print_tests {
-//     use crate::model::Submit;
-//
-//     #[test]
-//     fn correct_submit() {
-//         let s = Submit::new(
-//             "1234".to_string(),
-//             "Kupcy i piraci",
-//             100.0,
-//             "https://baca.ii.uj.edu.pl/so2018/#SubmitDetails/1234",
-//         );
-//
-//         s.print();
-//     }
-//
-//     #[test]
-//     fn wrong_answer_submit() {
-//         let s = Submit::new(
-//             "1234".to_string(),
-//             "Ada. Szkółka leśna",
-//             45.0,
-//             "https://baca.ii.uj.edu.pl/so2018/#SubmitDetails/1234",
-//         );
-//
-//         s.print();
-//     }
-// }

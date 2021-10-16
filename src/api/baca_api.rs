@@ -10,6 +10,7 @@ pub trait BacaApi {
     fn get_cookie(&self, instance: &InstanceData) -> Result<String>;
     fn get_submit_details(&self, instance: &InstanceData, submit_id: &str) -> Result<Submit>;
     fn get_results(&self, instance: &InstanceData) -> Result<Results>;
+    fn get_results_by_task(&self, instance: &InstanceData, task_id: &str) -> Result<Results>;
     fn get_tasks(&self, instance: &InstanceData) -> Result<Tasks>;
     fn submit(&self, instance: &InstanceData, task: &Task, file_path: &str) -> Result<()>;
 }

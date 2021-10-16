@@ -16,6 +16,12 @@ pub enum SubmitStatus {
     OutputSizeExceeded,
 }
 
+impl Default for SubmitStatus {
+    fn default() -> Self {
+        SubmitStatus::WrongAnswer
+    }
+}
+
 impl FromStr for SubmitStatus {
     type Err = ();
 

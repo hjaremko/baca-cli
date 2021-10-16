@@ -7,15 +7,10 @@ use crate::parse::from_baca_output::FromBacaOutput;
 use crate::workspace::InstanceData;
 use reqwest::blocking::Response;
 use std::str::FromStr;
-use tracing::debug;
+use tracing::{debug, info};
 
+#[derive(Default)]
 pub struct BacaService {}
-
-impl Default for BacaService {
-    fn default() -> Self {
-        Self {}
-    }
-}
 
 impl BacaApi for BacaService {
     fn get_cookie(&self, instance: &InstanceData) -> Result<String> {
@@ -48,6 +43,15 @@ impl BacaApi for BacaService {
             instance,
             &check_for_empty_response(resp)?,
         ))
+    }
+
+    fn get_results_by_task(&self, instance: &InstanceData, task_id: &str) -> Result<Results> {
+        let tasks = self.get_tasks(instance)?;
+        let task = tasks.get_by_id(task_id)?;
+        info!("Showing logs for task {}", &task.problem_name);
+        Ok(self
+            .get_results(instance)?
+            .filter_by_task(&task.problem_name))
     }
 
     fn get_tasks(&self, instance: &InstanceData) -> Result<Tasks> {
