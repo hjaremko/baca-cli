@@ -1,5 +1,5 @@
-use crate::workspace::InstanceData;
+use crate::workspace::ConnectionConfig;
 
 pub trait FromBacaOutput {
-    fn from_baca_output(instance: &InstanceData, data: &str) -> Self;
+    fn from_baca_output(connection_config: &ConnectionConfig, data: &str) -> Self;
 }

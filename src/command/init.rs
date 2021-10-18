@@ -102,7 +102,7 @@ impl Command for Init {
         debug!("Login: {}", login);
         debug!("Password: {}", password);
 
-        let mut instance = workspace::InstanceData {
+        let mut config = workspace::ConnectionConfig {
             host,
             login,
             password,
@@ -121,8 +121,8 @@ impl Command for Init {
         };
 
         workspace.initialize().map_err(cleanup_directory)?;
-        instance.cookie = api.get_cookie(&instance).map_err(cleanup_directory)?;
-        instance.save_config(workspace).map_err(cleanup_directory)
+        config.cookie = api.get_cookie(&config).map_err(cleanup_directory)?;
+        config.save_config(workspace).map_err(cleanup_directory)
     }
 }
 
@@ -130,13 +130,13 @@ impl Command for Init {
 mod tests {
     use crate::api;
     use crate::api::baca_api::MockBacaApi;
-    use crate::workspace::{InstanceData, MockWorkspace};
+    use crate::workspace::{ConnectionConfig, MockWorkspace};
 
     use super::*;
 
     // todo: tests::utils
-    fn make_mock_instance() -> InstanceData {
-        InstanceData {
+    fn make_mock_connection_config() -> ConnectionConfig {
+        ConnectionConfig {
             host: "host".to_string(),
             login: "login".to_string(),
             password: "pass".to_string(),
@@ -163,11 +163,11 @@ mod tests {
         host: &'static str,
         login: &'static str,
         password: &'static str,
-    ) -> InstanceData {
+    ) -> ConnectionConfig {
         let host = host.to_string();
         let login = login.to_string();
         let password = password.to_string();
-        InstanceData {
+        ConnectionConfig {
             host,
             login,
             password,
@@ -186,8 +186,8 @@ mod tests {
 
         mock_workspace
             .expect_save_config_object()
-            .withf(|x: &InstanceData| {
-                let mut expected = make_mock_instance();
+            .withf(|x: &ConnectionConfig| {
+                let mut expected = make_mock_connection_config();
                 expected.cookie = "ok_cookie".to_string();
 
                 *x == expected
@@ -197,7 +197,7 @@ mod tests {
         let mut mock_api = MockBacaApi::new();
         mock_api
             .expect_get_cookie()
-            .withf(|x| *x == make_mock_instance())
+            .withf(|x| *x == make_mock_connection_config())
             .returning(|_| Ok("ok_cookie".to_string()));
 
         let init = Init {
@@ -229,7 +229,7 @@ mod tests {
 
         mock_workspace
             .expect_save_config_object()
-            .withf(move |x: &InstanceData| *x == expected_config)
+            .withf(move |x: &ConnectionConfig| *x == expected_config)
             .returning(|_| Ok(()));
 
         let mut mock_api = MockBacaApi::new();
@@ -266,7 +266,7 @@ mod tests {
         let expected_cookie = expected_config.cookie.clone();
         mock_workspace
             .expect_save_config_object()
-            .withf(move |x: &InstanceData| *x == expected_config)
+            .withf(move |x: &ConnectionConfig| *x == expected_config)
             .returning(|_| Ok(()));
 
         let mut mock_api = MockBacaApi::new();
@@ -303,7 +303,7 @@ mod tests {
         let expected_cookie = expected_config.cookie.clone();
         mock_workspace
             .expect_save_config_object()
-            .withf(move |x: &InstanceData| *x == expected_config)
+            .withf(move |x: &ConnectionConfig| *x == expected_config)
             .returning(|_| Ok(()));
 
         let mut mock_api = MockBacaApi::new();
@@ -340,7 +340,7 @@ mod tests {
         let expected_cookie = expected_config.cookie.clone();
         mock_workspace
             .expect_save_config_object()
-            .withf(move |x: &InstanceData| *x == expected_config)
+            .withf(move |x: &ConnectionConfig| *x == expected_config)
             .returning(|_| Ok(()));
 
         let mut mock_api = MockBacaApi::new();

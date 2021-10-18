@@ -2,20 +2,20 @@ use crate::api::RequestType;
 use crate::error;
 use crate::error::Error;
 use crate::model::Task;
-use crate::workspace::InstanceData;
+use crate::workspace::ConnectionConfig;
 use reqwest::blocking::{multipart, RequestBuilder, Response};
 use reqwest::header::{CONTENT_TYPE, COOKIE};
 use tracing::{debug, info};
 
 pub struct Request<'a> {
-    instance: &'a InstanceData,
+    connection_config: &'a ConnectionConfig,
     client: reqwest::blocking::Client,
 }
 
 impl<'a> Request<'a> {
-    pub fn new(instance: &'a InstanceData) -> Self {
+    pub fn new(connection_config: &'a ConnectionConfig) -> Self {
         Request {
-            instance,
+            connection_config,
             client: reqwest::blocking::ClientBuilder::new()
                 .danger_accept_invalid_certs(true)
                 .build()
@@ -24,7 +24,7 @@ impl<'a> Request<'a> {
     }
 
     pub fn login(self) -> reqwest::Result<Response> {
-        let (login, pass) = self.instance.credentials();
+        let (login, pass) = self.connection_config.credentials();
         let req = self.make_request(RequestType::Login(login, pass));
         req.send()
     }
@@ -50,8 +50,12 @@ impl<'a> Request<'a> {
     }
 
     fn make_request(&self, req_type: RequestType) -> RequestBuilder {
-        let post_url = format!("{}{}", self.instance.make_module_base(), req_type.mapping());
-        let payload = self.instance.make_payload(&req_type);
+        let post_url = format!(
+            "{}{}",
+            self.connection_config.make_module_base(),
+            req_type.mapping()
+        );
+        let payload = self.connection_config.make_payload(&req_type);
 
         info!("Making request to: {}", post_url);
         debug!("Request payload: {}", payload);
@@ -59,7 +63,7 @@ impl<'a> Request<'a> {
         let req = self.make_base_request(&post_url).body(payload);
         let req = match req_type {
             RequestType::Login(_, _) => req,
-            _ => req.header(COOKIE, self.instance.make_cookie()),
+            _ => req.header(COOKIE, self.connection_config.make_cookie()),
         };
 
         debug!("{:?}", req);
@@ -71,8 +75,11 @@ impl<'a> Request<'a> {
             .post(url)
             .header(CONTENT_TYPE, "text/x-gwt-rpc; charset=UTF-8")
             .header("DNT", "1")
-            .header("X-GWT-Module-Base", self.instance.make_module_base())
-            .header("X-GWT-Permutation", &self.instance.permutation)
+            .header(
+                "X-GWT-Module-Base",
+                self.connection_config.make_module_base(),
+            )
+            .header("X-GWT-Permutation", &self.connection_config.permutation)
     }
 
     fn make_submit_request(&self, task: &Task, file_path: &str) -> error::Result<RequestBuilder> {
@@ -84,7 +91,7 @@ impl<'a> Request<'a> {
 
         let url = format!(
             "https://baca.ii.uj.edu.pl/{}/sendSubmit",
-            self.instance.host
+            self.connection_config.host
         );
 
         info!("Making submit request to: {}", url);
@@ -94,7 +101,7 @@ impl<'a> Request<'a> {
             .client
             .post(url)
             .multipart(form)
-            .header(COOKIE, self.instance.make_cookie());
+            .header(COOKIE, self.connection_config.make_cookie());
         debug!("{:?}", req);
         Ok(req)
     }
@@ -105,8 +112,8 @@ mod tests {
     use super::*;
     use reqwest::StatusCode;
 
-    fn make_instance() -> InstanceData {
-        InstanceData {
+    fn make_connection_config() -> ConnectionConfig {
+        ConnectionConfig {
             host: "mn2020".to_string(),
             login: "login".to_string(),
             password: "password".to_string(),
@@ -125,7 +132,7 @@ mod tests {
 
     #[test]
     fn login_should_connect() {
-        let baca = make_instance();
+        let baca = make_connection_config();
         let req = Request::new(&baca);
         let response = req.login();
 
@@ -135,7 +142,7 @@ mod tests {
 
     #[test]
     fn details_should_connect() {
-        let baca = make_instance();
+        let baca = make_connection_config();
         let req = Request::new(&baca);
         let response = req.details("1");
 
@@ -144,7 +151,7 @@ mod tests {
 
     #[test]
     fn results_should_connect() {
-        let baca = make_instance();
+        let baca = make_connection_config();
         let req = Request::new(&baca);
         let response = req.results();
 
@@ -153,7 +160,7 @@ mod tests {
 
     #[test]
     fn tasks_should_connect() {
-        let baca = make_instance();
+        let baca = make_connection_config();
         let req = Request::new(&baca);
         let response = req.tasks();
 

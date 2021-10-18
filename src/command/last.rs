@@ -3,7 +3,7 @@ use crate::command::details::Details;
 use crate::command::Command;
 use crate::error::{Error, Result};
 use crate::model::Submit;
-use crate::workspace::{ConfigObject, InstanceData, Workspace};
+use crate::workspace::{ConfigObject, ConnectionConfig, Workspace};
 use clap::ArgMatches;
 
 pub struct Last {
@@ -21,14 +21,14 @@ impl Last {
         }
     }
 
-    fn get_last_submit<A>(&self, instance: &InstanceData, api: &A) -> Result<Submit>
+    fn get_last_submit<A>(&self, connection_config: &ConnectionConfig, api: &A) -> Result<Submit>
     where
         A: BacaApi,
     {
         let results = if let Some(task_id) = &self.task_id {
-            api.get_results_by_task(instance, task_id)?
+            api.get_results_by_task(connection_config, task_id)?
         } else {
-            api.get_results(instance)?
+            api.get_results(connection_config)?
         };
 
         Ok(results.submits.first().ok_or(Error::NoSubmitsYet)?.clone())
@@ -41,8 +41,8 @@ impl Command for Last {
         W: Workspace,
         A: BacaApi,
     {
-        let instance = InstanceData::read_config(workspace)?;
-        let last = self.get_last_submit(&instance, api)?;
+        let connection_config = ConnectionConfig::read_config(workspace)?;
+        let last = self.get_last_submit(&connection_config, api)?;
 
         Details::new(&last.id).execute(workspace, api)
     }
@@ -64,19 +64,19 @@ mod tests {
     use crate::api::baca_api::MockBacaApi;
     use crate::model::SubmitStatus;
     use crate::model::{Results, Submit};
-    use crate::workspace::{InstanceData, MockWorkspace};
+    use crate::workspace::{ConnectionConfig, MockWorkspace};
 
     #[test]
     fn no_submits() {
         let mut mock_workspace = MockWorkspace::new();
         mock_workspace
             .expect_read_config_object()
-            .returning(|| Ok(InstanceData::default()));
+            .returning(|| Ok(ConnectionConfig::default()));
 
         let mut mock_api = MockBacaApi::new();
         mock_api
             .expect_get_results()
-            .withf(|x| *x == InstanceData::default())
+            .withf(|x| *x == ConnectionConfig::default())
             .returning(|_| Ok(Results { submits: vec![] }));
 
         let last = Last::new();
@@ -105,7 +105,7 @@ mod tests {
         let mut mock_workspace = MockWorkspace::new();
         mock_workspace
             .expect_read_config_object()
-            .returning(|| Ok(InstanceData::default()));
+            .returning(|| Ok(ConnectionConfig::default()));
 
         let mut mock_api = MockBacaApi::new();
         let results = Results {
@@ -113,13 +113,13 @@ mod tests {
         };
         mock_api
             .expect_get_results()
-            .withf(|x| *x == InstanceData::default())
+            .withf(|x| *x == ConnectionConfig::default())
             .returning(move |_| Ok(results.clone()));
 
         let submit = expected;
         mock_api
             .expect_get_submit_details()
-            .withf(|x, id| *x == InstanceData::default() && id == "3")
+            .withf(|x, id| *x == ConnectionConfig::default() && id == "3")
             .returning(move |_, _| Ok(submit.clone()));
 
         let last = Last::new();
@@ -179,7 +179,7 @@ mod tests {
         let mut mock_workspace = MockWorkspace::new();
         mock_workspace
             .expect_read_config_object()
-            .returning(|| Ok(InstanceData::default()));
+            .returning(|| Ok(ConnectionConfig::default()));
 
         let mut mock_api = MockBacaApi::new();
         let results = Results {
@@ -187,13 +187,13 @@ mod tests {
         };
         mock_api
             .expect_get_results()
-            .withf(|x| *x == InstanceData::default())
+            .withf(|x| *x == ConnectionConfig::default())
             .returning(move |_| Ok(results.clone()));
 
         let submit = submit1;
         mock_api
             .expect_get_submit_details()
-            .withf(|x, id| *x == InstanceData::default() && id == "1")
+            .withf(|x, id| *x == ConnectionConfig::default() && id == "1")
             .returning(move |_, _| Ok(submit.clone()));
 
         let last = Last::new();

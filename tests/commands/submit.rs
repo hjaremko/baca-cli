@@ -5,7 +5,7 @@ use predicates::prelude::*;
 use std::fs;
 
 fn assert_config_file_exists(temp: &TempDir) {
-    let config_path = &*temp.path().join(".baca/instance");
+    let config_path = &*temp.path().join(".baca/connection");
     let pred = predicate::path::exists().eval(config_path);
     assert!(pred);
 }
