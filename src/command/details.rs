@@ -1,7 +1,7 @@
 use crate::api::baca_api::BacaApi;
 use crate::command::Command;
 use crate::error::Result;
-use crate::workspace::Workspace;
+use crate::workspace::{ConfigObject, InstanceData, Workspace};
 
 use clap::ArgMatches;
 use tracing::info;
@@ -35,7 +35,7 @@ impl Command for Details {
     {
         info!("Printing details for submit: {}", self.submit_id);
 
-        let instance = workspace.read_instance()?;
+        let instance = InstanceData::read_config(workspace)?;
         let submit = api.get_submit_details(&instance, &self.submit_id)?;
 
         submit.print_with_tests();
@@ -53,7 +53,7 @@ mod tests {
     fn no_tasks_yet_should_return_error() {
         let mut mock_workspace = MockWorkspace::new();
         mock_workspace
-            .expect_read_instance()
+            .expect_read_config_object()
             .returning(|| Ok(InstanceData::default()));
 
         let mut mock_api = MockBacaApi::new();

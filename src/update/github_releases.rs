@@ -74,23 +74,21 @@ fn make_user_agent() -> String {
 mod tests {
     use super::*;
 
-    //noinspection ALL
     fn assert_fetching_release_error(actual: Result<BacaRelease>) {
         let assert_err = |e| match e {
             Error::ApiRateLimitExceeded => println!("API limit exceeded!"),
-            Error::FetchingRelease => assert!(true),
-            _ => assert!(false, "Unexpected error: {:?}", e),
+            Error::FetchingRelease => (),
+            _ => panic!("Unexpected error: {:?}", e),
         };
 
         assert_error(actual, assert_err);
     }
 
-    //noinspection ALL
     fn assert_no_release_error(actual: Result<BacaRelease>) {
         let assert_err = |e| match e {
             Error::ApiRateLimitExceeded => println!("API limit exceeded!"),
-            Error::NoRelease => assert!(true),
-            _ => assert!(false, "Unexpected error: {:?}", e),
+            Error::NoRelease => (),
+            _ => panic!("Unexpected error: {:?}", e),
         };
 
         assert_error(actual, assert_err);
@@ -121,7 +119,6 @@ mod tests {
         assert_fetching_release_error(actual);
     }
 
-    //noinspection ALL
     #[test]
     fn correct_repo_should_return_latest_release() {
         let gh = GithubReleases::new("hjaremko", "baca-cli");
@@ -129,10 +126,8 @@ mod tests {
 
         if let Err(e) = actual {
             match e {
-                Error::ApiRateLimitExceeded => {
-                    assert!(true)
-                }
-                _ => assert!(false, "Unexpected error: {:?}", e),
+                Error::ApiRateLimitExceeded => (),
+                _ => panic!("Unexpected error: {:?}", e),
             }
         }
     }

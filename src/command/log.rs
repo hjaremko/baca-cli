@@ -2,7 +2,7 @@ use crate::api::baca_api::BacaApi;
 use crate::command::Command;
 use crate::error::{Error, Result};
 use crate::model::Results;
-use crate::workspace::{InstanceData, Workspace};
+use crate::workspace::{ConfigObject, InstanceData, Workspace};
 use clap::ArgMatches;
 use tracing::info;
 
@@ -57,7 +57,7 @@ impl Command for Log {
     {
         let n = to_int(&self.last_n)?;
         info!("Fetching {} logs.", n);
-        let instance = workspace.read_instance()?;
+        let instance = InstanceData::read_config(workspace)?;
         let results = self.fetch_logs(api, &instance)?;
 
         results.print(n);
@@ -80,7 +80,7 @@ mod tests {
     fn no_submits() {
         let mut mock_workspace = MockWorkspace::new();
         mock_workspace
-            .expect_read_instance()
+            .expect_read_config_object()
             .returning(|| Ok(InstanceData::default()));
 
         let mut mock_api = MockBacaApi::new();

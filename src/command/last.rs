@@ -3,7 +3,7 @@ use crate::command::details::Details;
 use crate::command::Command;
 use crate::error::{Error, Result};
 use crate::model::Submit;
-use crate::workspace::{InstanceData, Workspace};
+use crate::workspace::{ConfigObject, InstanceData, Workspace};
 use clap::ArgMatches;
 
 pub struct Last {
@@ -41,7 +41,7 @@ impl Command for Last {
         W: Workspace,
         A: BacaApi,
     {
-        let instance = workspace.read_instance()?;
+        let instance = InstanceData::read_config(workspace)?;
         let last = self.get_last_submit(&instance, api)?;
 
         Details::new(&last.id).execute(workspace, api)
@@ -70,7 +70,7 @@ mod tests {
     fn no_submits() {
         let mut mock_workspace = MockWorkspace::new();
         mock_workspace
-            .expect_read_instance()
+            .expect_read_config_object()
             .returning(|| Ok(InstanceData::default()));
 
         let mut mock_api = MockBacaApi::new();
@@ -104,7 +104,7 @@ mod tests {
 
         let mut mock_workspace = MockWorkspace::new();
         mock_workspace
-            .expect_read_instance()
+            .expect_read_config_object()
             .returning(|| Ok(InstanceData::default()));
 
         let mut mock_api = MockBacaApi::new();
@@ -178,7 +178,7 @@ mod tests {
 
         let mut mock_workspace = MockWorkspace::new();
         mock_workspace
-            .expect_read_instance()
+            .expect_read_config_object()
             .returning(|| Ok(InstanceData::default()));
 
         let mut mock_api = MockBacaApi::new();

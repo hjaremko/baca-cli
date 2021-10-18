@@ -1,7 +1,7 @@
 use crate::api::baca_api::BacaApi;
 use crate::command::Command;
 use crate::error::Result;
-use crate::workspace::Workspace;
+use crate::workspace::{ConfigObject, InstanceData, Workspace};
 use tracing::info;
 
 pub struct Tasks {}
@@ -19,7 +19,7 @@ impl Command for Tasks {
         A: BacaApi,
     {
         info!("Getting all tasks.");
-        let instance = workspace.read_instance()?;
+        let instance = InstanceData::read_config(workspace)?;
         let tasks = api.get_tasks(&instance)?;
 
         tasks.print();
@@ -39,7 +39,7 @@ mod tests {
     fn success_test() {
         let mut mock_workspace = MockWorkspace::new();
         mock_workspace
-            .expect_read_instance()
+            .expect_read_config_object()
             .returning(|| Ok(InstanceData::default()));
 
         let mut mock_api = MockBacaApi::new();

@@ -2,7 +2,7 @@ use crate::api::baca_api::BacaApi;
 use crate::command::log::Log;
 use crate::command::Command;
 use crate::error::Result;
-use crate::workspace::{TaskConfig, Workspace};
+use crate::workspace::{ConfigObject, InstanceData, TaskConfig, Workspace};
 use crate::{error, workspace};
 use clap::ArgMatches;
 use colored::Colorize;
@@ -27,7 +27,7 @@ impl Command for Submit<'_> {
         A: BacaApi,
     {
         if self.args.subcommand_matches("clear").is_some() {
-            return workspace.remove_task();
+            return TaskConfig::remove_config(workspace);
         }
 
         let provided_task_id = self.args.value_of("task_id");
@@ -35,7 +35,7 @@ impl Command for Submit<'_> {
         let provided_to_zip = self.args.is_present("zip");
         let provided_lang = self.args.value_of("language");
         let provided_rename = self.args.value_of("rename");
-        let saved_task_config = workspace.read_task();
+        let saved_task_config = TaskConfig::read_config(workspace);
 
         if provided_task_id.is_none() && saved_task_config.is_err() {
             print_please_provide_monit("task_id");
@@ -79,7 +79,8 @@ impl Command for Submit<'_> {
         ask_for_save |= provided_to_zip;
 
         if self.args.is_present("save") {
-            workspace.save_task(&task_config)?;
+            task_config.save_config(workspace)?;
+            println!("Task config has been saved.");
         } else if !self.args.is_present("no_save") && ask_for_save {
             let proceed = Confirm::new()
                 .with_prompt("Save submit configuration?")
@@ -87,7 +88,8 @@ impl Command for Submit<'_> {
                 .interact()?;
 
             if proceed {
-                workspace.save_task(&task_config)?;
+                task_config.save_config(workspace)?;
+                println!("Task config has been saved.");
             }
         }
 
@@ -111,7 +113,7 @@ where
     W: Workspace,
     A: BacaApi,
 {
-    let instance = workspace.read_instance()?;
+    let instance = InstanceData::read_config(workspace)?;
     let tasks = api.get_tasks(&instance)?;
     let mut task = tasks.get_by_id(task_config.id.as_str())?.clone();
     task.language = task_config.language;
@@ -191,7 +193,7 @@ mod tests {
     fn renamed_file_should_be_identical_to_original() {
         let mut mock_workspace = MockWorkspace::new();
         mock_workspace
-            .expect_read_instance()
+            .expect_read_config_object()
             .returning(|| Ok(InstanceData::default()));
 
         let mut mock_api = MockBacaApi::new();

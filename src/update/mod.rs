@@ -8,10 +8,8 @@ pub use self::update_status::UpdateStatus;
 mod baca_release;
 mod github_releases;
 mod release_service;
-mod time_provider;
-mod update_check_timestamp;
+pub mod update_check_timestamp;
 pub mod update_checker;
 mod update_status;
-// pub use self::update_checker::UpdateScheduler;
 
 pub const CURRENT_VERSION: &str = env!("CARGO_PKG_VERSION");
