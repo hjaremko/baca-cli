@@ -1,16 +1,29 @@
 use crate::error::Result;
 use crate::model::{Results, Submit, Task, Tasks};
-use crate::workspace::InstanceData;
+use crate::workspace::ConnectionConfig;
 
 #[cfg(test)]
 use mockall::{automock, predicate::*};
 
 #[cfg_attr(test, automock)]
 pub trait BacaApi {
-    fn get_cookie(&self, instance: &InstanceData) -> Result<String>;
-    fn get_submit_details(&self, instance: &InstanceData, submit_id: &str) -> Result<Submit>;
-    fn get_results(&self, instance: &InstanceData) -> Result<Results>;
-    fn get_results_by_task(&self, instance: &InstanceData, task_id: &str) -> Result<Results>;
-    fn get_tasks(&self, instance: &InstanceData) -> Result<Tasks>;
-    fn submit(&self, instance: &InstanceData, task: &Task, file_path: &str) -> Result<()>;
+    fn get_cookie(&self, connection_config: &ConnectionConfig) -> Result<String>;
+    fn get_submit_details(
+        &self,
+        connection_config: &ConnectionConfig,
+        submit_id: &str,
+    ) -> Result<Submit>;
+    fn get_results(&self, connection_config: &ConnectionConfig) -> Result<Results>;
+    fn get_results_by_task(
+        &self,
+        connection_config: &ConnectionConfig,
+        task_id: &str,
+    ) -> Result<Results>;
+    fn get_tasks(&self, connection_config: &ConnectionConfig) -> Result<Tasks>;
+    fn submit(
+        &self,
+        connection_config: &ConnectionConfig,
+        task: &Task,
+        file_path: &str,
+    ) -> Result<()>;
 }

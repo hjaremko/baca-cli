@@ -1,7 +1,7 @@
 use crate::api::baca_api::BacaApi;
 use crate::command::Command;
 use crate::error::Result;
-use crate::workspace::{ConfigObject, InstanceData, Workspace};
+use crate::workspace::{ConfigObject, ConnectionConfig, Workspace};
 
 use clap::ArgMatches;
 use tracing::info;
@@ -35,8 +35,8 @@ impl Command for Details {
     {
         info!("Printing details for submit: {}", self.submit_id);
 
-        let instance = InstanceData::read_config(workspace)?;
-        let submit = api.get_submit_details(&instance, &self.submit_id)?;
+        let connection_config = ConnectionConfig::read_config(workspace)?;
+        let submit = api.get_submit_details(&connection_config, &self.submit_id)?;
 
         submit.print_with_tests();
         Ok(())
@@ -47,20 +47,20 @@ impl Command for Details {
 mod tests {
     use super::*;
     use crate::api::baca_api::MockBacaApi;
-    use crate::workspace::{InstanceData, MockWorkspace};
+    use crate::workspace::{ConnectionConfig, MockWorkspace};
 
     #[test]
     fn no_tasks_yet_should_return_error() {
         let mut mock_workspace = MockWorkspace::new();
         mock_workspace
             .expect_read_config_object()
-            .returning(|| Ok(InstanceData::default()));
+            .returning(|| Ok(ConnectionConfig::default()));
 
         let mut mock_api = MockBacaApi::new();
         mock_api
             .expect_get_submit_details()
             .once()
-            .withf(|x, id| *x == InstanceData::default() && id == "2888")
+            .withf(|x, id| *x == ConnectionConfig::default() && id == "2888")
             .returning(|_, _| Err(crate::error::Error::InvalidSubmitId));
 
         let details = Details {

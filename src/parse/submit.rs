@@ -1,22 +1,22 @@
 use crate::model::Submit;
 use crate::model::SubmitStatus;
 use crate::model::TestResults;
-use crate::workspace::InstanceData;
+use crate::workspace::ConnectionConfig;
 use std::cmp;
 use std::str::FromStr;
 
 impl Submit {
-    pub fn parse(instance: &InstanceData, data: &str) -> Submit {
+    pub fn parse(connection_config: &ConnectionConfig, data: &str) -> Submit {
         let data = Self::deserialize(data);
         tracing::debug!("Deserialized: {:?}", data);
 
         let test_data = Submit::parse_test_statuses(&data);
-        let mut submit = Submit::parse_submit_info(instance, data);
+        let mut submit = Submit::parse_submit_info(connection_config, data);
         submit.test_results = test_data;
         submit
     }
 
-    fn parse_submit_info(instance: &InstanceData, data: Vec<String>) -> Submit {
+    fn parse_submit_info(connection_config: &ConnectionConfig, data: Vec<String>) -> Submit {
         let st: Vec<_> = data
             .iter()
             .skip_while(|x| !x.contains("nazwa statusu"))
@@ -35,7 +35,7 @@ impl Submit {
             id: st[offset + 7].to_string(),
             max_points: Some(st[offset + 7 + 25].parse().unwrap()),
             problem_name: st[offset + 7 + 26].to_string(),
-            link: instance.make_url() + "/#SubmitDetails/" + st[offset + 7].as_str(),
+            link: connection_config.make_url() + "/#SubmitDetails/" + st[offset + 7].as_str(),
             test_results: None,
         }
     }
@@ -129,13 +129,13 @@ impl Submit {
 mod submit_parser_tests {
     use crate::model::SubmitStatus;
     use crate::model::{Submit, TestResults};
-    use crate::workspace::InstanceData;
+    use crate::workspace::ConnectionConfig;
 
     //todo: test code wih sequence "asda","asdasd"
 
     #[test]
     fn correct_p2_parse_test() {
-        let baca = InstanceData {
+        let baca = ConnectionConfig {
             host: "p22019".to_string(),
             login: "".to_string(),
             password: "".to_string(),
@@ -215,7 +215,7 @@ mod submit_parser_tests {
 
     #[test]
     fn correct_mn_parse_test() {
-        let baca = InstanceData {
+        let baca = ConnectionConfig {
             host: "mn".to_string(),
             login: "".to_string(),
             password: "".to_string(),
@@ -263,7 +263,7 @@ mod submit_parser_tests {
 
     #[test]
     fn incorrect_17_mn_parse_test() {
-        let baca = InstanceData {
+        let baca = ConnectionConfig {
             host: "mn".to_string(),
             login: "".to_string(),
             password: "".to_string(),
@@ -327,7 +327,7 @@ mod submit_parser_tests {
 
     #[test]
     fn incorrect_80_mp_parse_test() {
-        let baca = InstanceData {
+        let baca = ConnectionConfig {
             host: "mp".to_string(),
             login: "".to_string(),
             password: "".to_string(),
@@ -391,7 +391,7 @@ mod submit_parser_tests {
 
     #[test]
     fn correct_pn_parse_test() {
-        let baca = InstanceData {
+        let baca = ConnectionConfig {
             host: "pn".to_string(),
             login: "".to_string(),
             password: "".to_string(),
@@ -447,7 +447,7 @@ mod submit_parser_tests {
 
     #[test]
     fn no_tests_mn_parse_test() {
-        let baca = InstanceData {
+        let baca = ConnectionConfig {
             host: "pn".to_string(),
             login: "".to_string(),
             password: "".to_string(),
@@ -478,7 +478,7 @@ mod submit_parser_tests {
 
     #[test]
     fn one_testcase_no_file_provided() {
-        let baca = InstanceData {
+        let baca = ConnectionConfig {
             host: "so2018".to_string(),
             login: "".to_string(),
             password: "".to_string(),
@@ -511,7 +511,7 @@ mod submit_parser_tests {
 
     #[test]
     fn two_testcases() {
-        let baca = InstanceData {
+        let baca = ConnectionConfig {
             host: "p1".to_string(),
             login: "".to_string(),
             password: "".to_string(),
@@ -550,7 +550,7 @@ mod submit_parser_tests {
 
     #[test]
     fn real_submit_2888() {
-        let baca = InstanceData {
+        let baca = ConnectionConfig {
             host: "p1".to_string(),
             login: "".to_string(),
             password: "".to_string(),

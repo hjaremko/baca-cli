@@ -14,7 +14,7 @@ pub trait BacaDirectoryPaths {
 
 impl BacaDirectoryPaths for TempDir {
     fn baca_config_file_path(&self) -> Box<Path> {
-        self.path().join(".baca/instance").into_boxed_path()
+        self.path().join(".baca/connection").into_boxed_path()
     }
 
     fn baca_task_config_file_path(&self) -> Box<Path> {

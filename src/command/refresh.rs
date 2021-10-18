@@ -1,7 +1,7 @@
 use crate::api::baca_api::BacaApi;
 use crate::command::Command;
 use crate::error;
-use crate::workspace::{ConfigObject, InstanceData, Workspace};
+use crate::workspace::{ConfigObject, ConnectionConfig, Workspace};
 use tracing::info;
 
 pub struct Refresh {}
@@ -19,9 +19,9 @@ impl Command for Refresh {
         A: BacaApi,
     {
         info!("Refreshing Baca session.");
-        let mut instance = InstanceData::read_config(workspace)?;
-        instance.cookie = api.get_cookie(&instance)?;
-        instance.save_config(workspace)?;
+        let mut connection_config = ConnectionConfig::read_config(workspace)?;
+        connection_config.cookie = api.get_cookie(&connection_config)?;
+        connection_config.save_config(workspace)?;
 
         println!("New session obtained.");
         Ok(())
@@ -32,19 +32,19 @@ impl Command for Refresh {
 mod tests {
     use super::*;
     use crate::api::baca_api::MockBacaApi;
-    use crate::workspace::{InstanceData, MockWorkspace};
+    use crate::workspace::{ConnectionConfig, MockWorkspace};
 
     #[test]
     fn refresh_success_test() {
         let mut mock_workspace = MockWorkspace::new();
         mock_workspace
             .expect_read_config_object()
-            .returning(|| Ok(InstanceData::default()));
+            .returning(|| Ok(ConnectionConfig::default()));
         mock_workspace
             .expect_save_config_object()
             .once()
-            .withf(|x: &InstanceData| {
-                let mut expected = InstanceData::default();
+            .withf(|x: &ConnectionConfig| {
+                let mut expected = ConnectionConfig::default();
                 expected.cookie = "ok_cookie".to_string();
 
                 *x == expected
@@ -54,7 +54,7 @@ mod tests {
         let mut mock_api = MockBacaApi::new();
         mock_api
             .expect_get_cookie()
-            .withf(|x| *x == InstanceData::default())
+            .withf(|x| *x == ConnectionConfig::default())
             .returning(|_| Ok("ok_cookie".to_string()));
 
         let refresh = Refresh::new();

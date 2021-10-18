@@ -2,7 +2,7 @@ use crate::api::baca_api::BacaApi;
 use crate::command::Command;
 use crate::error::{Error, Result};
 use crate::model::Results;
-use crate::workspace::{ConfigObject, InstanceData, Workspace};
+use crate::workspace::{ConfigObject, ConnectionConfig, Workspace};
 use clap::ArgMatches;
 use tracing::info;
 
@@ -24,14 +24,14 @@ impl Log {
         self
     }
 
-    fn fetch_logs<A>(&self, api: &A, instance: &InstanceData) -> Result<Results>
+    fn fetch_logs<A>(&self, api: &A, connection_config: &ConnectionConfig) -> Result<Results>
     where
         A: BacaApi,
     {
         Ok(if let Some(task_id) = &self.task_id {
-            api.get_results_by_task(instance, task_id)?
+            api.get_results_by_task(connection_config, task_id)?
         } else {
-            api.get_results(instance)?
+            api.get_results(connection_config)?
         })
     }
 }
@@ -57,8 +57,8 @@ impl Command for Log {
     {
         let n = to_int(&self.last_n)?;
         info!("Fetching {} logs.", n);
-        let instance = InstanceData::read_config(workspace)?;
-        let results = self.fetch_logs(api, &instance)?;
+        let connection_config = ConnectionConfig::read_config(workspace)?;
+        let results = self.fetch_logs(api, &connection_config)?;
 
         results.print(n);
         Ok(())
@@ -74,19 +74,19 @@ mod tests {
     use super::*;
     use crate::api::baca_api::MockBacaApi;
     use crate::model::Results;
-    use crate::workspace::{InstanceData, MockWorkspace};
+    use crate::workspace::{ConnectionConfig, MockWorkspace};
 
     #[test]
     fn no_submits() {
         let mut mock_workspace = MockWorkspace::new();
         mock_workspace
             .expect_read_config_object()
-            .returning(|| Ok(InstanceData::default()));
+            .returning(|| Ok(ConnectionConfig::default()));
 
         let mut mock_api = MockBacaApi::new();
         mock_api
             .expect_get_results()
-            .withf(|x| *x == InstanceData::default())
+            .withf(|x| *x == ConnectionConfig::default())
             .returning(|_| Ok(Results::default()));
 
         let log = Log::new("10");

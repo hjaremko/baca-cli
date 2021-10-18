@@ -2,12 +2,12 @@ use crate::model::SubmitStatus;
 use crate::model::{Results, Submit};
 use crate::parse::deserialize;
 use crate::parse::from_baca_output::FromBacaOutput;
-use crate::workspace::InstanceData;
+use crate::workspace::ConnectionConfig;
 use std::str::FromStr;
 use tracing::debug;
 
 impl FromBacaOutput for Results {
-    fn from_baca_output(instance: &InstanceData, data: &str) -> Results {
+    fn from_baca_output(connection_config: &ConnectionConfig, data: &str) -> Results {
         let data = deserialize(data);
         debug!("Deserialized: {:?}", data);
 
@@ -34,7 +34,7 @@ impl FromBacaOutput for Results {
                 id: raw[8].to_string(),
                 max_points: None,
                 problem_name: raw[7].to_string(),
-                link: instance.make_url() + "/#SubmitDetails/" + raw[8].as_str(),
+                link: connection_config.make_url() + "/#SubmitDetails/" + raw[8].as_str(),
                 test_results: None,
             })
             .collect();
@@ -49,11 +49,11 @@ mod results_tests {
     use crate::model::SubmitStatus;
     use crate::model::{Results, Submit};
     use crate::parse::from_baca_output::FromBacaOutput;
-    use crate::workspace::InstanceData;
+    use crate::workspace::ConnectionConfig;
 
     #[test]
     fn parse_test() {
-        let baca = InstanceData {
+        let baca = ConnectionConfig {
             host: "mn".to_string(),
             login: "".to_string(),
             password: "".to_string(),

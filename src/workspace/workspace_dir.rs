@@ -125,7 +125,7 @@ fn as_config_remove_error(e: io::Error) -> Error {
 #[cfg(test)]
 pub(crate) mod tests {
     use super::*;
-    use crate::workspace::InstanceData;
+    use crate::workspace::ConnectionConfig;
     use assert_fs::TempDir;
 
     pub fn make_temp_workspace(
@@ -137,8 +137,8 @@ pub(crate) mod tests {
         Ok((temp_dir, mock_paths, workspace))
     }
 
-    pub fn make_baca() -> InstanceData {
-        InstanceData {
+    pub fn make_baca() -> ConnectionConfig {
+        ConnectionConfig {
             host: "test_host".to_string(),
             login: "test_login".to_string(),
             password: "test_pass".to_string(),

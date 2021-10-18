@@ -1,7 +1,7 @@
 use crate::api::baca_api::BacaApi;
 use crate::command::Command;
 use crate::error::Result;
-use crate::workspace::{ConfigObject, InstanceData, Workspace};
+use crate::workspace::{ConfigObject, ConnectionConfig, Workspace};
 use tracing::info;
 
 pub struct Tasks {}
@@ -19,8 +19,8 @@ impl Command for Tasks {
         A: BacaApi,
     {
         info!("Getting all tasks.");
-        let instance = InstanceData::read_config(workspace)?;
-        let tasks = api.get_tasks(&instance)?;
+        let connection_config = ConnectionConfig::read_config(workspace)?;
+        let tasks = api.get_tasks(&connection_config)?;
 
         tasks.print();
         Ok(())
@@ -33,20 +33,20 @@ mod tests {
     use crate::api::baca_api::MockBacaApi;
     use crate::model;
     use crate::model::{Language, Task};
-    use crate::workspace::{InstanceData, MockWorkspace};
+    use crate::workspace::{ConnectionConfig, MockWorkspace};
 
     #[test]
     fn success_test() {
         let mut mock_workspace = MockWorkspace::new();
         mock_workspace
             .expect_read_config_object()
-            .returning(|| Ok(InstanceData::default()));
+            .returning(|| Ok(ConnectionConfig::default()));
 
         let mut mock_api = MockBacaApi::new();
         mock_api
             .expect_get_tasks()
             .once()
-            .withf(|x| *x == InstanceData::default())
+            .withf(|x| *x == ConnectionConfig::default())
             .returning(|_| {
                 Ok(model::Tasks {
                     tasks: vec![

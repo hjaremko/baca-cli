@@ -4,9 +4,8 @@ use crate::error::Result;
 use crate::workspace::{ConfigObject, Workspace};
 use serde::{Deserialize, Serialize};
 
-// todo: rename as ConnectionConfig
 #[derive(Serialize, Deserialize, Debug, Clone, PartialEq)]
-pub struct InstanceData {
+pub struct ConnectionConfig {
     pub host: String,
     pub login: String,
     pub password: String,
@@ -14,7 +13,7 @@ pub struct InstanceData {
     pub cookie: String,
 }
 
-impl InstanceData {
+impl ConnectionConfig {
     pub fn credentials(&self) -> (String, String) {
         (self.login.clone(), self.password.clone())
     }
@@ -42,9 +41,9 @@ impl InstanceData {
     }
 }
 
-impl Default for InstanceData {
+impl Default for ConnectionConfig {
     fn default() -> Self {
-        InstanceData {
+        ConnectionConfig {
             host: String::default(),
             login: String::default(),
             password: String::default(),
@@ -54,7 +53,7 @@ impl Default for InstanceData {
     }
 }
 
-impl ConfigObject for InstanceData {
+impl ConfigObject for ConnectionConfig {
     fn save_config<W: Workspace>(&self, workspace: &W) -> Result<()> {
         workspace.save_config_object(self).map_err(|e| {
             if let Error::Other(inner) = e {
@@ -80,7 +79,7 @@ impl ConfigObject for InstanceData {
     }
 
     fn config_filename() -> String {
-        "instance".to_string()
+        "connection".to_string()
     }
 }
 
@@ -88,24 +87,24 @@ impl ConfigObject for InstanceData {
 mod tests {
     use super::*;
     use crate::workspace::workspace_dir::tests::{make_baca, make_temp_workspace};
-    use crate::workspace::{ConfigObject, InstanceData};
+    use crate::workspace::{ConfigObject, ConnectionConfig};
     use predicates::prelude::*;
 
     #[test]
-    fn save_read_instance_success() {
+    fn save_read_success() {
         let (temp_dir, _, workspace) = make_temp_workspace().unwrap();
         let baca = make_baca();
 
         workspace.initialize().unwrap();
         baca.save_config(&workspace).unwrap();
 
-        let result = InstanceData::read_config(&workspace).unwrap();
+        let result = ConnectionConfig::read_config(&workspace).unwrap();
         assert_eq!(result, baca);
         temp_dir.close().unwrap();
     }
 
     #[test]
-    fn save_instance_not_initialized() {
+    fn save_not_initialized() {
         let (temp_dir, mock_paths, workspace) = make_temp_workspace().unwrap();
 
         let baca = make_baca();
@@ -115,12 +114,14 @@ mod tests {
         if let Err(e) = result {
             assert!(matches!(e, Error::WorkspaceNotInitialized));
         }
-        assert!(predicate::path::missing().eval(mock_paths.config_path::<InstanceData>().as_path()));
+        assert!(
+            predicate::path::missing().eval(mock_paths.config_path::<ConnectionConfig>().as_path())
+        );
         temp_dir.close().unwrap();
     }
 
     #[test]
-    fn save_instance_should_override() {
+    fn save_should_override() {
         let (temp_dir, _, workspace) = make_temp_workspace().unwrap();
         let baca_first = make_baca();
         let mut baca_second = make_baca();
@@ -128,9 +129,15 @@ mod tests {
 
         workspace.initialize().unwrap();
         baca_first.save_config(&workspace).unwrap();
-        assert_eq!(InstanceData::read_config(&workspace).unwrap(), baca_first);
+        assert_eq!(
+            ConnectionConfig::read_config(&workspace).unwrap(),
+            baca_first
+        );
         baca_second.save_config(&workspace).unwrap();
-        assert_eq!(InstanceData::read_config(&workspace).unwrap(), baca_second);
+        assert_eq!(
+            ConnectionConfig::read_config(&workspace).unwrap(),
+            baca_second
+        );
 
         temp_dir.close().unwrap();
     }

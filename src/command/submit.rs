@@ -2,7 +2,7 @@ use crate::api::baca_api::BacaApi;
 use crate::command::log::Log;
 use crate::command::Command;
 use crate::error::Result;
-use crate::workspace::{ConfigObject, InstanceData, TaskConfig, Workspace};
+use crate::workspace::{ConfigObject, ConnectionConfig, TaskConfig, Workspace};
 use crate::{error, workspace};
 use clap::ArgMatches;
 use colored::Colorize;
@@ -113,8 +113,8 @@ where
     W: Workspace,
     A: BacaApi,
 {
-    let instance = InstanceData::read_config(workspace)?;
-    let tasks = api.get_tasks(&instance)?;
+    let connection_config = ConnectionConfig::read_config(workspace)?;
+    let tasks = api.get_tasks(&connection_config)?;
     let mut task = tasks.get_by_id(task_config.id.as_str())?.clone();
     task.language = task_config.language;
 
@@ -154,7 +154,11 @@ where
         );
     };
 
-    api.submit(&instance, &task, task_config.file.to_str().unwrap())?;
+    api.submit(
+        &connection_config,
+        &task,
+        task_config.file.to_str().unwrap(),
+    )?;
     println!();
     Log::new("1").execute(workspace, api)
 }
@@ -165,7 +169,7 @@ mod tests {
     use crate::api::baca_api::MockBacaApi;
     use crate::model::Language::Unsupported;
     use crate::model::{Language, Results, Task, Tasks};
-    use crate::workspace::{InstanceData, MockWorkspace};
+    use crate::workspace::{ConnectionConfig, MockWorkspace};
     use assert_fs::fixture::ChildPath;
     use assert_fs::prelude::*;
     use assert_fs::TempDir;
@@ -194,7 +198,7 @@ mod tests {
         let mut mock_workspace = MockWorkspace::new();
         mock_workspace
             .expect_read_config_object()
-            .returning(|| Ok(InstanceData::default()));
+            .returning(|| Ok(ConnectionConfig::default()));
 
         let mut mock_api = MockBacaApi::new();
         mock_api
@@ -203,7 +207,7 @@ mod tests {
 
         mock_api
             .expect_get_tasks()
-            .withf(|x| *x == InstanceData::default())
+            .withf(|x| *x == ConnectionConfig::default())
             .returning(|_| {
                 Ok(Tasks::new(vec![
                     Task::new("1", Unsupported, "Metoda parametryzacji", 12),

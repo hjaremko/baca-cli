@@ -4,7 +4,7 @@ use crate::api::Request;
 use crate::error::{Error, Result};
 use crate::model::{Results, Submit, Task, Tasks};
 use crate::parse::from_baca_output::FromBacaOutput;
-use crate::workspace::InstanceData;
+use crate::workspace::ConnectionConfig;
 use reqwest::blocking::Response;
 use std::str::FromStr;
 use tracing::{debug, info};
@@ -13,15 +13,19 @@ use tracing::{debug, info};
 pub struct BacaService {}
 
 impl BacaApi for BacaService {
-    fn get_cookie(&self, instance: &InstanceData) -> Result<String> {
-        let login_response = Request::new(instance).login()?;
+    fn get_cookie(&self, connection_config: &ConnectionConfig) -> Result<String> {
+        let login_response = Request::new(connection_config).login()?;
         log_response_details(&login_response);
         check_response_status(&login_response)?;
         extract_cookie(&login_response)
     }
 
-    fn get_submit_details(&self, instance: &InstanceData, submit_id: &str) -> Result<Submit> {
-        let resp = Request::new(instance).details(submit_id)?;
+    fn get_submit_details(
+        &self,
+        connection_config: &ConnectionConfig,
+        submit_id: &str,
+    ) -> Result<Submit> {
+        let resp = Request::new(connection_config).details(submit_id)?;
         check_response_status(&resp)?;
         let resp = resp.text()?;
         debug!("Received raw submit: {}", resp);
@@ -30,32 +34,39 @@ impl BacaApi for BacaService {
             return Err(Error::InvalidSubmitId);
         }
 
-        Ok(Submit::parse(instance, &check_for_empty_response(resp)?))
+        Ok(Submit::parse(
+            connection_config,
+            &check_for_empty_response(resp)?,
+        ))
     }
 
-    fn get_results(&self, instance: &InstanceData) -> Result<Results> {
-        let resp = Request::new(instance).results()?;
+    fn get_results(&self, connection_config: &ConnectionConfig) -> Result<Results> {
+        let resp = Request::new(connection_config).results()?;
         check_response_status(&resp)?;
         let resp = resp.text().expect("Invalid submit data");
         debug!("Received raw results: {}", resp);
 
         Ok(Results::from_baca_output(
-            instance,
+            connection_config,
             &check_for_empty_response(resp)?,
         ))
     }
 
-    fn get_results_by_task(&self, instance: &InstanceData, task_id: &str) -> Result<Results> {
-        let tasks = self.get_tasks(instance)?;
+    fn get_results_by_task(
+        &self,
+        connection_config: &ConnectionConfig,
+        task_id: &str,
+    ) -> Result<Results> {
+        let tasks = self.get_tasks(connection_config)?;
         let task = tasks.get_by_id(task_id)?;
         info!("Showing logs for task {}", &task.problem_name);
         Ok(self
-            .get_results(instance)?
+            .get_results(connection_config)?
             .filter_by_task(&task.problem_name))
     }
 
-    fn get_tasks(&self, instance: &InstanceData) -> Result<Tasks> {
-        let resp = Request::new(instance).tasks()?;
+    fn get_tasks(&self, connection_config: &ConnectionConfig) -> Result<Tasks> {
+        let resp = Request::new(connection_config).tasks()?;
         check_response_status(&resp)?;
 
         let resp = resp.text().expect("Invalid submit data");
@@ -64,9 +75,14 @@ impl BacaApi for BacaService {
         Tasks::from_str(&check_for_empty_response(resp)?)
     }
 
-    fn submit(&self, instance: &InstanceData, task: &Task, file_path: &str) -> Result<()> {
+    fn submit(
+        &self,
+        connection_config: &ConnectionConfig,
+        task: &Task,
+        file_path: &str,
+    ) -> Result<()> {
         debug!("{:?}", task);
-        let resp = Request::new(instance).submit(task, file_path)?;
+        let resp = Request::new(connection_config).submit(task, file_path)?;
         let resp = resp.text()?;
         debug!("Response: {}", resp);
 
@@ -119,8 +135,8 @@ mod tests {
     use crate::model::Language::Unsupported;
     use std::fmt::Debug;
 
-    fn make_correct_baca_invalid_session() -> InstanceData {
-        InstanceData {
+    fn make_correct_baca_invalid_session() -> ConnectionConfig {
+        ConnectionConfig {
             host: "mn2020".to_string(),
             login: "login".to_string(),
             password: "pass".to_string(),
@@ -129,8 +145,8 @@ mod tests {
         }
     }
 
-    fn make_incorrect_baca() -> InstanceData {
-        InstanceData {
+    fn make_incorrect_baca() -> ConnectionConfig {
+        ConnectionConfig {
             host: "invalid".to_string(),
             login: "login".to_string(),
             password: "pass".to_string(),

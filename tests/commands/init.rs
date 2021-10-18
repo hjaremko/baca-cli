@@ -8,7 +8,7 @@ fn baca_dir_exists(temp: &TempDir) -> bool {
 }
 
 fn config_exists(temp: &TempDir) -> bool {
-    predicate::path::exists().eval(&*temp.path().join(".baca/instance"))
+    predicate::path::exists().eval(&*temp.path().join(".baca/connection"))
 }
 
 #[test]
