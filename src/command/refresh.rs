@@ -1,7 +1,7 @@
 use crate::api::baca_api::BacaApi;
 use crate::command::Command;
 use crate::error;
-use crate::workspace::Workspace;
+use crate::workspace::{ConfigObject, InstanceData, Workspace};
 use tracing::info;
 
 pub struct Refresh {}
@@ -19,9 +19,9 @@ impl Command for Refresh {
         A: BacaApi,
     {
         info!("Refreshing Baca session.");
-        let mut instance = workspace.read_instance()?;
+        let mut instance = InstanceData::read_config(workspace)?;
         instance.cookie = api.get_cookie(&instance)?;
-        workspace.save_instance(&instance)?;
+        instance.save_config(workspace)?;
 
         println!("New session obtained.");
         Ok(())
@@ -38,12 +38,12 @@ mod tests {
     fn refresh_success_test() {
         let mut mock_workspace = MockWorkspace::new();
         mock_workspace
-            .expect_read_instance()
+            .expect_read_config_object()
             .returning(|| Ok(InstanceData::default()));
         mock_workspace
-            .expect_save_instance()
+            .expect_save_config_object()
             .once()
-            .withf(|x| {
+            .withf(|x: &InstanceData| {
                 let mut expected = InstanceData::default();
                 expected.cookie = "ok_cookie".to_string();
 

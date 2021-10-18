@@ -2,7 +2,7 @@
 extern crate clap;
 
 use crate::update::{GithubReleases, UpdateCheckTimestamp, UpdateChecker, UpdateStatus};
-use crate::workspace::WorkspaceDir;
+use crate::workspace::{ConfigObject, WorkspaceDir};
 use api::baca_service::BacaService;
 use clap::{App, AppSettings, ArgMatches};
 use colored::Colorize;
@@ -57,8 +57,10 @@ fn check_for_updates(workspace: &WorkspaceDir, matches: &ArgMatches) {
         return;
     }
 
-    let update_check_timestamp = UpdateCheckTimestamp::new();
-    if matches.is_present("force-update") || update_check_timestamp.is_expired(workspace) {
+    let now = UpdateCheckTimestamp::now();
+    let last_check = UpdateCheckTimestamp::read_config(workspace).unwrap();
+
+    if matches.is_present("force-update") || last_check.is_expired(&now) {
         let updates = fetch_updates();
 
         if let Err(e) = updates {
@@ -70,8 +72,7 @@ fn check_for_updates(workspace: &WorkspaceDir, matches: &ArgMatches) {
             UpdateStatus::NoUpdates => {
                 info!("No updates available.");
 
-                update_check_timestamp
-                    .save_current_timestamp(workspace)
+                now.save_config(workspace)
                     .unwrap_or_else(|e| warn!("Error saving last update check timestamp: {}", e));
             }
             UpdateStatus::Update(new_rel) => {

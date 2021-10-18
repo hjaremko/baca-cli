@@ -1,7 +1,7 @@
 use crate::api;
 use crate::api::baca_api::BacaApi;
 use crate::command::Command;
-use crate::workspace::Workspace;
+use crate::workspace::{ConfigObject, Workspace};
 use crate::{error, workspace};
 use clap::ArgMatches;
 #[cfg(test)]
@@ -122,9 +122,7 @@ impl Command for Init {
 
         workspace.initialize().map_err(cleanup_directory)?;
         instance.cookie = api.get_cookie(&instance).map_err(cleanup_directory)?;
-        workspace
-            .save_instance(&instance)
-            .map_err(cleanup_directory)
+        instance.save_config(workspace).map_err(cleanup_directory)
     }
 }
 
@@ -187,8 +185,8 @@ mod tests {
             .returning(|| Ok(()));
 
         mock_workspace
-            .expect_save_instance()
-            .withf(|x| {
+            .expect_save_config_object()
+            .withf(|x: &InstanceData| {
                 let mut expected = make_mock_instance();
                 expected.cookie = "ok_cookie".to_string();
 
@@ -230,8 +228,8 @@ mod tests {
         let expected_cookie = expected_config.cookie.clone();
 
         mock_workspace
-            .expect_save_instance()
-            .withf(move |x| *x == expected_config)
+            .expect_save_config_object()
+            .withf(move |x: &InstanceData| *x == expected_config)
             .returning(|_| Ok(()));
 
         let mut mock_api = MockBacaApi::new();
@@ -267,8 +265,8 @@ mod tests {
         let expected_config = make_baca_config("host", "login", "prompt_password");
         let expected_cookie = expected_config.cookie.clone();
         mock_workspace
-            .expect_save_instance()
-            .withf(move |x| *x == expected_config)
+            .expect_save_config_object()
+            .withf(move |x: &InstanceData| *x == expected_config)
             .returning(|_| Ok(()));
 
         let mut mock_api = MockBacaApi::new();
@@ -304,8 +302,8 @@ mod tests {
         let expected_config = make_baca_config("host", "prompt_login", "prompt_password");
         let expected_cookie = expected_config.cookie.clone();
         mock_workspace
-            .expect_save_instance()
-            .withf(move |x| *x == expected_config)
+            .expect_save_config_object()
+            .withf(move |x: &InstanceData| *x == expected_config)
             .returning(|_| Ok(()));
 
         let mut mock_api = MockBacaApi::new();
@@ -341,8 +339,8 @@ mod tests {
         let expected_config = make_baca_config("prompt_host", "login", "pass");
         let expected_cookie = expected_config.cookie.clone();
         mock_workspace
-            .expect_save_instance()
-            .withf(move |x| *x == expected_config)
+            .expect_save_config_object()
+            .withf(move |x: &InstanceData| *x == expected_config)
             .returning(|_| Ok(()));
 
         let mut mock_api = MockBacaApi::new();

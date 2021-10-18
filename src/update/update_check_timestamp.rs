@@ -1,192 +1,157 @@
+use crate::workspace::{ConfigObject, Workspace};
+use serde::{Deserialize, Serialize};
+use std::fmt::Debug;
 use time::OffsetDateTime;
 use tracing::debug;
 
-use crate::update::time_provider::{TimeProvider, UnixTimeProvider};
-use crate::workspace::Workspace;
-
 const TIMESTAMP_FILENAME: &str = "update_timestamp";
 
-// todo: workspace as member
+#[derive(Debug, Serialize, Deserialize)]
 pub struct UpdateCheckTimestamp {
-    clock: Box<dyn TimeProvider>,
+    timestamp: OffsetDateTime,
+}
+
+impl Default for UpdateCheckTimestamp {
+    fn default() -> Self {
+        Self {
+            timestamp: OffsetDateTime::from_unix_timestamp(0).unwrap(),
+        }
+    }
+}
+
+impl From<i64> for UpdateCheckTimestamp {
+    fn from(unix_timestamp: i64) -> Self {
+        Self {
+            timestamp: OffsetDateTime::from_unix_timestamp(unix_timestamp).unwrap(),
+        }
+    }
 }
 
 impl UpdateCheckTimestamp {
-    pub fn new() -> Self {
-        UpdateCheckTimestamp {
-            clock: Box::new(UnixTimeProvider::new()),
-        }
+    pub fn now() -> Self {
+        let timestamp = OffsetDateTime::now_utc();
+        Self { timestamp }
     }
 
-    // todo: workspace as member
-    pub fn is_expired<W>(&self, workspace: &W) -> bool
-    where
-        W: Workspace,
-    {
-        if let Some(saved) = self.get_timestamp(workspace) {
-            let now = self.clock.now();
-            let diff = now - saved;
-            debug!("Expired for {} days", diff.whole_days());
-            return diff.whole_days() >= 1;
-        }
-
-        true
+    pub fn is_expired(&self, other: &Self) -> bool {
+        let saved = self.get_timestamp();
+        let now = other.get_timestamp();
+        let diff = now - saved;
+        debug!("Expired for {} days", diff.whole_days());
+        diff.whole_days() >= 1
     }
 
-    pub fn get_timestamp<W>(&self, workspace: &W) -> Option<OffsetDateTime>
-    where
-        W: Workspace,
-    {
-        let timestamp = workspace.read_file(TIMESTAMP_FILENAME);
+    pub fn get_timestamp(&self) -> OffsetDateTime {
+        self.timestamp
+    }
+}
 
-        if timestamp.is_err() {
-            return None;
-        }
-
-        let timestamp = timestamp.unwrap();
-        let timestamp = timestamp
-            .chars()
-            .filter(|x| x.is_ascii_digit())
-            .collect::<String>();
-        Some(self.clock.datetime_from_timestamp(&timestamp))
+impl ConfigObject for UpdateCheckTimestamp {
+    fn save_config<W: Workspace>(&self, workspace: &W) -> crate::error::Result<()> {
+        workspace.save_config_object(self)
     }
 
-    pub fn save_current_timestamp<W>(&self, workspace: &W) -> crate::error::Result<()>
-    where
-        W: Workspace,
-    {
-        let timestamp = self.clock.now().unix_timestamp();
-        workspace.save_object(TIMESTAMP_FILENAME, &timestamp)
+    fn read_config<W: Workspace>(workspace: &W) -> crate::error::Result<Self> {
+        Ok(workspace.read_config_object::<Self>().unwrap_or_default())
+    }
+
+    fn remove_config<W: Workspace>(_workspace: &W) -> crate::error::Result<()> {
+        unimplemented!()
+    }
+
+    fn config_filename() -> String {
+        TIMESTAMP_FILENAME.to_string()
     }
 }
 
 #[cfg(test)]
 mod tests {
+    use super::*;
     use crate::error::Error;
-    use crate::update::time_provider::MockTimeProvider;
+
     use crate::workspace::MockWorkspace;
 
-    use super::*;
-
-    fn new_with_provider(clock: Box<dyn TimeProvider>) -> UpdateCheckTimestamp {
-        UpdateCheckTimestamp { clock }
-    }
+    type Timestamp = UpdateCheckTimestamp;
 
     #[test]
     fn no_saved_info_should_return_true() {
-        let udt = UpdateCheckTimestamp::new();
         let mut mock_workspace = MockWorkspace::new();
         mock_workspace
-            .expect_read_file()
-            .returning(|_| Err(Error::WorkspaceCorrupted));
+            .expect_read_config_object::<Timestamp>()
+            .returning(|| Err(Error::WorkspaceCorrupted));
 
-        assert!(udt.is_expired(&mock_workspace))
+        let now = UpdateCheckTimestamp::now();
+        let saved = UpdateCheckTimestamp::read_config(&mock_workspace).unwrap();
+
+        assert!(saved.is_expired(&now))
     }
 
     #[test]
-    fn no_saved_info_get_timestamp_should_return_none() {
+    fn no_saved_info_get_timestamp_should_return_default() {
         let mut mock_workspace = MockWorkspace::new();
         mock_workspace
-            .expect_read_file()
-            .returning(|_| Err(Error::WorkspaceCorrupted)); //todo
+            .expect_read_config_object::<Timestamp>()
+            .returning(|| Err(Error::WorkspaceCorrupted)); //todo
 
-        let udt = UpdateCheckTimestamp::new();
-        assert!(udt.get_timestamp(&mock_workspace).is_none())
+        let saved = UpdateCheckTimestamp::read_config(&mock_workspace).unwrap();
+        assert_eq!(
+            saved.get_timestamp().unix_timestamp(),
+            UpdateCheckTimestamp::default()
+                .get_timestamp()
+                .unix_timestamp()
+        )
     }
 
     #[test]
     fn save_timestamp_should_save() {
-        let mut mock_time = MockTimeProvider::new();
-        mock_time
-            .expect_now()
-            .returning(|| OffsetDateTime::from_unix_timestamp(1625126400).unwrap());
-
         let mut mock_workspace = MockWorkspace::new();
         mock_workspace
-            .expect_save_object()
-            .withf(|filename, timestamp: &i64| {
-                filename == TIMESTAMP_FILENAME && *timestamp == 1625126400
-            })
-            .returning(|_, _: &i64| Ok(()));
+            .expect_save_config_object::<Timestamp>()
+            .withf(|timestamp: &Timestamp| timestamp.get_timestamp().unix_timestamp() == 1625126400)
+            .returning(|_| Ok(()));
 
-        let udt = new_with_provider(Box::new(mock_time));
-        assert!(udt.save_current_timestamp(&mock_workspace).is_ok());
+        let udt = UpdateCheckTimestamp::from(1625126400);
+        assert!(udt.save_config(&mock_workspace).is_ok());
     }
 
     #[test]
     fn read_timestamp_test() {
         let mut mock_workspace = MockWorkspace::new();
         mock_workspace
-            .expect_read_file()
-            .withf(|filename| filename == TIMESTAMP_FILENAME)
-            .returning(|_| Ok("1627068997".to_string()));
+            .expect_read_config_object::<Timestamp>()
+            .returning(|| Ok(1627068997.into()));
 
-        let udt = UpdateCheckTimestamp::new();
-        udt.get_timestamp(&mock_workspace);
+        let udt = UpdateCheckTimestamp::read_config(&mock_workspace).unwrap();
+        assert_eq!(udt.get_timestamp().unix_timestamp(), 1627068997);
     }
 
     #[test]
     fn timestamp_newer_than_one_day_should_not_expire() {
         const TIME_2021_07_01_10_00_00: i64 = 1625126400;
         const TIME_2021_07_01_02_00_00: i64 = 1625097600;
+        let newer = Timestamp::from(TIME_2021_07_01_02_00_00);
+        let older = Timestamp::from(TIME_2021_07_01_10_00_00);
 
-        let mut mock_time = MockTimeProvider::new();
-        mock_time
-            .expect_now()
-            .returning(|| OffsetDateTime::from_unix_timestamp(TIME_2021_07_01_10_00_00).unwrap());
-        mock_time
-            .expect_datetime_from_timestamp()
-            .returning(|t| OffsetDateTime::from_unix_timestamp(t.parse().unwrap()).unwrap());
-        let mut mock_workspace = MockWorkspace::new();
-        mock_workspace
-            .expect_read_file()
-            .returning(|_| Ok(TIME_2021_07_01_02_00_00.to_string()));
-
-        let udt = new_with_provider(Box::new(mock_time));
-        assert!(!udt.is_expired(&mock_workspace));
+        assert!(!newer.is_expired(&older));
     }
 
     #[test]
     fn timestamp_older_than_one_day_should_expire() {
         const TIME_2021_07_01_10_00_00: i64 = 1625126400;
         const TIME_2021_06_01_02_00_00: i64 = 1622505600;
+        let newer = Timestamp::from(TIME_2021_07_01_10_00_00);
+        let older = Timestamp::from(TIME_2021_06_01_02_00_00);
 
-        let mut mock_time = MockTimeProvider::new();
-        mock_time
-            .expect_now()
-            .returning(|| OffsetDateTime::from_unix_timestamp(TIME_2021_07_01_10_00_00).unwrap());
-        mock_time
-            .expect_datetime_from_timestamp()
-            .returning(|t| OffsetDateTime::from_unix_timestamp(t.parse().unwrap()).unwrap());
-
-        let mut mock_workspace = MockWorkspace::new();
-        mock_workspace
-            .expect_read_file()
-            .returning(|_| Ok(TIME_2021_06_01_02_00_00.to_string()));
-
-        let udt = new_with_provider(Box::new(mock_time));
-        assert!(udt.is_expired(&mock_workspace));
+        assert!(older.is_expired(&newer));
     }
 
     #[test]
     fn timestamp_equal_one_day_should_expire() {
         const TIME_2021_07_01_10_00_00: i64 = 1625126400;
         const TIME_2021_07_02_10_00_00: i64 = 1625212800;
+        let newer = Timestamp::from(TIME_2021_07_01_10_00_00);
+        let older = Timestamp::from(TIME_2021_07_02_10_00_00);
 
-        let mut mock_time = MockTimeProvider::new();
-        mock_time
-            .expect_now()
-            .returning(|| OffsetDateTime::from_unix_timestamp(TIME_2021_07_02_10_00_00).unwrap());
-        mock_time
-            .expect_datetime_from_timestamp()
-            .returning(|t| OffsetDateTime::from_unix_timestamp(t.parse().unwrap()).unwrap());
-
-        let mut mock_workspace = MockWorkspace::new();
-        mock_workspace
-            .expect_read_file()
-            .returning(|_| Ok(TIME_2021_07_01_10_00_00.to_string()));
-
-        let udt = new_with_provider(Box::new(mock_time));
-        assert!(udt.is_expired(&mock_workspace));
+        assert!(newer.is_expired(&older));
     }
 }
