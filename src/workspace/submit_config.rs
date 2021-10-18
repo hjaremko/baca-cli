@@ -6,9 +6,8 @@ use serde::{Deserialize, Serialize};
 use std::path::Path;
 use std::path::PathBuf;
 
-// todo: rename as SubmitConfig
 #[derive(Debug, Serialize, Deserialize, PartialEq)]
-pub struct TaskConfig {
+pub struct SubmitConfig {
     pub id: String,
     pub file: PathBuf,
     pub to_zip: bool,
@@ -16,7 +15,7 @@ pub struct TaskConfig {
     pub rename_as: Option<String>,
 }
 
-impl TaskConfig {
+impl SubmitConfig {
     #[cfg(test)]
     pub fn new(
         id: &str,
@@ -35,7 +34,7 @@ impl TaskConfig {
     }
 }
 
-impl Default for TaskConfig {
+impl Default for SubmitConfig {
     fn default() -> Self {
         Self {
             id: "".to_string(),
@@ -47,7 +46,7 @@ impl Default for TaskConfig {
     }
 }
 
-impl ConfigObject for TaskConfig {
+impl ConfigObject for SubmitConfig {
     fn save_config<W: Workspace>(&self, workspace: &W) -> crate::error::Result<()> {
         workspace.save_config_object(self)?;
         Ok(())
@@ -74,7 +73,7 @@ impl ConfigObject for TaskConfig {
     }
 
     fn config_filename() -> String {
-        "task".to_string()
+        "submit".to_string()
     }
 }
 
@@ -93,34 +92,34 @@ mod tests {
         let (temp_dir, mock_paths, workspace) = make_temp_workspace().unwrap();
         let input_file = temp_dir.child("foo.sh");
         input_file.touch().unwrap();
-        let expected_task_config =
-            TaskConfig::new("2", input_file.path(), false, Language::Bash, None);
+        let expected_submit_config =
+            SubmitConfig::new("2", input_file.path(), false, Language::Bash, None);
 
         workspace.initialize().unwrap();
-        expected_task_config.save_config(&workspace).unwrap();
+        expected_submit_config.save_config(&workspace).unwrap();
 
         assert_eq!(
-            TaskConfig::read_config(&workspace).unwrap(),
-            expected_task_config
+            SubmitConfig::read_config(&workspace).unwrap(),
+            expected_submit_config
         );
-        assert!(predicate::path::exists().eval(mock_paths.config_path::<TaskConfig>().as_path()));
+        assert!(predicate::path::exists().eval(mock_paths.config_path::<SubmitConfig>().as_path()));
         temp_dir.close().unwrap();
     }
 
     #[test]
     fn read_corrupted_task() {
         let (temp_dir, mock_paths, workspace) = make_temp_workspace().unwrap();
-        let corrupted_task_config = ChildPath::new(mock_paths.config_path::<TaskConfig>());
+        let corrupted_submit_config = ChildPath::new(mock_paths.config_path::<SubmitConfig>());
 
         workspace.initialize().unwrap();
-        corrupted_task_config.write_str("invalid config").unwrap();
-        let result = TaskConfig::read_config(&workspace);
+        corrupted_submit_config.write_str("invalid config").unwrap();
+        let result = SubmitConfig::read_config(&workspace);
 
         assert!(result.is_err());
         if let Err(e) = result {
             assert!(matches!(e, Error::WorkspaceCorrupted));
         }
-        assert!(predicate::path::exists().eval(mock_paths.config_path::<TaskConfig>().as_path()));
+        assert!(predicate::path::exists().eval(mock_paths.config_path::<SubmitConfig>().as_path()));
         temp_dir.close().unwrap();
     }
 
@@ -129,13 +128,13 @@ mod tests {
         let (temp_dir, mock_paths, workspace) = make_temp_workspace().unwrap();
 
         workspace.initialize().unwrap();
-        let result = TaskConfig::read_config(&workspace);
+        let result = SubmitConfig::read_config(&workspace);
 
         assert!(result.is_err());
         if let Err(e) = result {
             assert!(matches!(e, Error::WorkspaceCorrupted), "error = {:?}", e);
         }
-        assert!(predicate::path::missing().eval(mock_paths.config_path::<TaskConfig>().as_path()));
+        assert!(predicate::path::missing().eval(mock_paths.config_path::<SubmitConfig>().as_path()));
         temp_dir.close().unwrap();
     }
 
@@ -143,14 +142,15 @@ mod tests {
     fn save_task_not_initialized() {
         let (temp_dir, mock_paths, workspace) = make_temp_workspace().unwrap();
 
-        let task_config = TaskConfig::new("2", Path::new("foo.txt"), true, Language::Bash, None);
-        let result = task_config.save_config(&workspace);
+        let submit_config =
+            SubmitConfig::new("2", Path::new("foo.txt"), true, Language::Bash, None);
+        let result = submit_config.save_config(&workspace);
 
         assert!(result.is_err());
         if let Err(e) = result {
             assert!(matches!(e, Error::WorkspaceNotInitialized));
         }
-        assert!(predicate::path::missing().eval(mock_paths.config_path::<TaskConfig>().as_path()));
+        assert!(predicate::path::missing().eval(mock_paths.config_path::<SubmitConfig>().as_path()));
         temp_dir.close().unwrap();
     }
 
@@ -159,35 +159,35 @@ mod tests {
         let (temp_dir, mock_paths, workspace) = make_temp_workspace().unwrap();
         let input_file = temp_dir.child("foo.sh");
         input_file.touch().unwrap();
-        let task_config_first =
-            TaskConfig::new("2", input_file.path(), false, Language::Bash, None);
-        let task_config_second =
-            TaskConfig::new("3", Path::new("bar.cpp"), false, Language::Cpp, None);
+        let submit_config_first =
+            SubmitConfig::new("2", input_file.path(), false, Language::Bash, None);
+        let submit_config_second =
+            SubmitConfig::new("3", Path::new("bar.cpp"), false, Language::Cpp, None);
 
         workspace.initialize().unwrap();
-        task_config_first.save_config(&workspace).unwrap();
-        task_config_second.save_config(&workspace).unwrap();
+        submit_config_first.save_config(&workspace).unwrap();
+        submit_config_second.save_config(&workspace).unwrap();
 
         assert_eq!(
-            TaskConfig::read_config(&workspace).unwrap(),
-            task_config_second
+            SubmitConfig::read_config(&workspace).unwrap(),
+            submit_config_second
         );
-        assert!(predicate::path::exists().eval(mock_paths.config_path::<TaskConfig>().as_path()));
+        assert!(predicate::path::exists().eval(mock_paths.config_path::<SubmitConfig>().as_path()));
         temp_dir.close().unwrap();
     }
 
     #[test]
-    fn remove_task_config() {
+    fn remove_submit_config() {
         let (temp_dir, mock_paths, workspace) = make_temp_workspace().unwrap();
         let input_file = temp_dir.child("foo.sh");
         input_file.touch().unwrap();
-        let task_config = TaskConfig::new("2", input_file.path(), false, Language::Bash, None);
+        let submit_config = SubmitConfig::new("2", input_file.path(), false, Language::Bash, None);
 
         workspace.initialize().unwrap();
-        task_config.save_config(&workspace).unwrap();
-        TaskConfig::remove_config(&workspace).unwrap();
+        submit_config.save_config(&workspace).unwrap();
+        SubmitConfig::remove_config(&workspace).unwrap();
         assert!(predicate::path::exists()
-            .eval(mock_paths.config_path::<TaskConfig>().as_path())
+            .eval(mock_paths.config_path::<SubmitConfig>().as_path())
             .not());
         temp_dir.close().unwrap();
     }
