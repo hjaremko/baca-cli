@@ -10,14 +10,14 @@ fn assert_config_file_exists(temp: &TempDir) {
     assert!(pred);
 }
 
-fn assert_task_config_file_exists(temp: &TempDir) {
-    let config_path = &*temp.path().join(".baca/task");
+fn assert_submit_config_file_exists(temp: &TempDir) {
+    let config_path = &*temp.path().join(".baca/submit");
     assert!(predicate::path::exists().eval(config_path));
 }
 
-fn assert_task_config_file_does_not_exist(temp: &TempDir) {
-    let config_path = &*temp.path().join(".baca/task");
-    let pred = predicate::path::exists().not().eval(config_path);
+fn assert_submit_config_file_does_not_exist(temp: &TempDir) {
+    let config_path = &*temp.path().join(".baca/submit");
+    let pred = predicate::path::missing().eval(config_path);
     assert!(pred);
 }
 
@@ -189,7 +189,7 @@ fn zip_should_zip() -> Result<(), Box<dyn std::error::Error>> {
 }
 
 #[test]
-fn default_option_should_save_task() -> Result<(), Box<dyn std::error::Error>> {
+fn default_option_should_save_config() -> Result<(), Box<dyn std::error::Error>> {
     let dir = initialize_correct_workspace()?;
     let mut cmd = set_up_command(&dir)?;
     make_input_file_dummy(&dir).unwrap();
@@ -206,12 +206,12 @@ fn default_option_should_save_task() -> Result<(), Box<dyn std::error::Error>> {
     ]);
 
     cmd.assert()
-        .stdout(predicate::str::contains("Task config has been saved."))
+        .stdout(predicate::str::contains("Submit config has been saved."))
         .stdout(predicate::str::contains("Submitting dummy.txt"))
         .stdout(predicate::str::contains("Java"))
         .stdout(predicate::str::contains("[B] Metoda Newtona"));
 
-    let config_path = dir.baca_task_config_file_path();
+    let config_path = dir.baca_submit_config_file_path();
     let does_exit_pred = predicate::path::exists().eval(&config_path);
     assert!(does_exit_pred);
     let saved_config = fs::read_to_string(&config_path)?;
@@ -283,7 +283,7 @@ fn cmd_options_should_override_saved_task() -> Result<(), Box<dyn std::error::Er
 }
 
 #[test]
-fn clear_should_remove_saved_task() -> Result<(), Box<dyn std::error::Error>> {
+fn clear_should_remove_saved_config() -> Result<(), Box<dyn std::error::Error>> {
     let dir = initialize_correct_workspace()?;
     let mut cmd = set_up_command(&dir)?;
     make_input_file_dummy(&dir)?;
@@ -300,13 +300,13 @@ fn clear_should_remove_saved_task() -> Result<(), Box<dyn std::error::Error>> {
     ]);
     cmd.assert();
 
-    assert_task_config_file_exists(&dir);
+    assert_submit_config_file_exists(&dir);
 
     let mut cmd = set_up_command(&dir)?;
     cmd.arg("submit").arg("clear");
     cmd.assert();
 
-    assert_task_config_file_does_not_exist(&dir);
+    assert_submit_config_file_does_not_exist(&dir);
     dir.close()?;
     Ok(())
 }
@@ -319,7 +319,7 @@ fn clear_on_already_clear_should_do_nothing() -> Result<(), Box<dyn std::error::
     cmd.arg("submit").arg("clear");
     cmd.assert();
 
-    assert_task_config_file_does_not_exist(&dir);
+    assert_submit_config_file_does_not_exist(&dir);
     assert_config_file_exists(&dir);
     dir.close()?;
     Ok(())
@@ -344,13 +344,13 @@ fn given_just_filename_absolute_path_should_be_saved() -> Result<(), Box<dyn std
 
     cmd.assert().stdout(predicate::str::contains("source.cpp"));
 
-    assert_task_config_file_exists(&dir);
+    assert_submit_config_file_exists(&dir);
 
-    let task_config_contents = fs::read_to_string(dir.baca_task_config_file_path()).unwrap();
+    let submit_config_contents = fs::read_to_string(dir.baca_submit_config_file_path()).unwrap();
     let input_path = input_file.path().canonicalize().unwrap();
     let input_path = input_path.to_str().unwrap().replace("\\", "\\\\");
 
-    assert!(predicate::str::contains(input_path).eval(&task_config_contents));
+    assert!(predicate::str::contains(input_path).eval(&submit_config_contents));
     dir.close()?;
     Ok(())
 }
@@ -373,13 +373,13 @@ fn given_absolute_path_should_be_saved() -> Result<(), Box<dyn std::error::Error
     ]);
 
     cmd.assert();
-    assert_task_config_file_exists(&dir);
+    assert_submit_config_file_exists(&dir);
 
-    let task_config_contents = fs::read_to_string(dir.baca_task_config_file_path()).unwrap();
+    let submit_config_contents = fs::read_to_string(dir.baca_submit_config_file_path()).unwrap();
     let input_path = input_file.path().canonicalize().unwrap();
     let input_path = input_path.to_str().unwrap().replace("\\", "\\\\");
 
-    assert!(predicate::str::contains(input_path).eval(&task_config_contents));
+    assert!(predicate::str::contains(input_path).eval(&submit_config_contents));
     dir.close()?;
     Ok(())
 }
@@ -409,13 +409,13 @@ fn given_relative_path_absolute_should_be_saved() -> Result<(), Box<dyn std::err
 
     cmd.assert().stdout(predicate::str::contains("source.cpp"));
 
-    assert_task_config_file_exists(&dir);
+    assert_submit_config_file_exists(&dir);
 
-    let task_config_contents = fs::read_to_string(dir.baca_task_config_file_path()).unwrap();
+    let submit_config_contents = fs::read_to_string(dir.baca_submit_config_file_path()).unwrap();
     let input_path = input_file.path().canonicalize().unwrap();
     let input_path = input_path.to_str().unwrap().replace("\\", "\\\\");
 
-    assert!(predicate::str::contains(input_path).eval(&task_config_contents));
+    assert!(predicate::str::contains(input_path).eval(&submit_config_contents));
     dir.close()?;
     Ok(())
 }

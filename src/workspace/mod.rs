@@ -1,13 +1,13 @@
 pub mod config_object;
 mod connection_config;
-mod task_config;
+mod submit_config;
 pub mod workspace_dir;
 pub mod workspace_paths;
 mod zip;
 
 pub use self::config_object::ConfigObject;
 pub use self::connection_config::ConnectionConfig;
-pub use self::task_config::TaskConfig;
+pub use self::submit_config::SubmitConfig;
 pub use self::workspace_dir::WorkspaceDir;
 pub use self::workspace_paths::WorkspacePaths;
 pub use self::zip::zip_file;

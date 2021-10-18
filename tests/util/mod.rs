@@ -9,7 +9,7 @@ use std::path::Path;
 
 pub trait BacaDirectoryPaths {
     fn baca_config_file_path(&self) -> Box<Path>;
-    fn baca_task_config_file_path(&self) -> Box<Path>;
+    fn baca_submit_config_file_path(&self) -> Box<Path>;
 }
 
 impl BacaDirectoryPaths for TempDir {
@@ -17,8 +17,8 @@ impl BacaDirectoryPaths for TempDir {
         self.path().join(".baca/connection").into_boxed_path()
     }
 
-    fn baca_task_config_file_path(&self) -> Box<Path> {
-        self.path().join(".baca/task").into_boxed_path()
+    fn baca_submit_config_file_path(&self) -> Box<Path> {
+        self.path().join(".baca/submit").into_boxed_path()
     }
 }
 
