@@ -532,3 +532,17 @@ fn given_already_saved_when_submit_then_do_not_ask_for_save(
     dir.close()?;
     Ok(())
 }
+
+#[test]
+fn given_config_edit_when_no_config_saved_then_print_error(
+) -> Result<(), Box<dyn std::error::Error>> {
+    let dir = initialize_correct_workspace()?;
+
+    let mut cmd = set_up_command(&dir)?;
+    cmd.args(&["submit", "config"]);
+    cmd.assert()
+        .stdout(predicate::str::contains("No saved submit config!"));
+
+    dir.close()?;
+    Ok(())
+}

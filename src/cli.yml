@@ -93,6 +93,9 @@ subcommands:
         - clear:
             long: clear
             about: Clears saved task config
+        - config:
+            long: config
+            about: Opens editor to edit submit config
   - last:
       about: Prints details of the last submit
       args:
