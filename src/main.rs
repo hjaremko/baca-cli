@@ -32,6 +32,7 @@ fn main() {
 
     if let (command, Some(sub_matches)) = matches.subcommand() {
         if let Err(e) = command::execute(&workspace, &baca_api, command, sub_matches) {
+            error!("{:?}", e);
             println!("{}", format!("{}", e).bright_red());
         }
     }

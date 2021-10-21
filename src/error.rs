@@ -32,6 +32,7 @@ pub enum Error {
     InvalidArgument,
     UnsupportedLanguage(String),
     NoSubmitsYet,
+    EditorFail(i32),
     // InputFileDoesNotExist,
 }
 
@@ -65,6 +66,7 @@ impl fmt::Display for Error {
             Error::UnsupportedLanguage(lang) => format!("{} is not yet supported!! Please create an issue at https://github.com/hjaremko/baca-cli/issues", lang),
             Error::NoSubmitsYet => "No submits yet!".to_owned(),
             // Error::InputFileDoesNotExist => "Provided input file does not exist!".to_owned(),
+            Error::EditorFail(code) => format!("Config editor failed with exit code: {}", code),
         };
 
         write!(f, "{}", msg)

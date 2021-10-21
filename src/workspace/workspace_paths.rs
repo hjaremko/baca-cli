@@ -2,7 +2,7 @@ use crate::workspace::ConfigObject;
 use std::path::{Path, PathBuf};
 
 // todo: walk up dir tree until found
-#[derive(Clone)]
+#[derive(Debug, Clone, PartialEq)]
 pub struct WorkspacePaths {
     root_path: PathBuf,
 }
@@ -24,7 +24,10 @@ impl WorkspacePaths {
         self.root_path.join(".baca")
     }
 
-    pub fn config_path<T: ConfigObject>(&self) -> PathBuf {
+    pub fn config_path<T>(&self) -> PathBuf
+    where
+        T: ConfigObject,
+    {
         self.baca_dir().join(&T::config_filename())
     }
 }

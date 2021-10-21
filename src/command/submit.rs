@@ -2,6 +2,7 @@ use crate::api::baca_api::BacaApi;
 use crate::command::log::Log;
 use crate::command::Command;
 use crate::error::Result;
+use crate::workspace::config_editor::ConfigEditor;
 use crate::workspace::{ConfigObject, ConnectionConfig, SubmitConfig, Workspace};
 use crate::{error, workspace};
 use clap::ArgMatches;
@@ -30,12 +31,23 @@ impl Command for Submit<'_> {
             return SubmitConfig::remove_config(workspace);
         }
 
+        let saved_submit_config = SubmitConfig::read_config(workspace);
+
+        if self.args.subcommand_matches("config").is_some() {
+            if saved_submit_config.is_err() {
+                println!("No saved submit config!");
+            } else {
+                ConfigEditor::new().edit::<W, SubmitConfig>(workspace)?;
+            }
+
+            return Ok(());
+        }
+
         let provided_task_id = self.args.value_of("task_id");
         let provided_file_path = self.args.value_of("file");
         let provided_to_zip = self.args.is_present("zip");
         let provided_lang = self.args.value_of("language");
         let provided_rename = self.args.value_of("rename");
-        let saved_submit_config = SubmitConfig::read_config(workspace);
 
         if provided_task_id.is_none() && saved_submit_config.is_err() {
             print_please_provide_monit("task_id");

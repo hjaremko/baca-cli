@@ -1,9 +1,6 @@
-pub mod config_object;
-mod connection_config;
-mod submit_config;
-pub mod workspace_dir;
-pub mod workspace_paths;
-mod zip;
+use crate::error::Result;
+#[cfg(test)]
+use mockall::{automock, predicate::*};
 
 pub use self::config_object::ConfigObject;
 pub use self::connection_config::ConnectionConfig;
@@ -11,9 +8,14 @@ pub use self::submit_config::SubmitConfig;
 pub use self::workspace_dir::WorkspaceDir;
 pub use self::workspace_paths::WorkspacePaths;
 pub use self::zip::zip_file;
-use crate::error::Result;
-#[cfg(test)]
-use mockall::{automock, predicate::*};
+
+pub mod config_editor;
+pub mod config_object;
+mod connection_config;
+mod submit_config;
+pub mod workspace_dir;
+pub mod workspace_paths;
+mod zip;
 
 #[cfg_attr(test, automock)]
 pub trait Workspace {
@@ -22,4 +24,5 @@ pub trait Workspace {
     fn save_config_object<T: ConfigObject + 'static>(&self, object: &T) -> Result<()>;
     fn read_config_object<T: ConfigObject + 'static>(&self) -> Result<T>;
     fn remove_config_object<T: ConfigObject + 'static>(&self) -> Result<()>;
+    fn get_paths(&self) -> WorkspacePaths;
 }

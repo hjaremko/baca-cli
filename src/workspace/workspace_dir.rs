@@ -105,6 +105,10 @@ impl Workspace for WorkspaceDir {
         info!("Removing config file {}", path.to_str().unwrap());
         fs::remove_file(path).map_err(|e| Error::Other(e.into()))
     }
+
+    fn get_paths(&self) -> WorkspacePaths {
+        self.paths.clone()
+    }
 }
 
 fn as_config_read_error(e: io::Error) -> Error {
@@ -175,4 +179,11 @@ pub(crate) mod tests {
         temp_dir.close().unwrap();
     }
     // todo: tests for removing and saving objects
+
+    #[test]
+    fn get_paths_test() {
+        let actual = WorkspacePaths::new();
+        let workspace = WorkspaceDir::new();
+        assert_eq!(actual, workspace.get_paths());
+    }
 }
