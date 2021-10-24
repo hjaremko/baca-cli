@@ -92,7 +92,7 @@ subcommands:
       subcommands:
         - clear:
             long: clear
-            about: Clears saved task config
+            about: Clears saved submit config
         - config:
             long: config
             about: Opens editor to edit submit config
@@ -106,3 +106,5 @@ subcommands:
             takes_value: true
   - config:
       about: Opens editor to edit BaCa configuration
+  - clear:
+      about: Removes the whole `.baca` directory
