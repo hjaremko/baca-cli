@@ -45,6 +45,7 @@ where
             ConfigEditor::new().edit::<W, ConnectionConfig>(workspace)?;
             Ok(())
         }
+        "clear" => workspace.remove_workspace(),
         _ => panic!("error!"),
     }
 }

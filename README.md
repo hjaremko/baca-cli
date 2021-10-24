@@ -36,6 +36,8 @@ FLAGS:
     -v, --verbose         Sets the level of verbosity
 
 SUBCOMMANDS:
+    clear      Removes the whole `.baca` directory
+    config     Opens editor to edit BaCa configuration
     details    Gets submit details
     help       Prints this message or the help of the given subcommand(s)
     init       Initializes current directory as BaCa workspace
@@ -81,7 +83,8 @@ Submit file to task given by its id. Use `baca tasks` to see what ids are availa
  - Optional parameter `--zip` will zip given file before submitting. The archive is saved as **`source.zip`**.  
  - Optional parameter `--rename` will rename file before submitting and zipping.  
  - **Currently a correct language string needs to be provided as well.**
-
+ - `submit config` opens editor to edit submit config.
+ - `submit clear` clears saved submit config.
 ```
 baca submit -t <task_id> -f <filename> -l <language> [optional --zip] [optional --rename or -r]
 ```

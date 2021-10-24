@@ -1,3 +1,4 @@
+pub mod clear;
 pub mod config;
 pub mod details;
 pub mod init;
