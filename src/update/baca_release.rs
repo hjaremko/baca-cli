@@ -1,6 +1,10 @@
-#[derive(Debug, PartialEq)]
+use serde::Deserialize;
+use serde::Serialize;
+
+#[derive(Debug, PartialEq, Serialize, Deserialize)]
 pub struct BacaRelease {
     pub version: String,
+    #[serde(skip_serializing)]
     pub link: String,
 }
 

@@ -1,6 +1,7 @@
 use crate::api;
 use crate::api::baca_api::BacaApi;
 use crate::command::Command;
+use crate::update::BacaRelease;
 use crate::workspace::{ConfigObject, Workspace};
 use crate::{error, workspace};
 use clap::ArgMatches;
@@ -122,8 +123,14 @@ impl Command for Init {
 
         workspace.initialize().map_err(cleanup_directory)?;
         config.cookie = api.get_cookie(&config).map_err(cleanup_directory)?;
-        config.save_config(workspace).map_err(cleanup_directory)
+        config.save_config(workspace).map_err(cleanup_directory)?;
+        save_version(workspace)
     }
+}
+
+fn save_version<W: Workspace>(workspace: &W) -> error::Result<()> {
+    let version = BacaRelease::new(env!("CARGO_PKG_VERSION"), "");
+    version.save_config(workspace)
 }
 
 #[cfg(test)]
@@ -183,6 +190,9 @@ mod tests {
             .expect_initialize()
             .once()
             .returning(|| Ok(()));
+        mock_workspace
+            .expect_save_config_object::<BacaRelease>()
+            .returning(|_| Ok(()));
 
         mock_workspace
             .expect_save_config_object()
@@ -223,6 +233,9 @@ mod tests {
             .expect_initialize()
             .once()
             .returning(|| Ok(()));
+        mock_workspace
+            .expect_save_config_object::<BacaRelease>()
+            .returning(|_| Ok(()));
 
         let expected_config = make_baca_config("host", "prompt_login", "pass");
         let expected_cookie = expected_config.cookie.clone();
@@ -261,6 +274,9 @@ mod tests {
             .expect_initialize()
             .once()
             .returning(|| Ok(()));
+        mock_workspace
+            .expect_save_config_object::<BacaRelease>()
+            .returning(|_| Ok(()));
 
         let expected_config = make_baca_config("host", "login", "prompt_password");
         let expected_cookie = expected_config.cookie.clone();
@@ -298,6 +314,9 @@ mod tests {
             .expect_initialize()
             .once()
             .returning(|| Ok(()));
+        mock_workspace
+            .expect_save_config_object::<BacaRelease>()
+            .returning(|_| Ok(()));
 
         let expected_config = make_baca_config("host", "prompt_login", "prompt_password");
         let expected_cookie = expected_config.cookie.clone();
@@ -335,6 +354,9 @@ mod tests {
             .expect_initialize()
             .once()
             .returning(|| Ok(()));
+        mock_workspace
+            .expect_save_config_object::<BacaRelease>()
+            .returning(|_| Ok(()));
 
         let expected_config = make_baca_config("prompt_host", "login", "pass");
         let expected_cookie = expected_config.cookie.clone();

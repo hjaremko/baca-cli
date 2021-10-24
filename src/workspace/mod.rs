@@ -9,6 +9,7 @@ pub use self::workspace_dir::WorkspaceDir;
 pub use self::workspace_paths::WorkspacePaths;
 pub use self::zip::zip_file;
 
+pub mod baca_release;
 pub mod config_editor;
 pub mod config_object;
 mod connection_config;
