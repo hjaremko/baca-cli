@@ -31,17 +31,6 @@ impl WorkspaceDir {
 
         Ok(())
     }
-
-    fn check_if_initialized(&self) -> Result<()> {
-        let path = self.paths.baca_dir();
-        info!("Checking if {} exists.", path.to_str().unwrap());
-
-        if !path.exists() {
-            return Err(Error::WorkspaceNotInitialized);
-        }
-
-        Ok(())
-    }
 }
 
 impl Workspace for WorkspaceDir {
@@ -56,6 +45,17 @@ impl Workspace for WorkspaceDir {
             .map_err(as_config_create_error)?;
 
         info!("Baca directory created successfully.");
+        Ok(())
+    }
+
+    fn check_if_initialized(&self) -> Result<()> {
+        let path = self.paths.baca_dir();
+        info!("Checking if {} exists.", path.to_str().unwrap());
+
+        if !path.exists() {
+            return Err(Error::WorkspaceNotInitialized);
+        }
+
         Ok(())
     }
 

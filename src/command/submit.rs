@@ -35,7 +35,8 @@ impl Command for Submit<'_> {
 
         if self.args.subcommand_matches("config").is_some() {
             if saved_submit_config.is_err() {
-                println!("No saved submit config!");
+                error!("{}", saved_submit_config.err().unwrap());
+                println!("{}", "No saved submit config!".bright_red());
             } else {
                 ConfigEditor::new().edit::<W, SubmitConfig>(workspace)?;
             }

@@ -7,7 +7,8 @@ use crate::command::refresh::Refresh;
 use crate::command::submit::Submit;
 use crate::command::tasks::Tasks;
 use crate::error;
-use crate::workspace::Workspace;
+use crate::workspace::config_editor::ConfigEditor;
+use crate::workspace::{ConnectionConfig, Workspace};
 use clap::ArgMatches;
 
 mod details;
@@ -40,6 +41,10 @@ where
         "tasks" => Tasks::new().execute(workspace, api),
         "submit" => Submit::from(matches).execute(workspace, api),
         "last" => Last::from(matches).execute(workspace, api),
+        "config" => {
+            ConfigEditor::new().edit::<W, ConnectionConfig>(workspace)?;
+            Ok(())
+        }
         _ => panic!("error!"),
     }
 }

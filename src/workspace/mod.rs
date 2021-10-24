@@ -20,6 +20,7 @@ mod zip;
 #[cfg_attr(test, automock)]
 pub trait Workspace {
     fn initialize(&self) -> Result<()>;
+    fn check_if_initialized(&self) -> Result<()>;
     fn remove_workspace(&self) -> Result<()>;
     fn save_config_object<T: ConfigObject + 'static>(&self, object: &T) -> Result<()>;
     fn read_config_object<T: ConfigObject + 'static>(&self) -> Result<T>;

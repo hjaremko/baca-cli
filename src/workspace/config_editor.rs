@@ -35,6 +35,8 @@ where
         W: Workspace,
         T: ConfigObject,
     {
+        workspace.check_if_initialized()?;
+
         let config_path = workspace.get_paths().config_path::<T>();
         let ts = fs::metadata(&config_path)?.modified()?;
         let rv = self.editor.spawn_and_wait(&config_path)?;
@@ -133,6 +135,9 @@ mod tests {
 
         let mut workspace_mock = MockWorkspace::new();
         workspace_mock
+            .expect_check_if_initialized()
+            .returning(|| Ok(()));
+        workspace_mock
             .expect_get_paths()
             .returning(move || WorkspacePaths::_with_root(&temp_dir));
         let mut spawner_mock = MockEditorSpawner::new();
@@ -158,6 +163,9 @@ mod tests {
         let mut config_mock = File::create(config_path).unwrap();
 
         let mut workspace_mock = MockWorkspace::new();
+        workspace_mock
+            .expect_check_if_initialized()
+            .returning(|| Ok(()));
         workspace_mock
             .expect_get_paths()
             .returning(move || WorkspacePaths::_with_root(&temp_dir));
@@ -189,6 +197,9 @@ mod tests {
         let mut config_mock = File::create(temp_dir.join(".baca/connection")).unwrap();
 
         let mut workspace_mock = MockWorkspace::new();
+        workspace_mock
+            .expect_check_if_initialized()
+            .returning(|| Ok(()));
         workspace_mock
             .expect_get_paths()
             .returning(move || WorkspacePaths::_with_root(&temp_dir));
