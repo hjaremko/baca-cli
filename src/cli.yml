@@ -104,3 +104,5 @@ subcommands:
             short: t
             help: Print spiecified task logs, type 'baca tasks' to see what ids are available
             takes_value: true
+  - config:
+      about: Opens editor to edit BaCa configuration
