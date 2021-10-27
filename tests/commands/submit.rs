@@ -73,6 +73,7 @@ fn inactive_task_should_report_error() -> Result<(), Box<dyn std::error::Error>>
 fn no_task_id_should_report_error() -> Result<(), Box<dyn std::error::Error>> {
     let dir = initialize_correct_workspace()?;
     let mut cmd = set_up_command(&dir)?;
+    make_input_file_dummy(&dir)?;
 
     cmd.args(&["submit", "-l", "C++", "-f", "dummy.txt"]);
 
@@ -117,7 +118,16 @@ fn invalid_filename_should_report_error() -> Result<(), Box<dyn std::error::Erro
     let dir = initialize_correct_workspace()?;
     let mut cmd = set_up_command(&dir)?;
 
-    cmd.args(&["submit", "-f", "dummy.txt", "-t", "2", "-l", "C++"]);
+    cmd.args(&[
+        "submit",
+        "-f",
+        "dummy.txt",
+        "-t",
+        "2",
+        "-l",
+        "C++",
+        "--no-save",
+    ]);
 
     cmd.assert().stdout(predicate::str::contains("Error"));
 
@@ -351,7 +361,12 @@ fn given_just_filename_absolute_path_should_be_saved() -> Result<(), Box<dyn std
     let input_path = input_file.path().canonicalize().unwrap();
     let input_path = input_path.to_str().unwrap().replace("\\", "\\\\");
 
-    assert!(predicate::str::contains(input_path).eval(&submit_config_contents));
+    assert!(
+        predicate::str::contains(&input_path).eval(&submit_config_contents),
+        "contents: {:?}\ninput_path: {:?}",
+        submit_config_contents,
+        input_path
+    );
     dir.close()?;
     Ok(())
 }
@@ -380,7 +395,12 @@ fn given_absolute_path_should_be_saved() -> Result<(), Box<dyn std::error::Error
     let input_path = input_file.path().canonicalize().unwrap();
     let input_path = input_path.to_str().unwrap().replace("\\", "\\\\");
 
-    assert!(predicate::str::contains(input_path).eval(&submit_config_contents));
+    assert!(
+        predicate::str::contains(&input_path).eval(&submit_config_contents),
+        "contents: {:?}\ninput_path: {:?}",
+        submit_config_contents,
+        input_path
+    );
     dir.close()?;
     Ok(())
 }
@@ -416,7 +436,12 @@ fn given_relative_path_absolute_should_be_saved() -> Result<(), Box<dyn std::err
     let input_path = input_file.path().canonicalize().unwrap();
     let input_path = input_path.to_str().unwrap().replace("\\", "\\\\");
 
-    assert!(predicate::str::contains(input_path).eval(&submit_config_contents));
+    assert!(
+        predicate::str::contains(&input_path).eval(&submit_config_contents),
+        "contents: {:?}\ninput_path: {:?}",
+        submit_config_contents,
+        input_path
+    );
     dir.close()?;
     Ok(())
 }

@@ -10,11 +10,13 @@ use crate::error;
 use crate::workspace::config_editor::ConfigEditor;
 use crate::workspace::{ConnectionConfig, Workspace};
 use clap::ArgMatches;
+use std::convert::TryFrom;
 
 mod details;
 mod init;
 mod last;
 mod log;
+mod prompt;
 mod refresh;
 mod submit;
 mod tasks;
@@ -39,7 +41,7 @@ where
         "refresh" => Refresh::new().execute(workspace, api),
         "log" => Log::from(matches).execute(workspace, api),
         "tasks" => Tasks::new().execute(workspace, api),
-        "submit" => Submit::from(matches).execute(workspace, api),
+        "submit" => Submit::try_from(matches)?.execute(workspace, api),
         "last" => Last::from(matches).execute(workspace, api),
         "config" => {
             ConfigEditor::new().edit::<W, ConnectionConfig>(workspace)?;
