@@ -13,7 +13,10 @@ The latest release can be downloaded **[here](https://github.com/hjaremko/baca-c
 - **Cargo** users can install with command `cargo install --git https://github.com/hjaremko/baca-cli.git`
 
 ### Arch Linux
-You can download the latest release from [AUR](https://aur.archlinux.org/packages/baca-cli) and install it using your favourite AUR helper or directly from source:
+
+You can download the latest release from [AUR](https://aur.archlinux.org/packages/baca-cli) and install it using your
+favourite AUR helper or directly from source:
+
 ```
 sudo pacman -S base-devel git
 git clone https://aur.archlinux.org/baca-cli.git
@@ -53,6 +56,7 @@ SUBCOMMANDS:
 Initializes current directory as BaCa workspace, similar to `git init`. Currently, passwords are stored in **plain
 text.**
 User will be asked for credentials, if not provided.
+
 ```
 baca init
 ```
@@ -79,43 +83,45 @@ baca refresh
 
 ### Submit: `submit`
 
-Submit file to task given by its id. Use `baca tasks` to see what ids are available.  
- - Optional parameter `--zip` will zip given file before submitting. The archive is saved as **`source.zip`**.  
- - Optional parameter `--rename` will rename file before submitting and zipping.  
- - **Currently a correct language string needs to be provided as well.**
- - `submit config` opens editor to edit submit config.
- - `submit clear` clears saved submit config.
+Submit file to task given by its id. Use `baca tasks` to see what ids are available.
+
+- Optional parameter `--zip` will zip given file before submitting. The archive is saved as **`source.zip`**.
+- Optional parameter `--rename` will rename file before submitting and zipping.
+- Optional parameter `--language` explicitly sets input file language.
+- `submit config` opens editor to edit submit config.
+- `submit clear` clears saved submit config.
+
 ```
-baca submit -t <task_id> -f <filename> -l <language> [optional --zip] [optional --rename or -r]
+baca submit -t <task_id> -f <filename> [optional -l <language>] [optional --zip] [optional --rename or -r <new_filename>]
 ```
 
 Example:
 
 ```
-> baca submit -f hello.cpp -t 5 -l "C++ z obsluga plikow"
+> baca submit -f hello.cpp -t 5
 
 Submitting hello.cpp to task [E] Metoda SOR (C++ with file support).
 ```
 
 #### Saving task info
 
-If you don't want to type task info (id and filename) every time you submit, you can use `--save` flag to save it.
-Keep in mind, that config provided through parameters will override saved data. To completely remove saved data
+If you don't want to type task info (id and filename) every time you submit, you can use `--save` flag to save it. Keep
+in mind, that config provided through parameters will override saved data. To completely remove saved data
 use `baca submit clear`. To disable automatic prompt for save, use `--no-save`.
 
 Example:
 
 ```
 > baca submit -f hello.cpp -t 5 --save
-Submitting hello.cpp to task [E] Metoda SOR.
+Submitting hello.cpp to task [E] Metoda SOR (C++ with file support).
 > baca submit
-Submitting hello.cpp to task [E] Metoda SOR.
+Submitting hello.cpp to task [E] Metoda SOR (C++ with file support).
 ```
 
 ### Recent submits: `log`
 
-Prints statuses of a couple of recent submits (default 3).
-Parameter `-t <task_id>` lets you print logs for specific task. Task ID can be found by `baca tasks`.
+Prints statuses of a couple of recent submits (default 3). Parameter `-t <task_id>` lets you print logs for specific
+task. Task ID can be found by `baca tasks`.
 
 ```
 baca log [optional: number] [optional: -t <task_id>]
@@ -141,8 +147,8 @@ Example:
 
 ### Last submit details: `last`
 
-Prints details of last submit. Requires workspace to be initialized.
-Parameter `-t <task_id>` lets you print logs for specific task. Task ID can be found by `baca tasks`.
+Prints details of last submit. Requires workspace to be initialized. Parameter `-t <task_id>` lets you print logs for
+specific task. Task ID can be found by `baca tasks`.
 
 ```
 baca last [optional: -t <task_id>]
@@ -229,12 +235,15 @@ Example:
 ```
 
 ## Environment variables
+
 ### Settings for update check
+
 ```
 GITHUB_USER=hjaremko
 GITHUB_REPO=baca-cli
 AUTH_TOKEN=<github token> # auth GitHub API requests (increases API call limit)
 ```
+
 ## Compilation
 
 ```
@@ -246,9 +255,11 @@ cargo build --release
 ```
 sudo apt install pkg-config libssl-dev
 ```
+
 ## Running tests
-Some tests require credentials to actual BaCa server.
-These can be set using environment variables.
+
+Some tests require credentials to actual BaCa server. These can be set using environment variables.
+
 ```
 TEST_BACA_LOGIN=<login>
 TEST_BACA_PASSWORD=<password>

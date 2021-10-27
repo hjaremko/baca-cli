@@ -2,7 +2,7 @@ use crate::api::baca_api::BacaApi;
 use crate::api::details::EMPTY_RESPONSE;
 use crate::api::Request;
 use crate::error::{Error, Result};
-use crate::model::{Results, Submit, Task, Tasks};
+use crate::model::{Language, Results, Submit, Task, Tasks};
 use crate::parse::from_baca_output::FromBacaOutput;
 use crate::workspace::ConnectionConfig;
 use reqwest::blocking::Response;
@@ -91,6 +91,21 @@ impl BacaApi for BacaService {
             "Błąd" => Err(Error::Submit),
             _ => Ok(()),
         }
+    }
+
+    fn get_allowed_language(
+        &self,
+        connection_config: &ConnectionConfig,
+        task_id: &str,
+    ) -> Result<Option<Language>> {
+        let response = Request::new(connection_config).allowed_languages(task_id)?;
+        check_response_status(&response)?;
+        let response = response.text()?;
+        debug!("Received raw allowed languages: {:?}", response);
+        Ok(Option::<Language>::from_baca_output(
+            connection_config,
+            &response,
+        ))
     }
 }
 
@@ -271,5 +286,32 @@ mod tests {
         let result = api.get_results(&baca);
 
         check_logged_out(result);
+    }
+
+    #[test]
+    fn get_languages_expired_task_should_return_empty() {
+        let connection = make_correct_baca_invalid_session();
+        let api = BacaService::default();
+        let result = api.get_allowed_language(&connection, "1").unwrap();
+
+        assert!(result.is_none());
+    }
+
+    #[test]
+    fn get_languages_on_incorrect_host_should_fail() {
+        let connection = make_incorrect_baca();
+        let api = BacaService::default();
+        let result = api.get_allowed_language(&connection, "1");
+
+        check_invalid_host(result);
+    }
+
+    #[test]
+    fn get_languages_on_incorrect_task_should_return_empty() {
+        let connection = make_correct_baca_invalid_session();
+        let api = BacaService::default();
+        let result = api.get_allowed_language(&connection, "12323").unwrap();
+
+        assert!(result.is_none());
     }
 }

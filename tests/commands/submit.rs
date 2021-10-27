@@ -98,14 +98,15 @@ fn no_file_should_report_error() -> Result<(), Box<dyn std::error::Error>> {
 }
 
 #[test]
-fn no_language_should_report_error() -> Result<(), Box<dyn std::error::Error>> {
+fn no_language_on_expired_task_should_report_error() -> Result<(), Box<dyn std::error::Error>> {
     let dir = initialize_correct_workspace()?;
     let mut cmd = set_up_command(&dir)?;
+    make_input_file_dummy(&dir).unwrap();
 
     cmd.args(&["submit", "-f", "dummy.txt", "-t", "2"]);
 
     cmd.assert()
-        .stdout(predicate::str::contains("provide language"));
+        .stdout(predicate::str::contains("still active?"));
 
     dir.close()?;
     Ok(())
