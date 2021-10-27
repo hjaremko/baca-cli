@@ -1,5 +1,5 @@
 use crate::error::Result;
-use crate::model::{Results, Submit, Task, Tasks};
+use crate::model::{Language, Results, Submit, Task, Tasks};
 use crate::workspace::ConnectionConfig;
 
 #[cfg(test)]
@@ -26,4 +26,9 @@ pub trait BacaApi {
         task: &Task,
         file_path: &str,
     ) -> Result<()>;
+    fn get_allowed_language(
+        &self,
+        connection_config: &ConnectionConfig,
+        task_id: &str,
+    ) -> Result<Option<Language>>;
 }

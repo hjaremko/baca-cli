@@ -49,6 +49,11 @@ impl<'a> Request<'a> {
         req.send().map_err(|e| e.into())
     }
 
+    pub fn allowed_languages(&self, task_id: &str) -> reqwest::Result<Response> {
+        let req = self.make_request(RequestType::AllowedLanguages(task_id.to_string()));
+        req.send()
+    }
+
     fn make_request(&self, req_type: RequestType) -> RequestBuilder {
         let post_url = format!(
             "{}{}",

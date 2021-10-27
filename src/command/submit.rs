@@ -1,7 +1,7 @@
 use crate::api::baca_api::BacaApi;
 use crate::command::log::Log;
 use crate::command::Command;
-use crate::error::Result;
+use crate::error::{Error, Result};
 use crate::workspace::config_editor::ConfigEditor;
 use crate::workspace::{ConfigObject, ConnectionConfig, SubmitConfig, Workspace};
 use crate::{error, workspace};
@@ -10,6 +10,7 @@ use colored::Colorize;
 use dialoguer::Confirm;
 use std::fs;
 use std::path::PathBuf;
+use tracing::info;
 
 pub struct Submit<'a> {
     args: &'a ArgMatches<'a>,
@@ -60,10 +61,19 @@ impl Command for Submit<'_> {
             return Ok(());
         }
 
-        if provided_lang.is_none() && saved_submit_config.is_err() {
-            print_please_provide_monit("language");
-            return Ok(());
-        }
+        let allowed_language = if provided_lang.is_none() && saved_submit_config.is_err() {
+            let connection_config = ConnectionConfig::read_config(workspace)?;
+            let allowed_language = api.get_allowed_language(&connection_config, "1")?;
+            info!("Allowed language: {:?}", allowed_language);
+
+            if allowed_language.is_none() {
+                return Err(Error::Submit);
+            }
+
+            allowed_language
+        } else {
+            None
+        };
 
         let mut ask_for_save = saved_submit_config.is_err();
         let mut submit_config = saved_submit_config.unwrap_or_default();
@@ -80,6 +90,9 @@ impl Command for Submit<'_> {
 
         if let Some(lang) = provided_lang {
             submit_config.language = lang.parse()?;
+            ask_for_save = true;
+        } else if let Some(lang) = allowed_language {
+            submit_config.language = lang;
             ask_for_save = true;
         }
 
