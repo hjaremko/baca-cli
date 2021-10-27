@@ -88,7 +88,7 @@ impl BacaApi for BacaService {
 
         match resp.as_str() {
             "Niezalogowany jesteś" => Err(Error::LoggedOut),
-            "Błąd" => Err(Error::Submit),
+            "Błąd" => Err(Error::TaskNotActive),
             _ => Ok(()),
         }
     }

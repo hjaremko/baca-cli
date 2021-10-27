@@ -1,38 +1,12 @@
 use crate::api;
 use crate::api::baca_api::BacaApi;
+use crate::command::prompt::{Input, Password, Prompt};
 use crate::command::Command;
 use crate::update::BacaRelease;
 use crate::workspace::{ConfigObject, Workspace};
 use crate::{error, workspace};
 use clap::ArgMatches;
-#[cfg(test)]
-use mockall::{automock, predicate::*};
 use tracing::{debug, info};
-
-#[cfg_attr(test, automock)]
-trait Prompt {
-    fn interact(&self) -> error::Result<String>;
-}
-
-struct Input(&'static str);
-
-impl Prompt for Input {
-    fn interact(&self) -> error::Result<String> {
-        Ok(dialoguer::Input::<String>::new()
-            .with_prompt(self.0)
-            .interact()?)
-    }
-}
-
-struct Password;
-
-impl Prompt for Password {
-    fn interact(&self) -> error::Result<String> {
-        Ok(dialoguer::Password::new()
-            .with_prompt("Password")
-            .interact()?)
-    }
-}
 
 pub struct Init {
     host: Option<String>,
@@ -135,11 +109,11 @@ fn save_version<W: Workspace>(workspace: &W) -> error::Result<()> {
 
 #[cfg(test)]
 mod tests {
+    use super::*;
     use crate::api;
     use crate::api::baca_api::MockBacaApi;
+    use crate::command::prompt::MockPrompt;
     use crate::workspace::{ConnectionConfig, MockWorkspace};
-
-    use super::*;
 
     // todo: tests::utils
     fn make_mock_connection_config() -> ConnectionConfig {

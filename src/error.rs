@@ -22,7 +22,7 @@ pub enum Error {
     InvalidSubmitId,
     Protocol,
     LoggedOut,
-    Submit,
+    TaskNotActive,
     InvalidTaskId(String),
     InvalidHost,
     InvalidLoginOrPassword,
@@ -33,6 +33,7 @@ pub enum Error {
     UnsupportedLanguage(String),
     NoSubmitsYet,
     EditorFail(i32),
+    SubmitArgumentNotProvided(String),
     // InputFileDoesNotExist,
 }
 
@@ -55,7 +56,7 @@ impl fmt::Display for Error {
             Error::InvalidSubmitId => "Invalid submit id.".to_owned(),
             Error::Protocol => "Unfortunately, Baca still uses deprecated TSLv1 protocol which is not supported on your system. Sorry!".to_owned(),
             Error::LoggedOut => "The session cookie has expired, type 'baca refresh' to re-log and try again.".to_owned(),
-            Error::Submit => "Error sending submit. Is the task still active?".to_owned(),
+            Error::TaskNotActive => "Error sending submit. Is the task still active?".to_owned(),
             Error::InvalidTaskId(id) => format!("Task no. {} does not exist.", id),
             Error::InvalidHost => "Invalid host provided. Example: for baca url 'https://baca.ii.uj.edu.pl/mn2021/', the host is 'mn2021'.".to_owned(),
             Error::InvalidLoginOrPassword => "Invalid login or password!".to_owned(),
@@ -67,6 +68,7 @@ impl fmt::Display for Error {
             Error::NoSubmitsYet => "No submits yet!".to_owned(),
             // Error::InputFileDoesNotExist => "Provided input file does not exist!".to_owned(),
             Error::EditorFail(code) => format!("Config editor failed with exit code: {}", code),
+            Error::SubmitArgumentNotProvided(argument) => format!("Please provide {}. Type 'baca submit -h' for more info.", argument),
         };
 
         write!(f, "{}", msg)

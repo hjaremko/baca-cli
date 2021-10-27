@@ -1,17 +1,30 @@
 use crate::error::Error;
 use crate::model::Language;
 use crate::workspace::{ConfigObject, Workspace};
+use clap::ArgMatches;
+use merge::Merge;
 use serde::{Deserialize, Serialize};
-#[cfg(test)]
+use std::convert::TryFrom;
 use std::path::Path;
 use std::path::PathBuf;
 
-#[derive(Debug, Serialize, Deserialize, PartialEq)]
+fn merge_left<T>(left: &mut Option<T>, right: Option<T>) {
+    if let Some(right) = right {
+        let _ = left.insert(right);
+    }
+}
+
+#[derive(Debug, Default, Serialize, Deserialize, PartialEq, Merge, Clone)]
 pub struct SubmitConfig {
-    pub id: String,
-    pub file: PathBuf,
+    #[merge(strategy = merge_left)]
+    pub id: Option<String>,
+    #[merge(strategy = merge_left)]
+    file: Option<PathBuf>,
+    #[merge(strategy = merge::bool::overwrite_false)]
     pub to_zip: bool,
-    pub language: Language,
+    #[merge(strategy = merge_left)]
+    pub language: Option<Language>,
+    #[merge(strategy = merge_left)]
     pub rename_as: Option<String>,
 }
 
@@ -25,31 +38,38 @@ impl SubmitConfig {
         rename_as: Option<String>,
     ) -> Self {
         Self {
-            id: id.to_string(),
-            file: file.to_owned(),
+            id: id.to_string().into(),
+            file: file.to_owned().into(),
             to_zip,
-            language,
+            language: language.into(),
             rename_as,
         }
     }
-}
 
-impl Default for SubmitConfig {
-    fn default() -> Self {
-        Self {
-            id: "".to_string(),
-            file: PathBuf::new(),
-            to_zip: false,
-            language: Language::Unsupported,
-            rename_as: None,
-        }
+    pub fn id(&self) -> Option<&String> {
+        self.id.as_ref()
+    }
+
+    pub fn file(&self) -> Option<&Path> {
+        self.file.as_deref()
+    }
+
+    pub fn try_set_file<P>(&mut self, filepath: Option<P>) -> crate::error::Result<()>
+    where
+        P: Into<PathBuf>,
+    {
+        let file = match filepath {
+            None => None,
+            Some(file) => Some(file.into().canonicalize()?),
+        };
+        self.file = file;
+        Ok(())
     }
 }
 
 impl ConfigObject for SubmitConfig {
     fn save_config<W: Workspace>(&self, workspace: &W) -> crate::error::Result<()> {
-        workspace.save_config_object(self)?;
-        Ok(())
+        workspace.save_config_object(self)
     }
 
     fn read_config<W: Workspace>(workspace: &W) -> crate::error::Result<Self> {
@@ -77,6 +97,25 @@ impl ConfigObject for SubmitConfig {
     }
 }
 
+impl<'a> TryFrom<&'a ArgMatches<'a>> for SubmitConfig {
+    type Error = crate::error::Error;
+
+    fn try_from(args: &'a ArgMatches<'a>) -> Result<Self, Error> {
+        let mut x = Self {
+            file: None,
+            language: match args.value_of("language") {
+                None => None,
+                Some(lang_str) => Some(lang_str.parse()?),
+            },
+            id: args.value_of("task_id").map(|x| x.into()),
+            rename_as: args.value_of("rename").map(|x| x.into()),
+            to_zip: args.is_present("zip"),
+        };
+        x.try_set_file(args.value_of("file"))?;
+        Ok(x)
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -86,6 +125,7 @@ mod tests {
     use assert_fs::prelude::*;
     use predicates::prelude::*;
     use std::ops::Not;
+    use std::str::FromStr;
 
     #[test]
     fn save_read_task_success() {
@@ -190,5 +230,70 @@ mod tests {
             .eval(mock_paths.config_path::<SubmitConfig>().as_path())
             .not());
         temp_dir.close().unwrap();
+    }
+
+    #[test]
+    fn default_should_contain_none() {
+        let default = SubmitConfig::default();
+
+        assert!(default.file.is_none());
+        assert!(default.language.is_none());
+        assert!(default.id.is_none());
+        assert!(default.rename_as.is_none());
+        assert!(!default.to_zip);
+    }
+
+    #[test]
+    fn merge_both_none() {
+        let mut lhs = SubmitConfig::default();
+        let rhs = SubmitConfig::default();
+        lhs.merge(rhs);
+        let merged = lhs;
+
+        assert!(merged.file.is_none());
+        assert!(merged.language.is_none());
+        assert!(merged.id.is_none());
+        assert!(merged.rename_as.is_none());
+        assert!(!merged.to_zip);
+    }
+
+    fn make_submit_config() -> SubmitConfig {
+        SubmitConfig {
+            id: "3".to_string().into(),
+            file: PathBuf::from("file.txt").into(),
+            to_zip: true,
+            language: Language::from_str("C++").unwrap().into(),
+            rename_as: "source.cpp".to_string().into(),
+        }
+    }
+
+    #[test]
+    fn merge_left_full() {
+        let mut lhs = make_submit_config();
+        let rhs = SubmitConfig::default();
+
+        lhs.merge(rhs);
+        let merged = lhs;
+
+        assert_eq!(merged.file.unwrap().to_str().unwrap(), "file.txt");
+        assert_eq!(merged.language.unwrap(), Language::Cpp);
+        assert_eq!(merged.id.unwrap(), "3");
+        assert_eq!(merged.rename_as.unwrap(), "source.cpp");
+        assert!(merged.to_zip);
+    }
+
+    #[test]
+    fn merge_right_full() {
+        let mut lhs = make_submit_config();
+        lhs.language = Language::Java.into();
+        let mut rhs = make_submit_config();
+        rhs.merge(lhs);
+        let merged = rhs;
+
+        assert_eq!(merged.file.unwrap().to_str().unwrap(), "file.txt");
+        assert_eq!(merged.language.unwrap(), Language::Java);
+        assert_eq!(merged.id.unwrap(), "3");
+        assert_eq!(merged.rename_as.unwrap(), "source.cpp");
+        assert!(merged.to_zip);
     }
 }

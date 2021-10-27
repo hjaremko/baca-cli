@@ -73,6 +73,7 @@ impl Workspace for WorkspaceDir {
         let path = self.paths.config_path::<T>();
 
         info!("Saving object {}", path.to_str().unwrap());
+        debug!("Saving object {:?}", &object);
 
         let serialized = serde_yaml::to_string(object)?;
         debug!("Serialized: {}", serialized);
