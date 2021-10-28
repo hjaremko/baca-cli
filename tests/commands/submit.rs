@@ -70,21 +70,6 @@ fn inactive_task_should_report_error() -> Result<(), Box<dyn std::error::Error>>
 }
 
 #[test]
-fn no_task_id_should_report_error() -> Result<(), Box<dyn std::error::Error>> {
-    let dir = initialize_correct_workspace()?;
-    let mut cmd = set_up_command(&dir)?;
-    make_input_file_dummy(&dir)?;
-
-    cmd.args(&["submit", "-l", "C++", "-f", "dummy.txt"]);
-
-    cmd.assert()
-        .stdout(predicate::str::contains("provide task_id"));
-
-    dir.close()?;
-    Ok(())
-}
-
-#[test]
 fn no_file_should_report_error() -> Result<(), Box<dyn std::error::Error>> {
     let dir = initialize_correct_workspace()?;
     let mut cmd = set_up_command(&dir)?;

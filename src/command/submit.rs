@@ -1,6 +1,7 @@
 use crate::api::baca_api::BacaApi;
 use crate::command::log::Log;
-use crate::command::Command;
+use crate::command::prompt::Prompt;
+use crate::command::{prompt, Command};
 use crate::error::{Error, Result};
 use crate::model::Language;
 use crate::workspace::config_editor::ConfigEditor;
@@ -121,12 +122,16 @@ impl Submit {
     {
         let (ask_for_save, mut submit_config) = self.merge_saved_and_provided_configs(workspace)?;
 
-        if submit_config.id.is_none() {
-            return Err(Error::SubmitArgumentNotProvided("task_id".to_string()));
-        }
-
         if submit_config.file().is_none() {
             return Err(Error::SubmitArgumentNotProvided("file".to_string()));
+        }
+
+        if submit_config.id.is_none() {
+            let connection_config = ConnectionConfig::read_config(workspace)?;
+
+            let tasks = api.get_tasks(&connection_config)?;
+            let task_choice = prompt::TaskChoice::new(tasks);
+            submit_config.id = task_choice.interact()?.into();
         }
 
         if submit_config.language.is_none() {

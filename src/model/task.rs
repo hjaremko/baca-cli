@@ -1,4 +1,5 @@
 use crate::model::Language;
+use std::fmt::{Display, Formatter};
 
 #[derive(Debug, Clone, PartialEq)]
 pub struct Task {
@@ -17,5 +18,11 @@ impl Task {
             problem_name: problem_name.to_string(),
             overall_oks,
         }
+    }
+}
+
+impl Display for Task {
+    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
+        f.write_str(&self.problem_name)
     }
 }
