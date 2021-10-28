@@ -83,11 +83,12 @@ baca refresh
 
 ### Submit: `submit`
 
-Submit file to task given by its id. Use `baca tasks` to see what ids are available.
+Submits given file to specified task. Will prompt the user for task, if not provided.
 
+- Optional parameter `--task <id>` explicitly sets problem to submit to. Use `baca tasks` to see what ids are available.
 - Optional parameter `--zip` will zip given file before submitting. The archive is saved as **`source.zip`**.
 - Optional parameter `--rename` will rename file before submitting and zipping.
-- Optional parameter `--language` explicitly sets input file language.
+- Optional parameter `--language <language>` explicitly sets input file language.
 - `submit config` opens editor to edit submit config.
 - `submit clear` clears saved submit config.
 
@@ -98,8 +99,8 @@ baca submit -t <task_id> -f <filename> [optional -l <language>] [optional --zip]
 Example:
 
 ```
-> baca submit -f hello.cpp -t 5
-
+> baca submit -f hello.cpp
+✔ Choose task: · [E] Metoda SOR
 Submitting hello.cpp to task [E] Metoda SOR (C++ with file support).
 ```
 
