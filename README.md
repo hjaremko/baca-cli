@@ -24,6 +24,12 @@ cd baca-cli
 makepkg -sic
 ```
 
+### Dependencies (Linux)
+
+```
+sudo apt install pkg-config libssl-dev
+```
+
 ## Usage
 
 ```
@@ -249,12 +255,6 @@ AUTH_TOKEN=<github token> # auth GitHub API requests (increases API call limit)
 
 ```
 cargo build --release
-```
-
-### Dependencies (Linux only)
-
-```
-sudo apt install pkg-config libssl-dev
 ```
 
 ## Running tests
