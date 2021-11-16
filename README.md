@@ -30,6 +30,8 @@ makepkg -sic
 sudo apt install pkg-config libssl-dev
 ```
 
+**[Troubleshooting](#troubleshooting)**
+
 ## Usage
 
 ```
@@ -275,3 +277,26 @@ Log levels are configured by `-v` flag.
 - `-v` - **info**
 - `-vv` - **debug**
 - `-vvv or more` - **trace**
+
+## Troubleshooting
+
+- `Unfortunately, Baca still uses deprecated TLSv1 protocol which is not supported on your system. Sorry!`<br />Since Baca uses deprecated TLSv1 protocol, you have to enable TLSv1 to use it. You can do it multiple ways, some of which are described below.
+  - Every method presented below assumes that a OpenSSL config file exists at `~/.openssl.cnf`. Inside of it you can specify the security level, which changes the TLS version. You can find more information by clicking [here](https://discourse.ubuntu.com/t/default-to-tls-v1-2-in-all-tls-libraries-in-20-04-lts/12464/8).<br />**Example config:**
+
+        openssl_conf = openssl_init
+
+        [openssl_init]
+        ssl_conf = ssl_sect
+
+        [ssl_sect]
+        system_default = system_default_sect
+
+        [system_default_sect]
+        CipherString = DEFAULT@SECLEVEL=1
+
+  - Supplying the environmental variable only for the command that follows: `OPENSSL_CONF=~/.openssl.cnf baca`.
+  - Creating an alias in your shell's RC file. This enables this specific OpenSSL config for this specific terminal instance, until it's closed. **Example:**<br />
+    1. In `.zshrc` append `alias bacaSSL="export OPENSSL_CONF=~/.openssl_baca.cnf"`.
+    2. Restart the terminal or `source /path/to/.zshrc`.
+    3. Use baca-cli as you would normally.
+  - ***Not recommended!*** It is possible to overwrite the global OpenSSL config to allow for TLSv1 connections everywhere, but it is **really** insecure to do so. Thus we will not show how to do it.
