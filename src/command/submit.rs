@@ -1,5 +1,5 @@
 use crate::api::baca_api::BacaApi;
-use crate::command::log::Log;
+use crate::command::last::Last;
 use crate::command::prompt::Prompt;
 use crate::command::{prompt, Command};
 use crate::error::{Error, Result};
@@ -229,8 +229,8 @@ where
 {
     let connection_config = ConnectionConfig::read_config(workspace)?;
     let tasks = api.get_tasks(&connection_config)?;
-    let task_id = submit_config.id().unwrap();
-    let mut task = tasks.get_by_id(task_id)?.clone();
+    let task_id = submit_config.id().unwrap().clone();
+    let mut task = tasks.get_by_id(&task_id)?.clone();
     task.language = submit_config.language.unwrap();
 
     let original_filename = submit_config
@@ -296,14 +296,15 @@ where
         &task,
         submit_config.file().unwrap().to_str().unwrap(),
     )?;
-    println!();
-    Log::new("1").execute(workspace, api)
+
+    Last::with_filter(&task_id).execute(workspace, api)
 }
 
 #[cfg(test)]
 mod tests {
     use super::*;
     use crate::api::baca_api::MockBacaApi;
+    use crate::model;
     use crate::model::Language::Unsupported;
     use crate::model::{Language, Results, Task, Tasks};
     use crate::workspace::{ConnectionConfig, MockWorkspace};
@@ -342,7 +343,6 @@ mod tests {
         mock_api
             .expect_get_results()
             .returning(|_| Ok(Results { submits: vec![] }));
-
         mock_api
             .expect_get_tasks()
             .withf(|x| *x == ConnectionConfig::default())
@@ -352,6 +352,12 @@ mod tests {
                     Task::new("2", Unsupported, "Metoda parametryzacji torusów", 4),
                 ]))
             });
+        mock_api
+            .expect_get_results_by_task()
+            .returning(|_, _| Ok(Results::new(vec![model::Submit::default()])));
+        mock_api
+            .expect_get_submit_details()
+            .returning(|_, _| Ok(model::Submit::default()));
 
         let dir = assert_fs::TempDir::new().unwrap();
         let original_input = make_input_file_cpp(&dir);
