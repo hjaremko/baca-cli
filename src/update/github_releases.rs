@@ -1,5 +1,6 @@
-use crate::error::{Error, Result};
+use crate::error::Error;
 use crate::update::{BacaRelease, ReleaseService};
+use anyhow::Result;
 use serde_json::Value;
 use std::env;
 use tracing::{debug, info};

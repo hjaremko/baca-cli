@@ -1,5 +1,5 @@
-use crate::error::Result;
 use crate::update::BacaRelease;
+use anyhow::Result;
 #[cfg(test)]
 use mockall::{automock, predicate::*};
 

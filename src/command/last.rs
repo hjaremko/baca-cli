@@ -1,9 +1,10 @@
 use crate::api::baca_api::BacaApi;
 use crate::command::details::Details;
 use crate::command::Command;
-use crate::error::{Error, Result};
+use crate::error::Error;
 use crate::model::Submit;
 use crate::workspace::{ConfigObject, ConnectionConfig, Workspace};
+use anyhow::Result;
 use clap::ArgMatches;
 
 pub struct Last {

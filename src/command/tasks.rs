@@ -1,7 +1,7 @@
 use crate::api::baca_api::BacaApi;
 use crate::command::Command;
-use crate::error::Result;
 use crate::workspace::{ConfigObject, ConnectionConfig, Workspace};
+use anyhow::Result;
 use tracing::info;
 
 pub struct Tasks {}

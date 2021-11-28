@@ -7,6 +7,7 @@ use crate::workspace::{ConfigObject, Workspace};
 use crate::{error, workspace};
 use clap::ArgMatches;
 use tracing::{debug, info};
+use anyhow::{anyhow, Result};
 
 pub struct Init {
     host: Option<String>,
@@ -35,7 +36,7 @@ impl From<&ArgMatches<'_>> for Init {
 }
 
 impl Init {
-    fn get_host(&self) -> error::Result<String> {
+    fn get_host(&self) -> Result<String> {
         if self.host.as_ref().is_none() {
             return self.host_prompt.interact();
         }
@@ -43,7 +44,7 @@ impl Init {
         Ok(self.host.as_ref().unwrap().clone())
     }
 
-    fn get_login(&self) -> error::Result<String> {
+    fn get_login(&self) -> Result<String> {
         if self.login.as_ref().is_none() {
             return self.login_prompt.interact();
         }
@@ -51,7 +52,7 @@ impl Init {
         Ok(self.login.as_ref().unwrap().clone())
     }
 
-    fn get_password(&self) -> error::Result<String> {
+    fn get_password(&self) -> Result<String> {
         if self.password.as_ref().is_none() {
             return self.password_prompt.interact();
         }
@@ -62,7 +63,7 @@ impl Init {
 
 impl Command for Init {
     // todo: -r to override current config
-    fn execute<W, A>(self, workspace: &W, api: &A) -> error::Result<()>
+    fn execute<W, A>(self, workspace: &W, api: &A) -> Result<()>
     where
         W: Workspace,
         A: BacaApi,
@@ -85,7 +86,7 @@ impl Command for Init {
             cookie: "".to_string(),
         };
 
-        let cleanup_directory = |e| match e {
+        let cleanup_directory = |e: anyhow::Error| match e.downcast_ref::<error::Error>().unwrap() {
             error::Error::WorkspaceAlreadyInitialized => e,
             _ => {
                 workspace
@@ -102,7 +103,7 @@ impl Command for Init {
     }
 }
 
-fn save_version<W: Workspace>(workspace: &W) -> error::Result<()> {
+fn save_version<W: Workspace>(workspace: &W) -> Result<()> {
     let version = BacaRelease::new(env!("CARGO_PKG_VERSION"), "");
     version.save_config(workspace)
 }

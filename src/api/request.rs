@@ -1,11 +1,11 @@
 use crate::api::RequestType;
-use crate::error;
 use crate::error::Error;
 use crate::model::Task;
 use crate::workspace::ConnectionConfig;
 use reqwest::blocking::{multipart, RequestBuilder, Response};
 use reqwest::header::{CONTENT_TYPE, COOKIE};
 use tracing::{debug, info};
+use anyhow::Result;
 
 pub struct Request<'a> {
     connection_config: &'a ConnectionConfig,
@@ -44,7 +44,7 @@ impl<'a> Request<'a> {
         req.send()
     }
 
-    pub fn submit(&self, task: &Task, file_path: &str) -> error::Result<Response> {
+    pub fn submit(&self, task: &Task, file_path: &str) -> Result<Response> {
         let req = self.make_submit_request(task, file_path)?;
         req.send().map_err(|e| e.into())
     }
@@ -87,7 +87,7 @@ impl<'a> Request<'a> {
             .header("X-GWT-Permutation", &self.connection_config.permutation)
     }
 
-    fn make_submit_request(&self, task: &Task, file_path: &str) -> error::Result<RequestBuilder> {
+    fn make_submit_request(&self, task: &Task, file_path: &str) -> Result<RequestBuilder> {
         let form = multipart::Form::new()
             .text("zadanie", task.id.clone())
             .text("jezyk", task.language.code())

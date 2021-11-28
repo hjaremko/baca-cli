@@ -1,10 +1,11 @@
 use crate::api::baca_api::BacaApi;
 use crate::api::details::EMPTY_RESPONSE;
 use crate::api::Request;
-use crate::error::{Error, Result};
+use crate::error::Error;
 use crate::model::{Language, Results, Submit, Task, Tasks};
 use crate::parse::from_baca_output::FromBacaOutput;
 use crate::workspace::ConnectionConfig;
+use anyhow::Result;
 use reqwest::blocking::Response;
 use std::str::FromStr;
 use tracing::{debug, info};
@@ -31,7 +32,7 @@ impl BacaApi for BacaService {
         debug!("Received raw submit: {}", resp);
 
         if resp.contains("failed") {
-            return Err(Error::InvalidSubmitId);
+            return Err(Error::InvalidSubmitId)?;
         }
 
         Ok(Submit::parse(
@@ -72,7 +73,7 @@ impl BacaApi for BacaService {
         let resp = resp.text().expect("Invalid submit data");
         debug!("Received raw tasks: {}", resp);
 
-        Tasks::from_str(&check_for_empty_response(resp)?)
+        Tasks::from_str(&check_for_empty_response(resp)?).map_err(|e| e.into())
     }
 
     fn submit(
@@ -87,8 +88,8 @@ impl BacaApi for BacaService {
         debug!("Response: {}", resp);
 
         match resp.as_str() {
-            "Niezalogowany jesteś" => Err(Error::LoggedOut),
-            "Błąd" => Err(Error::TaskNotActive),
+            "Niezalogowany jesteś" => Err(Error::LoggedOut.into()),
+            "Błąd" => Err(Error::TaskNotActive.into()),
             _ => Ok(()),
         }
     }
@@ -129,7 +130,7 @@ fn extract_cookie(response: &Response) -> Result<String> {
 
 fn check_response_status(response: &Response) -> Result<()> {
     if response.status().as_str() == "404" {
-        return Err(Error::InvalidHost);
+        return Err(Error::InvalidHost.into());
     };
 
     Ok(())
@@ -137,7 +138,7 @@ fn check_response_status(response: &Response) -> Result<()> {
 
 fn check_for_empty_response(resp: String) -> Result<String> {
     if resp == EMPTY_RESPONSE {
-        Err(Error::LoggedOut)
+        Err(Error::LoggedOut.into())
     } else {
         Ok(resp)
     }
@@ -175,7 +176,7 @@ mod tests {
         T: Debug,
     {
         let e = result.expect_err("Should fail");
-        assert!(matches!(e, Error::InvalidHost));
+        assert!(matches!(e, Error::InvalidHost), "{:?}", e);
     }
 
     fn check_invalid_login<T>(result: Result<T>)
@@ -183,7 +184,7 @@ mod tests {
         T: Debug,
     {
         let e = result.expect_err("Should fail");
-        assert!(matches!(e, Error::InvalidLoginOrPassword));
+        assert!(matches!(e, Error::InvalidLoginOrPassword), "{:?}", e);
     }
 
     fn check_logged_out<T>(result: Result<T>)
@@ -191,7 +192,7 @@ mod tests {
         T: Debug,
     {
         let e = result.expect_err("Should fail");
-        assert!(matches!(e, Error::LoggedOut));
+        assert!(matches!(e, Error::LoggedOut), "{:?}", e);
     }
 
     #[test]

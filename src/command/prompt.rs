@@ -1,20 +1,20 @@
-use crate::error;
 use crate::model::Tasks;
 use dialoguer::theme::ColorfulTheme;
 use dialoguer::Select;
 #[cfg(test)]
 use mockall::{automock, predicate::*};
 use tracing::info;
+use anyhow::Result;
 
 #[cfg_attr(test, automock)]
 pub trait Prompt {
-    fn interact(&self) -> error::Result<String>;
+    fn interact(&self) -> Result<String>;
 }
 
 pub struct Input(pub &'static str);
 
 impl Prompt for Input {
-    fn interact(&self) -> error::Result<String> {
+    fn interact(&self) -> Result<String> {
         Ok(dialoguer::Input::<String>::new()
             .with_prompt(self.0)
             .interact()?)
@@ -24,7 +24,7 @@ impl Prompt for Input {
 pub struct Password;
 
 impl Prompt for Password {
-    fn interact(&self) -> error::Result<String> {
+    fn interact(&self) -> Result<String> {
         Ok(dialoguer::Password::new()
             .with_prompt("Password")
             .interact()?)
@@ -42,7 +42,7 @@ impl TaskChoice {
 }
 
 impl Prompt for TaskChoice {
-    fn interact(&self) -> error::Result<String> {
+    fn interact(&self) -> Result<String> {
         let items = &self.available_tasks.tasks;
 
         let selection = Select::with_theme(&ColorfulTheme::default())

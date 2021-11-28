@@ -6,11 +6,11 @@ use crate::command::log::Log;
 use crate::command::refresh::Refresh;
 use crate::command::submit::Submit;
 use crate::command::tasks::Tasks;
-use crate::error;
 use crate::workspace::config_editor::ConfigEditor;
 use crate::workspace::{ConnectionConfig, Workspace};
 use clap::ArgMatches;
 use std::convert::TryFrom;
+use anyhow::Result;
 
 mod details;
 mod init;
@@ -22,7 +22,7 @@ mod submit;
 mod tasks;
 
 trait Command {
-    fn execute<W: Workspace, A: BacaApi>(self, workspace: &W, api: &A) -> error::Result<()>;
+    fn execute<W: Workspace, A: BacaApi>(self, workspace: &W, api: &A) -> Result<()>;
 }
 
 pub fn execute<W, Api>(
@@ -30,7 +30,7 @@ pub fn execute<W, Api>(
     api: &Api,
     command: &str,
     matches: &ArgMatches,
-) -> error::Result<()>
+) -> Result<()>
 where
     W: Workspace,
     Api: BacaApi,

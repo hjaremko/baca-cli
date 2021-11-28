@@ -7,6 +7,7 @@ use serde::{Deserialize, Serialize};
 use std::convert::TryFrom;
 use std::path::Path;
 use std::path::PathBuf;
+use anyhow::Result;
 
 fn merge_left<T>(left: &mut Option<T>, right: Option<T>) {
     if let Some(right) = right {
@@ -54,7 +55,7 @@ impl SubmitConfig {
         self.file.as_deref()
     }
 
-    pub fn try_set_file<P>(&mut self, filepath: Option<P>) -> crate::error::Result<()>
+    pub fn try_set_file<P>(&mut self, filepath: Option<P>) -> Result<()>
     where
         P: Into<PathBuf>,
     {
@@ -68,11 +69,11 @@ impl SubmitConfig {
 }
 
 impl ConfigObject for SubmitConfig {
-    fn save_config<W: Workspace>(&self, workspace: &W) -> crate::error::Result<()> {
+    fn save_config<W: Workspace>(&self, workspace: &W) -> Result<()> {
         workspace.save_config_object(self)
     }
 
-    fn read_config<W: Workspace>(workspace: &W) -> crate::error::Result<Self> {
+    fn read_config<W: Workspace>(workspace: &W) -> Result<Self> {
         workspace.read_config_object::<Self>().map_err(|e| {
             if let Error::Other(inner) = e {
                 return Error::ReadingTask(inner);
@@ -82,7 +83,7 @@ impl ConfigObject for SubmitConfig {
         })
     }
 
-    fn remove_config<W: Workspace>(workspace: &W) -> crate::error::Result<()> {
+    fn remove_config<W: Workspace>(workspace: &W) -> Result<()> {
         workspace.remove_config_object::<Self>().map_err(|e| {
             if let Error::Other(inner) = e {
                 return Error::RemovingTask(inner);

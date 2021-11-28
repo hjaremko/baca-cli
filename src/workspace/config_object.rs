@@ -1,5 +1,5 @@
-use crate::error::Result;
 use crate::workspace::Workspace;
+use anyhow::Result;
 use serde::de::DeserializeOwned;
 use serde::Serialize;
 use std::fmt::Debug;

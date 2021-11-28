@@ -1,7 +1,7 @@
-use crate::error::{Error, Result};
+use crate::error::Error;
 use crate::update::update_status::UpdateStatus::{NoUpdates, Update};
 use crate::update::{ReleaseService, UpdateStatus, CURRENT_VERSION};
-
+use anyhow::Result;
 use tracing::{debug, error, info};
 
 pub struct UpdateChecker<T: ReleaseService> {

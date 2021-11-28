@@ -1,5 +1,5 @@
 use crate::error::Error;
-use crate::error::Result;
+use anyhow::Result;
 use crate::workspace::{ConfigObject, Workspace, WorkspacePaths};
 use std::fs::DirBuilder;
 use std::io::ErrorKind;

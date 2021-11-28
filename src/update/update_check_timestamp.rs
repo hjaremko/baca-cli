@@ -3,6 +3,7 @@ use serde::{Deserialize, Serialize};
 use std::fmt::Debug;
 use time::OffsetDateTime;
 use tracing::debug;
+use anyhow::Result;
 
 const TIMESTAMP_FILENAME: &str = "update_timestamp";
 
@@ -47,15 +48,15 @@ impl UpdateCheckTimestamp {
 }
 
 impl ConfigObject for UpdateCheckTimestamp {
-    fn save_config<W: Workspace>(&self, workspace: &W) -> crate::error::Result<()> {
+    fn save_config<W: Workspace>(&self, workspace: &W) -> Result<()> {
         workspace.save_config_object(self)
     }
 
-    fn read_config<W: Workspace>(workspace: &W) -> crate::error::Result<Self> {
+    fn read_config<W: Workspace>(workspace: &W) -> Result<Self> {
         Ok(workspace.read_config_object::<Self>().unwrap_or_default())
     }
 
-    fn remove_config<W: Workspace>(_workspace: &W) -> crate::error::Result<()> {
+    fn remove_config<W: Workspace>(_workspace: &W) -> Result<()> {
         unimplemented!()
     }
 

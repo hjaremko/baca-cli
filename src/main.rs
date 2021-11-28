@@ -90,7 +90,7 @@ fn check_for_updates(workspace: &WorkspaceDir, matches: &ArgMatches) {
     }
 }
 
-fn fetch_updates() -> error::Result<UpdateStatus> {
+fn fetch_updates() -> anyhow::Result<UpdateStatus> {
     let owner = env::var("GITHUB_USER").unwrap_or_else(|_| "hjaremko".to_string());
     let repo = env::var("GITHUB_REPO").unwrap_or_else(|_| "baca-cli".to_string());
 

@@ -1,4 +1,4 @@
-use crate::error::Result;
+use anyhow::Result;
 #[cfg(test)]
 use mockall::{automock, predicate::*};
 

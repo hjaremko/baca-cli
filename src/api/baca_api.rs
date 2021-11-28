@@ -1,6 +1,6 @@
-use crate::error::Result;
 use crate::model::{Language, Results, Submit, Task, Tasks};
 use crate::workspace::ConnectionConfig;
+use anyhow::Result;
 
 #[cfg(test)]
 use mockall::{automock, predicate::*};

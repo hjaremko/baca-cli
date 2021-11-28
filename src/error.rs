@@ -1,21 +1,22 @@
 use crate::error::Error::{Network, Other, Protocol, WorkspaceCorrupted};
 use std::{fmt, io};
 use tracing::error;
+// use thiserror::Error;
+// pub type Result<T> = std::result::Result<T, self::Error>;
 
-pub type Result<T> = std::result::Result<T, self::Error>;
-
+// #[derive(Error, Debug)]
 #[derive(Debug)]
 pub enum Error {
-    Other(Box<dyn std::error::Error>),
-    Network(Box<dyn std::error::Error>),
-    CreatingWorkspace(Box<dyn std::error::Error>),
-    OpeningWorkspace(Box<dyn std::error::Error>),
-    WritingWorkspace(Box<dyn std::error::Error>),
-    RemovingWorkspace(Box<dyn std::error::Error>),
-    RemovingTask(Box<dyn std::error::Error>),
-    ReadingTask(Box<dyn std::error::Error>),
-    ReadingSource(Box<dyn std::error::Error>),
-    Zipping(Box<dyn std::error::Error>),
+    Other(anyhow::Error),
+    Network(anyhow::Error),
+    CreatingWorkspace(anyhow::Error),
+    OpeningWorkspace(anyhow::Error),
+    WritingWorkspace(anyhow::Error),
+    RemovingWorkspace(anyhow::Error),
+    RemovingTask(anyhow::Error),
+    ReadingTask(anyhow::Error),
+    ReadingSource(anyhow::Error),
+    Zipping(anyhow::Error),
     WorkspaceNotInitialized,
     WorkspaceCorrupted,
     WorkspaceAlreadyInitialized,
@@ -35,6 +36,10 @@ pub enum Error {
     EditorFail(i32),
     SubmitArgumentNotProvided(String),
     // InputFileDoesNotExist,
+}
+
+impl std::error::Error for Error {
+
 }
 
 impl fmt::Display for Error {

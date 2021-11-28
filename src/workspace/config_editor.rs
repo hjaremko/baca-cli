@@ -1,5 +1,5 @@
-use crate::error::Result;
 use crate::workspace::{ConfigObject, Workspace};
+use anyhow::Result;
 use std::path::Path;
 use std::process::ExitStatus;
 use std::{env, ffi::OsString, fs, io, process};

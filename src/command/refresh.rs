@@ -1,8 +1,8 @@
 use crate::api::baca_api::BacaApi;
 use crate::command::Command;
-use crate::error;
 use crate::workspace::{ConfigObject, ConnectionConfig, Workspace};
 use tracing::info;
+use anyhow::Result;
 
 pub struct Refresh {}
 
@@ -13,7 +13,7 @@ impl Refresh {
 }
 
 impl Command for Refresh {
-    fn execute<W, A>(self, workspace: &W, api: &A) -> error::Result<()>
+    fn execute<W, A>(self, workspace: &W, api: &A) -> Result<()>
     where
         W: Workspace,
         A: BacaApi,

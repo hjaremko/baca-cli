@@ -1,7 +1,7 @@
 use crate::api;
 use crate::error::Error;
-use crate::error::Result;
 use crate::workspace::{ConfigObject, Workspace};
+use anyhow::Result;
 use serde::{Deserialize, Serialize};
 
 #[derive(Serialize, Deserialize, Debug, Clone, PartialEq)]

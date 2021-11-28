@@ -1,8 +1,9 @@
 use crate::api::baca_api::BacaApi;
 use crate::command::Command;
-use crate::error::{Error, Result};
+use crate::error::Error;
 use crate::model::Results;
 use crate::workspace::{ConfigObject, ConnectionConfig, Workspace};
+use anyhow::Result;
 use clap::ArgMatches;
 use tracing::info;
 

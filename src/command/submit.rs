@@ -2,11 +2,12 @@ use crate::api::baca_api::BacaApi;
 use crate::command::log::Log;
 use crate::command::prompt::Prompt;
 use crate::command::{prompt, Command};
-use crate::error::{Error, Result};
+use crate::error::Error;
 use crate::model::Language;
 use crate::workspace::config_editor::ConfigEditor;
 use crate::workspace::{ConfigObject, ConnectionConfig, SubmitConfig, Workspace};
 use crate::{error, workspace};
+use anyhow::Result;
 use clap::ArgMatches;
 use colored::Colorize;
 use dialoguer::Confirm;
@@ -222,7 +223,7 @@ impl Submit {
     }
 }
 
-fn submit<W, A>(workspace: &W, api: &A, mut submit_config: SubmitConfig) -> error::Result<()>
+fn submit<W, A>(workspace: &W, api: &A, mut submit_config: SubmitConfig) -> Result<()>
 where
     W: Workspace,
     A: BacaApi,

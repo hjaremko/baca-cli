@@ -1,6 +1,6 @@
-use crate::error::Result;
 use crate::update::BacaRelease;
 use crate::workspace::{ConfigObject, Workspace};
+use anyhow::Result;
 
 impl ConfigObject for BacaRelease {
     fn save_config<W: Workspace>(&self, workspace: &W) -> Result<()> {
