@@ -13,6 +13,7 @@ fn config_exists(temp: &TempDir) -> bool {
 }
 
 #[test]
+#[ignore]
 fn invalid_password() -> Result<(), Box<dyn std::error::Error>> {
     let temp = assert_fs::TempDir::new()?;
 
@@ -31,6 +32,7 @@ fn invalid_password() -> Result<(), Box<dyn std::error::Error>> {
 }
 
 #[test]
+#[ignore]
 fn invalid_host() -> Result<(), Box<dyn std::error::Error>> {
     let (login, pass, _) = get_baca_credentials();
     let temp = assert_fs::TempDir::new()?;
@@ -50,6 +52,7 @@ fn invalid_host() -> Result<(), Box<dyn std::error::Error>> {
 }
 
 #[test]
+#[ignore]
 fn success() -> Result<(), Box<dyn std::error::Error>> {
     let (login, pass, host) = get_baca_credentials();
     let temp = assert_fs::TempDir::new()?;
@@ -69,6 +72,7 @@ fn success() -> Result<(), Box<dyn std::error::Error>> {
 }
 
 #[test]
+#[ignore]
 fn should_save_version() -> Result<(), Box<dyn std::error::Error>> {
     let (login, pass, host) = get_baca_credentials();
     let temp = assert_fs::TempDir::new()?;

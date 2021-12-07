@@ -195,6 +195,7 @@ mod tests {
     }
 
     #[test]
+    #[ignore]
     fn get_cookie_on_correct_host_should_fail_login() {
         let baca = make_correct_baca_invalid_session();
         let api = BacaService::default();
@@ -204,6 +205,7 @@ mod tests {
     }
 
     #[test]
+    #[ignore]
     fn get_cookie_on_incorrect_host_should_fail() {
         let baca = make_incorrect_baca();
         let api = BacaService::default();
@@ -213,6 +215,7 @@ mod tests {
     }
 
     #[test]
+    #[ignore]
     fn get_task_on_correct_host_should_succeed() {
         let baca = make_correct_baca_invalid_session();
         let api = BacaService::default();
@@ -244,6 +247,7 @@ mod tests {
     }
 
     #[test]
+    #[ignore]
     fn get_task_on_incorrect_host_should_fail() {
         let baca = make_incorrect_baca();
         let api = BacaService::default();
@@ -253,6 +257,7 @@ mod tests {
     }
 
     #[test]
+    #[ignore]
     fn get_details_on_incorrect_host_should_fail() {
         let baca = make_incorrect_baca();
         let api = BacaService::default();
@@ -262,6 +267,7 @@ mod tests {
     }
 
     #[test]
+    #[ignore]
     fn get_details_on_incorrect_session_should_fail() {
         let baca = make_correct_baca_invalid_session();
         let api = BacaService::default();
@@ -271,6 +277,7 @@ mod tests {
     }
 
     #[test]
+    #[ignore]
     fn get_results_on_incorrect_host_should_fail() {
         let baca = make_incorrect_baca();
         let api = BacaService::default();
@@ -280,6 +287,7 @@ mod tests {
     }
 
     #[test]
+    #[ignore]
     fn get_results_on_incorrect_session_should_fail() {
         let baca = make_correct_baca_invalid_session();
         let api = BacaService::default();
@@ -289,6 +297,7 @@ mod tests {
     }
 
     #[test]
+    #[ignore]
     fn get_languages_expired_task_should_return_empty() {
         let connection = make_correct_baca_invalid_session();
         let api = BacaService::default();
@@ -298,6 +307,7 @@ mod tests {
     }
 
     #[test]
+    #[ignore]
     fn get_languages_on_incorrect_host_should_fail() {
         let connection = make_incorrect_baca();
         let api = BacaService::default();
@@ -307,6 +317,7 @@ mod tests {
     }
 
     #[test]
+    #[ignore]
     fn get_languages_on_incorrect_task_should_return_empty() {
         let connection = make_correct_baca_invalid_session();
         let api = BacaService::default();

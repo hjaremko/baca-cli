@@ -2,6 +2,7 @@ use crate::util::{initialize_correct_workspace, set_up_command, set_up_with_dir}
 use predicates::prelude::*;
 
 #[test]
+#[ignore]
 fn clear_when_init_then_remove_directory() {
     let dir = initialize_correct_workspace().unwrap();
     let mut cmd = set_up_command(&dir).unwrap();

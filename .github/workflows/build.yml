@@ -27,7 +27,8 @@ jobs:
           TEST_BACA_LOGIN: ${{ secrets.TEST_BACA_LOGIN }}
           TEST_BACA_HOST: ${{ secrets.TEST_BACA_HOST }}
           AUTH_TOKEN: ${{ secrets.AUTH_TOKEN }}
-        run: cargo test
+        run: cargo test -- --include-ignored
+
 
   formatting:
     name: Formatting

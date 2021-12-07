@@ -8,6 +8,7 @@ fn on_not_initialized_should_report_error() -> Result<(), Box<dyn std::error::Er
 }
 
 #[test]
+#[ignore]
 fn on_correct_repo_should_refresh_cookie() -> Result<(), Box<dyn std::error::Error>> {
     let dir = initialize_correct_workspace()?;
     let mut cmd = set_up_command(&dir)?;
@@ -20,6 +21,7 @@ fn on_correct_repo_should_refresh_cookie() -> Result<(), Box<dyn std::error::Err
 }
 
 #[test]
+#[ignore]
 fn on_corrupted_repo_should_report_error() -> Result<(), Box<dyn std::error::Error>> {
     let dir = initialize_correct_workspace()?;
     let mut cmd = set_up_command(&dir)?;
