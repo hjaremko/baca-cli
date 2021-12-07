@@ -8,6 +8,7 @@ fn tasks_not_initialized() -> Result<(), Box<dyn std::error::Error>> {
 }
 
 #[test]
+#[ignore]
 fn no_argument_should_print_last_three() -> Result<(), Box<dyn std::error::Error>> {
     let dir = initialize_correct_workspace()?;
     let mut cmd = set_up_command(&dir)?;
@@ -32,6 +33,7 @@ fn no_argument_should_print_last_three() -> Result<(), Box<dyn std::error::Error
 }
 
 #[test]
+#[ignore]
 fn with_given_1_should_print_last_1() -> Result<(), Box<dyn std::error::Error>> {
     let dir = initialize_correct_workspace()?;
     let mut cmd = set_up_command(&dir)?;
@@ -56,6 +58,7 @@ fn with_given_1_should_print_last_1() -> Result<(), Box<dyn std::error::Error>> 
 }
 
 #[test]
+#[ignore]
 fn with_given_more_than_available_should_print_all() -> Result<(), Box<dyn std::error::Error>> {
     let dir = initialize_correct_workspace()?;
     let mut cmd = set_up_command(&dir)?;
@@ -79,6 +82,7 @@ fn with_given_more_than_available_should_print_all() -> Result<(), Box<dyn std::
 }
 
 #[test]
+#[ignore]
 fn with_invalid_argument_should_report_error() -> Result<(), Box<dyn std::error::Error>> {
     let dir = initialize_correct_workspace()?;
     let mut cmd = set_up_command(&dir)?;
@@ -91,6 +95,7 @@ fn with_invalid_argument_should_report_error() -> Result<(), Box<dyn std::error:
 }
 
 #[test]
+#[ignore]
 fn on_corrupted_repo_should_report_error() -> Result<(), Box<dyn std::error::Error>> {
     let dir = initialize_correct_workspace()?;
     let mut cmd = set_up_command(&dir)?;
@@ -103,6 +108,7 @@ fn on_corrupted_repo_should_report_error() -> Result<(), Box<dyn std::error::Err
 }
 
 #[test]
+#[ignore]
 fn filter() -> Result<(), Box<dyn std::error::Error>> {
     let dir = initialize_correct_workspace()?;
     let mut cmd = set_up_command(&dir)?;
@@ -123,6 +129,7 @@ fn filter() -> Result<(), Box<dyn std::error::Error>> {
 }
 
 #[test]
+#[ignore]
 fn filter_given_invalid_task_id_should_print_error() -> Result<(), Box<dyn std::error::Error>> {
     let dir = initialize_correct_workspace()?;
     let mut cmd = set_up_command(&dir)?;
@@ -135,6 +142,7 @@ fn filter_given_invalid_task_id_should_print_error() -> Result<(), Box<dyn std::
 }
 
 #[test]
+#[ignore]
 fn filter_given_invalid_argument_should_print_error() -> Result<(), Box<dyn std::error::Error>> {
     let dir = initialize_correct_workspace()?;
     let mut cmd = set_up_command(&dir)?;

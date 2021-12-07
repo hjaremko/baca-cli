@@ -43,6 +43,7 @@ fn not_initialized() {
 }
 
 #[test]
+#[ignore]
 fn inactive_task_should_report_error() -> Result<(), Box<dyn std::error::Error>> {
     let dir = initialize_correct_workspace()?;
     let mut cmd = set_up_command(&dir)?;
@@ -70,6 +71,7 @@ fn inactive_task_should_report_error() -> Result<(), Box<dyn std::error::Error>>
 }
 
 #[test]
+#[ignore]
 fn no_file_should_report_error() -> Result<(), Box<dyn std::error::Error>> {
     let dir = initialize_correct_workspace()?;
     let mut cmd = set_up_command(&dir)?;
@@ -84,6 +86,7 @@ fn no_file_should_report_error() -> Result<(), Box<dyn std::error::Error>> {
 }
 
 #[test]
+#[ignore]
 fn no_language_on_expired_task_should_report_error() -> Result<(), Box<dyn std::error::Error>> {
     let dir = initialize_correct_workspace()?;
     let mut cmd = set_up_command(&dir)?;
@@ -99,6 +102,7 @@ fn no_language_on_expired_task_should_report_error() -> Result<(), Box<dyn std::
 }
 
 #[test]
+#[ignore]
 fn invalid_filename_should_report_error() -> Result<(), Box<dyn std::error::Error>> {
     let dir = initialize_correct_workspace()?;
     let mut cmd = set_up_command(&dir)?;
@@ -121,6 +125,7 @@ fn invalid_filename_should_report_error() -> Result<(), Box<dyn std::error::Erro
 }
 
 #[test]
+#[ignore]
 fn invalid_language_should_report_error() -> Result<(), Box<dyn std::error::Error>> {
     let dir = initialize_correct_workspace()?;
     let mut cmd = set_up_command(&dir)?;
@@ -136,6 +141,7 @@ fn invalid_language_should_report_error() -> Result<(), Box<dyn std::error::Erro
 }
 
 #[test]
+#[ignore]
 fn invalid_task_should_report_error() -> Result<(), Box<dyn std::error::Error>> {
     let dir = initialize_correct_workspace()?;
     let mut cmd = set_up_command(&dir)?;
@@ -160,6 +166,7 @@ fn invalid_task_should_report_error() -> Result<(), Box<dyn std::error::Error>> 
 }
 
 #[test]
+#[ignore]
 fn zip_should_zip() -> Result<(), Box<dyn std::error::Error>> {
     let dir = initialize_correct_workspace()?;
     let mut cmd = set_up_command(&dir)?;
@@ -185,6 +192,7 @@ fn zip_should_zip() -> Result<(), Box<dyn std::error::Error>> {
 }
 
 #[test]
+#[ignore]
 fn default_option_should_save_config() -> Result<(), Box<dyn std::error::Error>> {
     let dir = initialize_correct_workspace()?;
     let mut cmd = set_up_command(&dir)?;
@@ -220,6 +228,7 @@ fn default_option_should_save_config() -> Result<(), Box<dyn std::error::Error>>
 }
 
 #[test]
+#[ignore]
 fn saved_task_should_be_used() -> Result<(), Box<dyn std::error::Error>> {
     let dir = initialize_correct_workspace()?;
     let mut cmd = set_up_command(&dir)?;
@@ -249,6 +258,7 @@ fn saved_task_should_be_used() -> Result<(), Box<dyn std::error::Error>> {
 }
 
 #[test]
+#[ignore]
 fn cmd_options_should_override_saved_task() -> Result<(), Box<dyn std::error::Error>> {
     let dir = initialize_correct_workspace()?;
     let mut cmd = set_up_command(&dir)?;
@@ -279,6 +289,7 @@ fn cmd_options_should_override_saved_task() -> Result<(), Box<dyn std::error::Er
 }
 
 #[test]
+#[ignore]
 fn clear_should_remove_saved_config() -> Result<(), Box<dyn std::error::Error>> {
     let dir = initialize_correct_workspace()?;
     let mut cmd = set_up_command(&dir)?;
@@ -308,6 +319,7 @@ fn clear_should_remove_saved_config() -> Result<(), Box<dyn std::error::Error>> 
 }
 
 #[test]
+#[ignore]
 fn clear_on_already_clear_should_do_nothing() -> Result<(), Box<dyn std::error::Error>> {
     let dir = initialize_correct_workspace()?;
     let mut cmd = set_up_command(&dir)?;
@@ -322,6 +334,7 @@ fn clear_on_already_clear_should_do_nothing() -> Result<(), Box<dyn std::error::
 }
 
 #[test]
+#[ignore]
 fn given_just_filename_absolute_path_should_be_saved() -> Result<(), Box<dyn std::error::Error>> {
     let dir = initialize_correct_workspace()?;
     let mut cmd = set_up_command(&dir)?;
@@ -357,6 +370,7 @@ fn given_just_filename_absolute_path_should_be_saved() -> Result<(), Box<dyn std
 }
 
 #[test]
+#[ignore]
 fn given_absolute_path_should_be_saved() -> Result<(), Box<dyn std::error::Error>> {
     let dir = initialize_correct_workspace()?;
     let mut cmd = set_up_command(&dir)?;
@@ -391,6 +405,7 @@ fn given_absolute_path_should_be_saved() -> Result<(), Box<dyn std::error::Error
 }
 
 #[test]
+#[ignore]
 fn given_relative_path_absolute_should_be_saved() -> Result<(), Box<dyn std::error::Error>> {
     let dir = initialize_correct_workspace()?;
     let nested_dir = dir.join("test_nested_dir");
@@ -432,6 +447,7 @@ fn given_relative_path_absolute_should_be_saved() -> Result<(), Box<dyn std::err
 }
 
 #[test]
+#[ignore]
 fn when_rename_option_then_submit_renamed_file() -> Result<(), Box<dyn std::error::Error>> {
     let dir = initialize_correct_workspace()?;
     let mut cmd = set_up_command(&dir)?;
@@ -459,6 +475,7 @@ fn when_rename_option_then_submit_renamed_file() -> Result<(), Box<dyn std::erro
 }
 
 #[test]
+#[ignore]
 fn when_rename_as_same_name_then_do_not_rename() -> Result<(), Box<dyn std::error::Error>> {
     let dir = initialize_correct_workspace()?;
     let mut cmd = set_up_command(&dir)?;
@@ -486,6 +503,7 @@ fn when_rename_as_same_name_then_do_not_rename() -> Result<(), Box<dyn std::erro
 }
 
 #[test]
+#[ignore]
 fn when_zipping_renamed_then_zip_renamed() -> Result<(), Box<dyn std::error::Error>> {
     let dir = initialize_correct_workspace()?;
     let mut cmd = set_up_command(&dir)?;
@@ -517,6 +535,7 @@ fn when_zipping_renamed_then_zip_renamed() -> Result<(), Box<dyn std::error::Err
 }
 
 #[test]
+#[ignore]
 fn given_already_saved_when_submit_then_do_not_ask_for_save(
 ) -> Result<(), Box<dyn std::error::Error>> {
     let dir = initialize_correct_workspace()?;
@@ -545,6 +564,7 @@ fn given_already_saved_when_submit_then_do_not_ask_for_save(
 }
 
 #[test]
+#[ignore]
 fn given_config_edit_when_no_config_saved_then_print_error(
 ) -> Result<(), Box<dyn std::error::Error>> {
     let dir = initialize_correct_workspace()?;

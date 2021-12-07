@@ -8,6 +8,7 @@ fn tasks_not_initialized() -> Result<(), Box<dyn std::error::Error>> {
 }
 
 #[test]
+#[ignore]
 fn on_correct_repo_should_print_tasks() -> Result<(), Box<dyn std::error::Error>> {
     let dir = initialize_correct_workspace()?;
     let mut cmd = set_up_command(&dir)?;
@@ -28,6 +29,7 @@ fn on_correct_repo_should_print_tasks() -> Result<(), Box<dyn std::error::Error>
 }
 
 #[test]
+#[ignore]
 fn on_corrupted_repo_should_report_error() -> Result<(), Box<dyn std::error::Error>> {
     let dir = initialize_correct_workspace()?;
     let mut cmd = set_up_command(&dir)?;

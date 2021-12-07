@@ -4,6 +4,7 @@ use assert_fs::TempDir;
 use predicates::prelude::*;
 
 #[test]
+#[ignore]
 fn update_check_timestamp_should_be_saved_if_no_update() -> Result<(), Box<dyn std::error::Error>> {
     let (login, pass, host) = get_baca_credentials();
     let temp = assert_fs::TempDir::new()?;
@@ -30,6 +31,7 @@ fn update_check_timestamp_should_be_saved_if_no_update() -> Result<(), Box<dyn s
 }
 
 #[test]
+#[ignore]
 fn update_check_timestamp_should_not_be_saved_if_update() -> Result<(), Box<dyn std::error::Error>>
 {
     let (login, pass, host) = get_baca_credentials();
@@ -70,6 +72,7 @@ fn update_check_error_if_invalid_repo() -> Result<(), Box<dyn std::error::Error>
 }
 
 #[test]
+#[ignore]
 fn forced_update_check_should_be_triggered_despite_timestamp(
 ) -> Result<(), Box<dyn std::error::Error>> {
     let (login, pass, host) = get_baca_credentials();
