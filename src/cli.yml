@@ -92,6 +92,9 @@ subcommands:
         - no_main:
             long: no-main
             help: Removes main function before submitting. Takes effect only on C/C++ files.
+        - no_polish:
+            long: no-polish
+            help: Transliterates Unicode strings in the input file into pure ASCII, effectively removing Polish diacritics.
       subcommands:
         - clear:
             long: clear

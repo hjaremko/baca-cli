@@ -99,6 +99,7 @@ Submits given file to specified task. Will prompt the user for task, if not prov
 - Optional parameter `--zip` will zip given file before submitting. The archive is saved as **`source.zip`**.
 - Optional parameter `--rename` will rename file before submitting and zipping.
 - Optional parameter `--no-main` will remove main function from C/C++ files before submitting and zipping.
+- Optional parameter `--no-polsih` will remove non-unicode characters from files before submitting and zipping.
 - Optional parameter `--language <language>` explicitly sets input file language.
 - `submit config` opens editor to edit submit config.
 - `submit clear` clears saved submit config.
@@ -110,6 +111,7 @@ USAGE:
 FLAGS:
     -h, --help       Prints help information
         --no-main    Removes main function before submitting. Takes effect only on C/C++ files.
+        --no-polish  Transliterates Unicode strings in the input file into pure ASCII, effectively removing Polish diacritics.
         --no-save    Does not ask for save
     -s, --save       Saves task config, if provided, future 'submit' calls won't require providing task config
     -V, --version    Prints version information
@@ -125,7 +127,6 @@ SUBCOMMANDS:
     clear     Clears saved submit config
     config    Opens editor to edit submit config
     help      Prints this message or the help of the given subcommand(s)
-
 ```
 
 Example:
