@@ -4,6 +4,7 @@ use mockall::{automock, predicate::*};
 
 pub use self::config_object::ConfigObject;
 pub use self::connection_config::ConnectionConfig;
+pub use self::no_main::remove_main;
 pub use self::submit_config::SubmitConfig;
 pub use self::workspace_dir::WorkspaceDir;
 pub use self::workspace_paths::WorkspacePaths;
@@ -13,6 +14,7 @@ pub mod baca_release;
 pub mod config_editor;
 pub mod config_object;
 mod connection_config;
+mod no_main;
 mod submit_config;
 pub mod workspace_dir;
 pub mod workspace_paths;

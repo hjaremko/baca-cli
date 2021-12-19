@@ -4,10 +4,10 @@ use std::io::{Error, ErrorKind, Write};
 use std::path::Path;
 
 pub fn zip_file(path: &Path) -> Result<&Path, error::Error> {
-    _zip_file(path).map_err(|e| error::Error::Zipping(e.into()))
+    zip_file_impl(path).map_err(|e| error::Error::Zipping(e.into()))
 }
 
-fn _zip_file(path: &Path) -> Result<&Path, Error> {
+fn zip_file_impl(path: &Path) -> Result<&Path, Error> {
     let filename = path.file_name().unwrap().to_str().ok_or(ErrorKind::Other)?;
     let path = path.to_str().ok_or(ErrorKind::Other)?;
 

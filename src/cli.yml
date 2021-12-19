@@ -89,6 +89,9 @@ subcommands:
             short: r
             takes_value: true
             help: Submit input file under different name
+        - no_main:
+            long: no-main
+            help: Removes main function before submitting. Takes effect only on C/C++ files.
       subcommands:
         - clear:
             long: clear

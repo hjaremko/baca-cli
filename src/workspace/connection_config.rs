@@ -3,8 +3,9 @@ use crate::error::Error;
 use crate::error::Result;
 use crate::workspace::{ConfigObject, Workspace};
 use serde::{Deserialize, Serialize};
+use tracing::error;
 
-#[derive(Serialize, Deserialize, Debug, Clone, PartialEq)]
+#[derive(Serialize, Deserialize, Debug, Clone, PartialEq, Default)]
 pub struct ConnectionConfig {
     pub host: String,
     pub login: String,
@@ -41,40 +42,34 @@ impl ConnectionConfig {
     }
 }
 
-impl Default for ConnectionConfig {
-    fn default() -> Self {
-        ConnectionConfig {
-            host: String::default(),
-            login: String::default(),
-            password: String::default(),
-            permutation: String::default(),
-            cookie: String::default(),
-        }
-    }
-}
-
 impl ConfigObject for ConnectionConfig {
     fn save_config<W: Workspace>(&self, workspace: &W) -> Result<()> {
         workspace.save_config_object(self).map_err(|e| {
-            if let Error::Other(inner) = e {
-                return Error::WritingWorkspace(inner);
+            error!("{:?}", e);
+            match e {
+                Error::WorkspaceNotInitialized => e,
+                _ => Error::WorkspaceCorrupted,
             }
-
-            e
         })
     }
 
     fn read_config<W: Workspace>(workspace: &W) -> Result<Self> {
-        workspace.read_config_object::<Self>()
+        workspace.read_config_object::<Self>().map_err(|e| {
+            error!("{:?}", e);
+            match e {
+                Error::WorkspaceNotInitialized => e,
+                _ => Error::WorkspaceCorrupted,
+            }
+        })
     }
 
     fn remove_config<W: Workspace>(workspace: &W) -> Result<()> {
         workspace.remove_config_object::<Self>().map_err(|e| {
-            if let Error::Other(inner) = e {
-                return Error::RemovingWorkspace(inner);
+            error!("{:?}", e);
+            match e {
+                Error::WorkspaceNotInitialized => e,
+                _ => Error::WorkspaceCorrupted,
             }
-
-            e
         })
     }
 

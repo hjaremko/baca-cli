@@ -98,12 +98,34 @@ Submits given file to specified task. Will prompt the user for task, if not prov
 - Optional parameter `--task <id>` explicitly sets problem to submit to. Use `baca tasks` to see what ids are available.
 - Optional parameter `--zip` will zip given file before submitting. The archive is saved as **`source.zip`**.
 - Optional parameter `--rename` will rename file before submitting and zipping.
+- Optional parameter `--no-main` will remove main function from C/C++ files before submitting and zipping.
 - Optional parameter `--language <language>` explicitly sets input file language.
 - `submit config` opens editor to edit submit config.
 - `submit clear` clears saved submit config.
 
 ```
-baca submit -t <task_id> -f <filename> [optional -l <language>] [optional --zip] [optional --rename or -r <new_filename>]
+USAGE:
+    baca submit [FLAGS] [OPTIONS] [SUBCOMMAND]
+
+FLAGS:
+    -h, --help       Prints help information
+        --no-main    Removes main function before submitting. Takes effect only on C/C++ files.
+        --no-save    Does not ask for save
+    -s, --save       Saves task config, if provided, future 'submit' calls won't require providing task config
+    -V, --version    Prints version information
+    -z, --zip        Zips files to 'source.zip' before submitting, overrides saved config
+
+OPTIONS:
+    -f, --file <file>            File to submit, overrided saved path
+    -l, --language <language>    Task language. Please type exacly as it is displayed on Baca.
+    -r, --rename <rename>        Submit input file under different name
+    -t, --task-id <task_id>      Task id, type 'baca tasks' to see what ids are available, overrides saved task id
+
+SUBCOMMANDS:
+    clear     Clears saved submit config
+    config    Opens editor to edit submit config
+    help      Prints this message or the help of the given subcommand(s)
+
 ```
 
 Example:

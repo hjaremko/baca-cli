@@ -35,13 +35,13 @@ impl<'a> From<&'a ArgMatches<'a>> for SubmitSubcommand {
     }
 }
 
-enum SubmitSwitch {
+enum SaveSwitch {
     None,
     Save,
     NoSave,
 }
 
-impl<'a> From<&'a ArgMatches<'a>> for SubmitSwitch {
+impl<'a> From<&'a ArgMatches<'a>> for SaveSwitch {
     fn from(args: &'a ArgMatches) -> Self {
         if args.is_present("save") {
             return Self::Save;
@@ -57,7 +57,7 @@ impl<'a> From<&'a ArgMatches<'a>> for SubmitSwitch {
 
 pub struct Submit {
     subcommand: SubmitSubcommand,
-    switch: SubmitSwitch,
+    save_switch: SaveSwitch,
     provided_config: SubmitConfig,
 }
 
@@ -67,7 +67,7 @@ impl<'a> TryFrom<&'a ArgMatches<'a>> for Submit {
     fn try_from(args: &'a ArgMatches<'a>) -> core::result::Result<Self, Self::Error> {
         Ok(Self {
             subcommand: args.into(),
-            switch: args.into(),
+            save_switch: args.into(),
             provided_config: SubmitConfig::try_from(args)?,
         })
     }
@@ -135,13 +135,11 @@ impl Submit {
         }
 
         if submit_config.language.is_none() {
-            let allowed_language =
+            submit_config.language =
                 Self::fetch_allowed_language(workspace, api, submit_config.id().unwrap())?;
 
-            if allowed_language.is_none() {
+            if submit_config.language.is_none() {
                 return Err(Error::TaskNotActive);
-            } else {
-                submit_config.language = allowed_language;
             }
         }
 
@@ -156,12 +154,16 @@ impl Submit {
         debug!("Saved config: {:?}", saved_submit_config);
         debug!("Provided config: {:?}", self.provided_config);
 
+        if let Err(Error::WorkspaceCorrupted) = saved_submit_config {
+            return Err(Error::WorkspaceCorrupted);
+        }
+
         let was_not_saved = saved_submit_config.is_err();
         let ask_for_save = was_not_saved || self.provided_config != SubmitConfig::default();
 
         let mut submit_config = saved_submit_config.unwrap_or_default();
         submit_config.merge(self.provided_config.clone());
-        debug!("Merged config: {:?}", submit_config);
+        info!("Merged config: {:?}", submit_config);
 
         Ok((ask_for_save, submit_config))
     }
@@ -202,19 +204,19 @@ impl Submit {
         ask_for_save: bool,
         submit_config: &SubmitConfig,
     ) -> Result<()> {
-        match self.switch {
-            SubmitSwitch::None => {
+        match self.save_switch {
+            SaveSwitch::None => {
                 info!("Ask for save? {}", ask_for_save);
                 if ask_for_save {
                     Submit::prompt_for_save(workspace, submit_config)?;
                 }
             }
-            SubmitSwitch::Save => {
+            SaveSwitch::Save => {
                 info!("Forcing submit config save");
                 submit_config.save_config(workspace)?;
                 println!("Submit config has been saved.");
             }
-            SubmitSwitch::NoSave => {
+            SaveSwitch::NoSave => {
                 info!("Save prompt disabled");
             }
         }
@@ -272,6 +274,15 @@ where
         task.problem_name.bright_green(),
         task.language.to_string()
     );
+
+    if submit_config.no_main {
+        info!("Main removal enabled");
+        println!("Submitting with no main included");
+
+        let unmained_input = workspace::remove_main(submit_config.file().unwrap())?;
+        submit_config.try_set_file(unmained_input.into())?;
+        info!("Unmained input file: {:?}", submit_config.file());
+    }
 
     if submit_config.to_zip {
         submit_config.try_set_file(

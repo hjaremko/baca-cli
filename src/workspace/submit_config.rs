@@ -8,7 +8,7 @@ use std::convert::TryFrom;
 use std::path::Path;
 use std::path::PathBuf;
 
-fn merge_left<T>(left: &mut Option<T>, right: Option<T>) {
+fn merge_left_option<T>(left: &mut Option<T>, right: Option<T>) {
     if let Some(right) = right {
         let _ = left.insert(right);
     }
@@ -16,16 +16,18 @@ fn merge_left<T>(left: &mut Option<T>, right: Option<T>) {
 
 #[derive(Debug, Default, Serialize, Deserialize, PartialEq, Merge, Clone)]
 pub struct SubmitConfig {
-    #[merge(strategy = merge_left)]
+    #[merge(strategy = merge_left_option)]
     pub id: Option<String>,
-    #[merge(strategy = merge_left)]
+    #[merge(strategy = merge_left_option)]
     file: Option<PathBuf>,
     #[merge(strategy = merge::bool::overwrite_false)]
     pub to_zip: bool,
-    #[merge(strategy = merge_left)]
+    #[merge(strategy = merge_left_option)]
     pub language: Option<Language>,
-    #[merge(strategy = merge_left)]
+    #[merge(strategy = merge_left_option)]
     pub rename_as: Option<String>,
+    #[merge(strategy = merge::bool::overwrite_false)]
+    pub no_main: bool,
 }
 
 impl SubmitConfig {
@@ -43,6 +45,7 @@ impl SubmitConfig {
             to_zip,
             language: language.into(),
             rename_as,
+            no_main: false,
         }
     }
 
@@ -60,7 +63,15 @@ impl SubmitConfig {
     {
         let file = match filepath {
             None => None,
-            Some(file) => Some(file.into().canonicalize()?),
+            Some(file) => {
+                let path = file.into();
+
+                if !path.exists() {
+                    return Err(Error::InputFileDoesNotExist);
+                }
+
+                Some(path.canonicalize()?)
+            }
         };
         self.file = file;
         Ok(())
@@ -73,23 +84,11 @@ impl ConfigObject for SubmitConfig {
     }
 
     fn read_config<W: Workspace>(workspace: &W) -> crate::error::Result<Self> {
-        workspace.read_config_object::<Self>().map_err(|e| {
-            if let Error::Other(inner) = e {
-                return Error::ReadingTask(inner);
-            }
-
-            e
-        })
+        workspace.read_config_object::<Self>()
     }
 
     fn remove_config<W: Workspace>(workspace: &W) -> crate::error::Result<()> {
-        workspace.remove_config_object::<Self>().map_err(|e| {
-            if let Error::Other(inner) = e {
-                return Error::RemovingTask(inner);
-            }
-
-            e
-        })
+        workspace.remove_config_object::<Self>()
     }
 
     fn config_filename() -> String {
@@ -110,6 +109,7 @@ impl<'a> TryFrom<&'a ArgMatches<'a>> for SubmitConfig {
             id: args.value_of("task_id").map(|x| x.into()),
             rename_as: args.value_of("rename").map(|x| x.into()),
             to_zip: args.is_present("zip"),
+            no_main: args.is_present("no_main"),
         };
         x.try_set_file(args.value_of("file"))?;
         Ok(x)
@@ -172,7 +172,7 @@ mod tests {
 
         assert!(result.is_err());
         if let Err(e) = result {
-            assert!(matches!(e, Error::WorkspaceCorrupted), "error = {:?}", e);
+            assert!(matches!(e, Error::ReadingConfig(_)), "error = {:?}", e);
         }
         assert!(predicate::path::missing().eval(mock_paths.config_path::<SubmitConfig>().as_path()));
         temp_dir.close().unwrap();
@@ -241,6 +241,7 @@ mod tests {
         assert!(default.id.is_none());
         assert!(default.rename_as.is_none());
         assert!(!default.to_zip);
+        assert!(!default.no_main);
     }
 
     #[test]
@@ -255,6 +256,7 @@ mod tests {
         assert!(merged.id.is_none());
         assert!(merged.rename_as.is_none());
         assert!(!merged.to_zip);
+        assert!(!merged.no_main);
     }
 
     fn make_submit_config() -> SubmitConfig {
@@ -264,6 +266,7 @@ mod tests {
             to_zip: true,
             language: Language::from_str("C++").unwrap().into(),
             rename_as: "source.cpp".to_string().into(),
+            no_main: true,
         }
     }
 
@@ -280,6 +283,7 @@ mod tests {
         assert_eq!(merged.id.unwrap(), "3");
         assert_eq!(merged.rename_as.unwrap(), "source.cpp");
         assert!(merged.to_zip);
+        assert!(merged.no_main);
     }
 
     #[test]
@@ -295,5 +299,6 @@ mod tests {
         assert_eq!(merged.id.unwrap(), "3");
         assert_eq!(merged.rename_as.unwrap(), "source.cpp");
         assert!(merged.to_zip);
+        assert!(merged.no_main);
     }
 }

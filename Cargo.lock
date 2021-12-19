@@ -93,6 +93,7 @@ dependencies = [
  "merge",
  "mockall",
  "predicates 2.0.2",
+ "regex",
  "reqwest",
  "serde",
  "serde_json",

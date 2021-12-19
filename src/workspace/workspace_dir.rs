@@ -2,7 +2,6 @@ use crate::error::Error;
 use crate::error::Result;
 use crate::workspace::{ConfigObject, Workspace, WorkspacePaths};
 use std::fs::DirBuilder;
-use std::io::ErrorKind;
 use std::{fs, io};
 use tracing::{debug, info};
 
@@ -77,7 +76,7 @@ impl Workspace for WorkspaceDir {
 
         let serialized = serde_yaml::to_string(object)?;
         debug!("Serialized: {}", serialized);
-        fs::write(path, serialized).map_err(|e| Error::Other(e.into()))
+        fs::write(path, serialized).map_err(|e| Error::SavingConfig(e.into()))
     }
 
     fn read_config_object<T>(&self) -> Result<T>
@@ -88,7 +87,7 @@ impl Workspace for WorkspaceDir {
         let path = self.paths.config_path::<T>();
 
         info!("Reading {}", path.to_str().unwrap());
-        let serialized = fs::read_to_string(path).map_err(as_config_read_error)?;
+        let serialized = fs::read_to_string(path).map_err(|e| Error::ReadingConfig(e.into()))?;
         debug!("Serialized: {}", serialized);
 
         let deserialized = serde_yaml::from_str::<T>(&serialized)?;
@@ -104,18 +103,11 @@ impl Workspace for WorkspaceDir {
         let path = self.paths.config_path::<T>();
 
         info!("Removing config file {}", path.to_str().unwrap());
-        fs::remove_file(path).map_err(|e| Error::Other(e.into()))
+        fs::remove_file(path).map_err(|e| Error::RemovingConfig(e.into()))
     }
 
     fn get_paths(&self) -> WorkspacePaths {
         self.paths.clone()
-    }
-}
-
-fn as_config_read_error(e: io::Error) -> Error {
-    match e.kind() {
-        ErrorKind::NotFound => Error::WorkspaceCorrupted,
-        _ => Error::OpeningWorkspace(e.into()),
     }
 }
 

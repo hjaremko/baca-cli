@@ -20,6 +20,7 @@ zip = "0.5"
 dialoguer = "0.9"
 time = { version = "0.3", features = ["serde"] }
 merge = "0.1"
+regex = "1.5"
 
 [dev-dependencies]
 mockall = "0.10"
