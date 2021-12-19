@@ -7,7 +7,7 @@ use api::baca_service::BacaService;
 use clap::{App, AppSettings, ArgMatches};
 use colored::Colorize;
 use std::env;
-use tracing::{error, info, warn, Level};
+use tracing::{error, info, Level};
 
 mod api;
 mod command;
@@ -73,8 +73,9 @@ fn check_for_updates(workspace: &WorkspaceDir, matches: &ArgMatches) {
             UpdateStatus::NoUpdates => {
                 info!("No updates available.");
 
-                now.save_config(workspace)
-                    .unwrap_or_else(|e| warn!("Error saving last update check timestamp: {}", e));
+                now.save_config(workspace).unwrap_or_else(|e| {
+                    error!("Error saving last update check timestamp: {:?}", e)
+                });
             }
             UpdateStatus::Update(new_rel) => {
                 println!(

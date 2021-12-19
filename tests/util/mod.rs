@@ -25,7 +25,7 @@ impl BacaDirectoryPaths for TempDir {
 pub fn set_up_command(dir: &TempDir) -> Result<Command, Box<dyn Error>> {
     let mut cmd = Command::cargo_bin("baca")?;
     cmd.current_dir(&dir);
-    cmd.arg("-u");
+    cmd.arg("-uv");
     Ok(cmd)
 }
 

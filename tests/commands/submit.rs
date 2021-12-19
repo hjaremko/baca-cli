@@ -118,7 +118,8 @@ fn invalid_filename_should_report_error() -> Result<(), Box<dyn std::error::Erro
         "--no-save",
     ]);
 
-    cmd.assert().stdout(predicate::str::contains("Error"));
+    cmd.assert()
+        .stdout(predicate::str::contains("input file does not exist"));
 
     dir.close()?;
     Ok(())
@@ -266,6 +267,7 @@ fn cmd_options_should_override_saved_task() -> Result<(), Box<dyn std::error::Er
     make_input_file_dummy(&dir)?;
 
     cmd.args(&[
+        "-v",
         "submit",
         "-f",
         "dummy.txt",
@@ -573,6 +575,53 @@ fn given_config_edit_when_no_config_saved_then_print_error(
     cmd.args(&["submit", "config"]);
     cmd.assert()
         .stdout(predicate::str::contains("No saved submit config!"));
+
+    dir.close()?;
+    Ok(())
+}
+
+#[test]
+#[ignore]
+fn given_no_main_should_trigger_main_removal() -> Result<(), Box<dyn std::error::Error>> {
+    let dir = initialize_correct_workspace()?;
+    let mut cmd = set_up_command(&dir)?;
+    let input_file = make_input_file_cpp(&dir)?;
+
+    cmd.args(&[
+        "submit",
+        "--no-main",
+        "-f",
+        input_file.path().to_str().unwrap(),
+        "--no-save",
+        "-t",
+        "1",
+    ]);
+    cmd.assert()
+        .stdout(predicate::str::contains("no_main: true"));
+
+    dir.close()?;
+    Ok(())
+}
+
+#[test]
+#[ignore]
+fn given_no_main_when_zip_should_remove_before_zipping() -> Result<(), Box<dyn std::error::Error>> {
+    let dir = initialize_correct_workspace()?;
+    let mut cmd = set_up_command(&dir)?;
+    let input_file = make_input_file_cpp(&dir)?;
+
+    cmd.args(&[
+        "submit",
+        "--no-main",
+        "-f",
+        input_file.path().to_str().unwrap(),
+        "--no-save",
+        "--zip",
+        "-t",
+        "1",
+    ]);
+    cmd.assert()
+        .stdout(predicate::str::contains("no_main: true"));
 
     dir.close()?;
     Ok(())
