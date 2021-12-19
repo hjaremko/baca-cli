@@ -28,6 +28,8 @@ pub struct SubmitConfig {
     pub rename_as: Option<String>,
     #[merge(strategy = merge::bool::overwrite_false)]
     pub no_main: bool,
+    #[merge(strategy = merge::bool::overwrite_false)]
+    pub no_polish: bool,
 }
 
 impl SubmitConfig {
@@ -46,6 +48,7 @@ impl SubmitConfig {
             language: language.into(),
             rename_as,
             no_main: false,
+            no_polish: false,
         }
     }
 
@@ -110,6 +113,7 @@ impl<'a> TryFrom<&'a ArgMatches<'a>> for SubmitConfig {
             rename_as: args.value_of("rename").map(|x| x.into()),
             to_zip: args.is_present("zip"),
             no_main: args.is_present("no_main"),
+            no_polish: args.is_present("no_polish"),
         };
         x.try_set_file(args.value_of("file"))?;
         Ok(x)
@@ -242,6 +246,7 @@ mod tests {
         assert!(default.rename_as.is_none());
         assert!(!default.to_zip);
         assert!(!default.no_main);
+        assert!(!default.no_polish);
     }
 
     #[test]
@@ -257,6 +262,7 @@ mod tests {
         assert!(merged.rename_as.is_none());
         assert!(!merged.to_zip);
         assert!(!merged.no_main);
+        assert!(!merged.no_polish);
     }
 
     fn make_submit_config() -> SubmitConfig {
@@ -267,6 +273,7 @@ mod tests {
             language: Language::from_str("C++").unwrap().into(),
             rename_as: "source.cpp".to_string().into(),
             no_main: true,
+            no_polish: true,
         }
     }
 
@@ -284,6 +291,7 @@ mod tests {
         assert_eq!(merged.rename_as.unwrap(), "source.cpp");
         assert!(merged.to_zip);
         assert!(merged.no_main);
+        assert!(merged.no_polish);
     }
 
     #[test]
@@ -300,5 +308,6 @@ mod tests {
         assert_eq!(merged.rename_as.unwrap(), "source.cpp");
         assert!(merged.to_zip);
         assert!(merged.no_main);
+        assert!(merged.no_polish);
     }
 }

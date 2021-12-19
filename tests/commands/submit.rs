@@ -626,3 +626,49 @@ fn given_no_main_when_zip_should_remove_before_zipping() -> Result<(), Box<dyn s
     dir.close()?;
     Ok(())
 }
+
+#[test]
+#[ignore]
+fn given_no_polish_should_trigger_unicode_removal() -> Result<(), Box<dyn std::error::Error>> {
+    let dir = initialize_correct_workspace()?;
+    let mut cmd = set_up_command(&dir)?;
+    let input_file = make_input_file_cpp(&dir)?;
+
+    cmd.args(&[
+        "submit",
+        "--no-polish",
+        "-f",
+        input_file.path().to_str().unwrap(),
+        "--no-save",
+        "-t",
+        "1",
+    ]);
+    cmd.assert()
+        .stdout(predicate::str::contains("no_polish: true"));
+
+    dir.close()?;
+    Ok(())
+}
+
+#[test]
+#[ignore]
+fn not_given_no_polish_should_not_trigger_unicode_removal() -> Result<(), Box<dyn std::error::Error>>
+{
+    let dir = initialize_correct_workspace()?;
+    let mut cmd = set_up_command(&dir)?;
+    let input_file = make_input_file_cpp(&dir)?;
+
+    cmd.args(&[
+        "submit",
+        "-f",
+        input_file.path().to_str().unwrap(),
+        "--no-save",
+        "-t",
+        "1",
+    ]);
+    cmd.assert()
+        .stdout(predicate::str::contains("no_polish: false"));
+
+    dir.close()?;
+    Ok(())
+}

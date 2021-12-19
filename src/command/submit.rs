@@ -105,6 +105,7 @@ impl Submit {
     {
         let saved_submit_config = SubmitConfig::read_config(workspace);
 
+        // todo: better error message on workspace corrupted/dedicated error for no such file
         if saved_submit_config.is_err() {
             error!("{}", saved_submit_config.err().unwrap());
             println!("{}", "No saved submit config!".bright_red());
@@ -282,6 +283,15 @@ where
         let unmained_input = workspace::remove_main(submit_config.file().unwrap())?;
         submit_config.try_set_file(unmained_input.into())?;
         info!("Unmained input file: {:?}", submit_config.file());
+    }
+
+    if submit_config.no_polish {
+        info!("Polish diacritics removal enabled");
+        println!("Submitting with no Polish diacritics");
+
+        let polishless_input = workspace::make_polishless_file(submit_config.file().unwrap())?;
+        submit_config.try_set_file(polishless_input.into())?;
+        info!("Polishless input file: {:?}", submit_config.file());
     }
 
     if submit_config.to_zip {
