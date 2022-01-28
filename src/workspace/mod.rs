@@ -15,7 +15,7 @@ pub mod baca_release;
 pub mod config_editor;
 pub mod config_object;
 mod connection_config;
-mod header_check;
+pub mod header_check;
 mod no_main;
 mod no_polish;
 mod submit_config;

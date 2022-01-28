@@ -1,21 +1,23 @@
 use crate::error::*;
 use crate::model::Language;
+use std::fmt::Debug;
 use std::fs::File;
 use std::io::{BufRead, BufReader};
 use std::path::Path;
 use tracing::{debug, info};
 
-fn is_header_present<P>(input_file: P, lang: &Language) -> Result<bool>
+pub fn is_header_present<P>(input_file: P, lang: &Language) -> Result<bool>
 where
-    P: AsRef<Path>,
+    P: AsRef<Path> + Debug,
 {
-    println!("Checking for {:?} header...", lang);
+    info!("Checking for header...");
+    debug!("Checking for {:?} header in file {:?}", lang, input_file);
 
     let input_file = File::open(input_file)?;
     let first_line = BufReader::new(input_file)
         .lines()
         .take(1)
-        .map(|x| x.unwrap())
+        .map(|x| x.unwrap_or_else(|_| "no_header".to_string()))
         .collect::<String>();
 
     debug!("First line: {first_line}");

@@ -20,22 +20,20 @@ impl Language {
         val.to_string()
     }
 
-    pub fn comment_style(&self) -> String {
+    pub fn comment_style(&self) -> Option<&str> {
         match self {
-            Language::Unsupported => "",
-            Language::Cpp | Language::Java | Language::CppWithFileSupport => "//",
-            Language::Bash => "#",
-            Language::Ada => "--", // Language::C => {"/*"}
+            Language::Cpp | Language::Java | Language::CppWithFileSupport => Some("//"),
+            Language::Bash => Some("#"),
+            Language::Ada => Some("--"), // Language::C => {"/*"}
+            _ => None,
         }
-        .to_string()
-    }
-
-    pub fn make_comment(&self, str: &str) -> String {
-        format!("{}{str}", self.comment_style())
     }
 
     pub fn is_comment(&self, line: &str) -> bool {
-        line.starts_with(&self.comment_style())
+        match self.comment_style() {
+            None => false,
+            Some(comment) => line.starts_with(comment),
+        }
     }
 }
 

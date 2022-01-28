@@ -5,6 +5,7 @@ use crate::command::{prompt, Command};
 use crate::error::{Error, Result};
 use crate::model::Language;
 use crate::workspace::config_editor::ConfigEditor;
+use crate::workspace::header_check::is_header_present;
 use crate::workspace::{ConfigObject, ConnectionConfig, SubmitConfig, Workspace};
 use crate::{error, workspace};
 use clap::ArgMatches;
@@ -312,6 +313,15 @@ where
         );
     };
 
+    if !submit_config.to_zip
+        && !is_header_present(
+            submit_config.file().unwrap(),
+            &submit_config.language.unwrap(),
+        )?
+    {
+        return Err(Error::NoHeader);
+    }
+
     api.submit(
         &connection_config,
         &task,
@@ -326,7 +336,6 @@ mod tests {
     use super::*;
     use crate::api::baca_api::MockBacaApi;
     use crate::model;
-    use crate::model::Language::Unsupported;
     use crate::model::{Language, Results, Task, Tasks};
     use crate::workspace::{ConnectionConfig, MockWorkspace};
     use assert_fs::fixture::ChildPath;
@@ -340,8 +349,7 @@ mod tests {
         input_file.touch().unwrap();
         input_file
             .write_str(
-                r#"
-        \\ Hubert Jaremko
+                r#"// Hubert Jaremko
         #include <iostream>
         int main() {
             std::cout << "Hello world" << std::endl;
@@ -369,8 +377,8 @@ mod tests {
             .withf(|x| *x == ConnectionConfig::default())
             .returning(|_| {
                 Ok(Tasks::new(vec![
-                    Task::new("1", Unsupported, "Metoda parametryzacji", 12),
-                    Task::new("2", Unsupported, "Metoda parametryzacji torusów", 4),
+                    Task::new("1", Language::Cpp, "Metoda parametryzacji", 12),
+                    Task::new("2", Language::Cpp, "Metoda parametryzacji torusów", 4),
                 ]))
             });
         mock_api
@@ -387,7 +395,7 @@ mod tests {
             "1",
             original_input.path(),
             false,
-            Language::Unsupported,
+            Language::Cpp,
             Some("new_name.c".to_string()),
         );
 

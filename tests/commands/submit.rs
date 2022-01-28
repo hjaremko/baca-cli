@@ -672,3 +672,53 @@ fn not_given_no_polish_should_not_trigger_unicode_removal() -> Result<(), Box<dy
     dir.close()?;
     Ok(())
 }
+
+#[test]
+#[ignore]
+fn submit_with_no_header_should_fail() -> Result<(), Box<dyn std::error::Error>> {
+    let dir = initialize_correct_workspace()?;
+    let mut cmd = set_up_command(&dir)?;
+    let input_file = make_input_file_dummy_no_header(&dir)?;
+
+    cmd.args(&[
+        "submit",
+        "-f",
+        input_file.path().to_str().unwrap(),
+        "--no-save",
+        "-t",
+        "1",
+        "-l",
+        "C++",
+    ]);
+    cmd.assert()
+        .stdout(predicate::str::contains("Header found: false"))
+        .stdout(predicate::str::contains("No header!"));
+
+    dir.close()?;
+    Ok(())
+}
+
+#[test]
+#[ignore]
+fn submit_with_header_should_not_fail() -> Result<(), Box<dyn std::error::Error>> {
+    let dir = initialize_correct_workspace()?;
+    let mut cmd = set_up_command(&dir)?;
+    let input_file = make_input_file_cpp(&dir)?;
+
+    cmd.args(&[
+        "submit",
+        "-f",
+        input_file.path().to_str().unwrap(),
+        "--no-save",
+        "-t",
+        "1",
+        "-l",
+        "C++",
+    ]);
+    cmd.assert()
+        .stdout(predicate::str::contains("Header found: true"))
+        .stdout(predicate::str::contains("No header!").not());
+
+    dir.close()?;
+    Ok(())
+}
