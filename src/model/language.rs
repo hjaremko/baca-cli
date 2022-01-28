@@ -19,6 +19,24 @@ impl Language {
         let val = val as i32;
         val.to_string()
     }
+
+    pub fn comment_style(&self) -> String {
+        match self {
+            Language::Unsupported => "",
+            Language::Cpp | Language::Java | Language::CppWithFileSupport => "//",
+            Language::Bash => "#",
+            Language::Ada => "--", // Language::C => {"/*"}
+        }
+        .to_string()
+    }
+
+    pub fn make_comment(&self, str: &str) -> String {
+        format!("{}{str}", self.comment_style())
+    }
+
+    pub fn is_comment(&self, line: &str) -> bool {
+        line.starts_with(&self.comment_style())
+    }
 }
 
 impl ToString for Language {
@@ -111,5 +129,40 @@ mod tests {
         assert_eq!(Language::Bash.code(), "10");
         assert_eq!(Language::CppWithFileSupport.code(), "12");
         assert_eq!(Language::Ada.code(), "9");
+    }
+
+    // #[test]
+    // fn no_comment() {
+    //     assert!(!contains_comment("no comment sorry"));
+    // }
+
+    #[test]
+    fn cpp_comment() {
+        assert!(Language::Cpp.is_comment("// Hubert Jaremko"));
+    }
+
+    #[test]
+    fn cpp_comment_should_not_confuse_preprocessor() {
+        assert!(!Language::Cpp.is_comment("#include <iostream>"));
+    }
+
+    #[test]
+    fn bash_comment() {
+        assert!(Language::Bash.is_comment("# Hubert Jaremko"));
+    }
+
+    // #[test]
+    // fn c_comment() {
+    //     assert!(Language::C.is_comment("/* Hubert Jaremko */"));
+    // }
+
+    #[test]
+    fn ada_comment() {
+        assert!(Language::Ada.is_comment("-- Hubert Jaremko"));
+    }
+
+    #[test]
+    fn unsupported_comment() {
+        assert!(!Language::Unsupported.is_comment("% Hubert Jaremko"));
     }
 }
