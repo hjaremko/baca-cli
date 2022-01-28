@@ -66,8 +66,7 @@ pub fn make_input_file_cpp(dir: &TempDir) -> Result<ChildPath, Box<dyn std::erro
     let input_file = dir.child("source.cpp");
     input_file.touch()?;
     input_file.write_str(
-        r#"
-        \\ Hubert Jaremko
+        r#"// Hubert Jaremko
         #include <iostream>
         int main() {
             std::cout << "Hello world" << std::endl;
@@ -82,9 +81,20 @@ pub fn make_input_file_dummy(dir: &TempDir) -> Result<ChildPath, Box<dyn std::er
     let input_file = dir.child("dummy.txt");
     input_file.touch()?;
     input_file.write_str(
-        r#"
-        \\ Hubert Jaremko
+        r#"// Hubert Jaremko
         Dummy text file
+        "#,
+    )?;
+    Ok(input_file)
+}
+
+pub fn make_input_file_dummy_no_header(
+    dir: &TempDir,
+) -> Result<ChildPath, Box<dyn std::error::Error>> {
+    let input_file = dir.child("dummy.txt");
+    input_file.touch()?;
+    input_file.write_str(
+        r#"Dummy text file
         "#,
     )?;
     Ok(input_file)
