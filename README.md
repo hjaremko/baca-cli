@@ -93,7 +93,8 @@ baca refresh
 
 ### Submit: `submit`
 
-Submits given file to specified task. Will prompt the user for task, if not provided.
+Submits given file to specified task. Will prompt the user for task, if not provided.  
+**Submits with no comment on the first line (header) will fail. Please include header.** 
 
 - Optional parameter `--task <id>` explicitly sets problem to submit to. Use `baca tasks` to see what ids are available.
 - Optional parameter `--zip` will zip given file before submitting. The archive is saved as **`source.zip`**.
@@ -109,13 +110,14 @@ USAGE:
     baca submit [FLAGS] [OPTIONS] [SUBCOMMAND]
 
 FLAGS:
-    -h, --help       Prints help information
-        --no-main    Removes main function before submitting. Takes effect only on C/C++ files.
-        --no-polish  Transliterates Unicode strings in the input file into pure ASCII, effectively removing Polish diacritics.
-        --no-save    Does not ask for save
-    -s, --save       Saves task config, if provided, future 'submit' calls won't require providing task config
-    -V, --version    Prints version information
-    -z, --zip        Zips files to 'source.zip' before submitting, overrides saved config
+    -h, --help         Prints help information
+        --no-main      Removes main function before submitting. Takes effect only on C/C++ files.
+        --no-polish    Transliterates Unicode strings in the input file into pure ASCII, effectively removing Polish
+                       diacritics.
+        --no-save      Does not ask for save
+    -s, --save         Saves task config, if provided, future 'submit' calls won't require providing task config
+    -V, --version      Prints version information
+    -z, --zip          Zips files to 'source.zip' before submitting, overrides saved config
 
 OPTIONS:
     -f, --file <file>            File to submit, overrided saved path
