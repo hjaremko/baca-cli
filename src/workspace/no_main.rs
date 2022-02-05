@@ -399,4 +399,44 @@ int moin(int argc, char** argv)
             .eval(expected));
         assert_eq!(actual_filepath.file_name().unwrap(), "input.cpp");
     }
+
+    #[test]
+    fn real_example() {
+        let input = r#"void SymmetricDifference(string filename1, string filename2, string filename3) {
+// code
+}
+
+const string test_nr = "3";
+
+int main() {
+    string f1, f2, f3;
+    f1 = "./../src/input" + test_nr + ".txt";
+    f2 = "./../src/buff1.txt";
+    f3 = "./../src/buff2.txt";
+    copy_file("./../src/org/input" + test_nr + ".txt", f1);
+
+    cout << file_size(f1) << endl;
+
+//    Data test;
+    SortCount(f1, f2, f3);
+//    SortInt(f1, f2, f3);
+    cout << file_size(f1) << endl;
+//    SortString(f1, f2, f3);
+//    SymmetricDifference(f1, f2, f3);
+}
+
+"#;
+
+        let expected = r#"void SymmetricDifference(string filename1, string filename2, string filename3) {
+// code
+}
+
+const string test_nr = "3";
+
+
+
+"#;
+        let actual = strip_main(input);
+        assert_eq!(actual, expected);
+    }
 }
