@@ -136,6 +136,7 @@ mod tests {
     }
 
     #[test]
+    #[ignore]
     fn login_should_connect() {
         let baca = make_connection_config();
         let req = Request::new(&baca);
@@ -146,6 +147,7 @@ mod tests {
     }
 
     #[test]
+    #[ignore]
     fn details_should_connect() {
         let baca = make_connection_config();
         let req = Request::new(&baca);
@@ -155,6 +157,7 @@ mod tests {
     }
 
     #[test]
+    #[ignore]
     fn results_should_connect() {
         let baca = make_connection_config();
         let req = Request::new(&baca);
@@ -164,6 +167,7 @@ mod tests {
     }
 
     #[test]
+    #[ignore]
     fn tasks_should_connect() {
         let baca = make_connection_config();
         let req = Request::new(&baca);

@@ -52,7 +52,7 @@ jobs:
         uses: actions-rs/cargo@v1
         with:
           command: test
-          args: --all --no-fail-fast ${{ matrix.cargo_flags }} -- --include-ignored
+          args: --all --no-fail-fast ${{ matrix.cargo_flags }}
         env:
           TEST_BACA_PASSWORD: ${{ secrets.TEST_BACA_PASSWORD }}
           TEST_BACA_LOGIN: ${{ secrets.TEST_BACA_LOGIN }}
