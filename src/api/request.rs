@@ -128,7 +128,6 @@ mod tests {
     }
 
     fn check_response(response: reqwest::Result<Response>) {
-        // todo: tsl error
         if let Ok(response) = response {
             assert_eq!(response.status(), StatusCode::OK);
             assert_eq!(response.text().unwrap(), "//OK[0,[],0,7]");
@@ -142,7 +141,6 @@ mod tests {
         let req = Request::new(&baca);
         let response = req.login();
 
-        // todo: handle tsl error
         check_response(response);
     }
 

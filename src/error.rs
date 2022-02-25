@@ -1,4 +1,4 @@
-use crate::error::Error::{Network, Other, Protocol, WorkspaceCorrupted};
+use crate::error::Error::{Network, Other, WorkspaceCorrupted};
 use std::{fmt, io};
 use tracing::error;
 
@@ -19,7 +19,6 @@ pub enum Error {
     WorkspaceCorrupted,
     WorkspaceAlreadyInitialized,
     InvalidSubmitId,
-    Protocol,
     LoggedOut,
     TaskNotActive,
     InvalidTaskId(String),
@@ -55,7 +54,6 @@ impl fmt::Display for Error {
             Error::WorkspaceCorrupted => "Workspace corrupted, please delete .baca directory and initialize again.".to_owned(),
             Error::WorkspaceAlreadyInitialized => "Baca already initialized. Remove '.baca' directory if you want to change config or edit it manually.".to_owned(),
             Error::InvalidSubmitId => "Invalid submit id.".to_owned(),
-            Error::Protocol => "Unfortunately, Baca still uses deprecated TLSv1 protocol which is not supported on your system. Sorry!".to_owned(),
             Error::LoggedOut => "The session cookie has expired, type 'baca refresh' to re-log and try again.".to_owned(),
             Error::TaskNotActive => "Error sending submit. Is the task still active?".to_owned(),
             Error::InvalidTaskId(id) => format!("Task no. {} does not exist.", id),
@@ -94,11 +92,6 @@ impl From<serde_yaml::Error> for Error {
 impl From<reqwest::Error> for Error {
     fn from(e: reqwest::Error) -> Self {
         error!("{}", e);
-
-        if e.to_string().contains("unsupported protocol") {
-            return Protocol;
-        }
-
         Network(e.into())
     }
 }
