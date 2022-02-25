@@ -29,3 +29,7 @@ assert_cmd = "2.0"
 predicates = "2.0"
 assert_fs = "1.0"
 tempfile = "3.3"
+
+[profile.release]
+strip = "debuginfo"
+
