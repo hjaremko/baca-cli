@@ -20,7 +20,7 @@ impl Submit {
         let st: Vec<_> = data
             .iter()
             .skip_while(|x| !x.contains("nazwa statusu"))
-            .map(|x| x.replace("\"", ""))
+            .map(|x| x.replace('\"', ""))
             .collect();
 
         let offset = 10;
@@ -89,7 +89,7 @@ impl Submit {
     fn collect_tests_data(data: &[String]) -> Vec<String> {
         data.iter()
             .take_while(|x| !x.contains("nazwa statusu"))
-            .map(|x| x.replace("\"", ""))
+            .map(|x| x.replace('\"', ""))
             .collect()
     }
 

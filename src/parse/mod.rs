@@ -28,7 +28,7 @@ fn map_serialized(keys: &[String], values: &[String]) -> Vec<String> {
         .map(to_usize)
         .filter(not_zero)
         .map(to_value)
-        .map(|x| x.replace("\"", ""))
+        .map(|x| x.replace('\"', ""))
         .collect()
 }
 
