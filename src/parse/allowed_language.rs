@@ -9,7 +9,7 @@ impl FromBacaOutput for Option<Language> {
         let data = deserialize(data);
         debug!("Deserialized: {:?}", data);
 
-        if let Ok(language) = data[4].replace("\\", "").parse::<Language>() {
+        if let Ok(language) = data[4].replace('\\', "").parse::<Language>() {
             Some(language)
         } else {
             None
