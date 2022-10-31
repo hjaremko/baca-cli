@@ -95,6 +95,9 @@ subcommands:
         - no_polish:
             long: no-polish
             help: Transliterates Unicode strings in the input file into pure ASCII, effectively removing Polish diacritics.
+        - skip_header:
+            long: skip-header
+            help: Skips header authentication
       subcommands:
         - clear:
             long: clear

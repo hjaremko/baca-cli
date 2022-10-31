@@ -30,6 +30,8 @@ pub struct SubmitConfig {
     pub no_main: bool,
     #[merge(strategy = merge::bool::overwrite_false)]
     pub no_polish: bool,
+    #[merge(strategy = merge::bool::overwrite_false)]
+    pub skip_header: bool,
 }
 
 impl SubmitConfig {
@@ -49,6 +51,7 @@ impl SubmitConfig {
             rename_as,
             no_main: false,
             no_polish: false,
+            skip_header: false,
         }
     }
 
@@ -114,6 +117,7 @@ impl<'a> TryFrom<&'a ArgMatches<'a>> for SubmitConfig {
             to_zip: args.is_present("zip"),
             no_main: args.is_present("no_main"),
             no_polish: args.is_present("no_polish"),
+            skip_header: args.is_present("skip_header"),
         };
         x.try_set_file(args.value_of("file"))?;
         Ok(x)
@@ -274,6 +278,7 @@ mod tests {
             rename_as: "source.cpp".to_string().into(),
             no_main: true,
             no_polish: true,
+            skip_header: false,
         }
     }
 

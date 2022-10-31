@@ -314,6 +314,7 @@ where
     };
 
     if !submit_config.to_zip
+        && !submit_config.skip_header
         && !is_header_present(
             submit_config.file().unwrap(),
             &submit_config.language.unwrap(),
