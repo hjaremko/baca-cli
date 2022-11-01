@@ -20,19 +20,20 @@ impl Language {
         val.to_string()
     }
 
-    pub fn comment_style(&self) -> Option<&str> {
+    pub fn comment_styles(&self) -> Option<Vec<&str>> {
         match self {
-            Language::Cpp | Language::Java | Language::CppWithFileSupport => Some("//"),
-            Language::Bash => Some("#"),
-            Language::Ada => Some("--"), // Language::C => {"/*"}
+            Language::Cpp => Some(vec!["//", ";"]),
+            Language::Java | Language::CppWithFileSupport => Some(vec!["//"]),
+            Language::Bash => Some(vec!["#"]),
+            Language::Ada => Some(vec!["--"]), // Language::C => {"/*"}
             _ => None,
         }
     }
 
     pub fn is_comment(&self, line: &str) -> bool {
-        match self.comment_style() {
+        match self.comment_styles() {
             None => false,
-            Some(comment) => line.starts_with(comment),
+            Some(comment_styles) => comment_styles.iter().any(|style| line.starts_with(style)),
         }
     }
 }
@@ -137,6 +138,11 @@ mod tests {
     #[test]
     fn cpp_comment() {
         assert!(Language::Cpp.is_comment("// Hubert Jaremko"));
+    }
+
+    #[test]
+    fn asm_comment() {
+        assert!(Language::Cpp.is_comment("; Hubert Jaremko"));
     }
 
     #[test]
