@@ -5,7 +5,7 @@ use crate::workspace::{ConfigObject, Workspace};
 use serde::{Deserialize, Serialize};
 use tracing::error;
 
-#[derive(Serialize, Deserialize, Debug, Clone, PartialEq, Default)]
+#[derive(Serialize, Deserialize, Debug, Clone, PartialEq, Eq, Default)]
 pub struct ConnectionConfig {
     pub host: String,
     pub login: String,

@@ -14,7 +14,7 @@ fn merge_left_option<T>(left: &mut Option<T>, right: Option<T>) {
     }
 }
 
-#[derive(Debug, Default, Serialize, Deserialize, PartialEq, Merge, Clone)]
+#[derive(Debug, Default, Serialize, Deserialize, PartialEq, Eq, Merge, Clone)]
 pub struct SubmitConfig {
     #[merge(strategy = merge_left_option)]
     pub id: Option<String>,

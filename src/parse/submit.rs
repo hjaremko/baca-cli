@@ -56,8 +56,7 @@ impl Submit {
             .skip(1)
             .map(|data| TestResults {
                 name: data[test_name_idx].to_string(),
-                status: SubmitStatus::from_str(&*data[test_status_idx])
-                    .expect("Invalid test status"),
+                status: SubmitStatus::from_str(data[test_status_idx]).expect("Invalid test status"),
             })
             .into_iter()
             .collect::<Vec<_>>();

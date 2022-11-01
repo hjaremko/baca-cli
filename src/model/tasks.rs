@@ -2,7 +2,7 @@ use crate::error::Error;
 use crate::model::Task;
 use colored::Colorize;
 
-#[derive(Debug, PartialEq)]
+#[derive(Debug, PartialEq, Eq)]
 pub struct Tasks {
     pub tasks: Vec<Task>,
 }
