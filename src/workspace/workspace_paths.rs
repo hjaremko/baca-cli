@@ -2,7 +2,7 @@ use crate::workspace::ConfigObject;
 use std::path::{Path, PathBuf};
 
 // todo: walk up dir tree until found
-#[derive(Debug, Clone, PartialEq)]
+#[derive(Debug, Clone, PartialEq, Eq)]
 pub struct WorkspacePaths {
     root_path: PathBuf,
 }

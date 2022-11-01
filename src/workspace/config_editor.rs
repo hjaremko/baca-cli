@@ -5,7 +5,7 @@ use std::process::ExitStatus;
 use std::{env, ffi::OsString, fs, io, process};
 use tracing::{debug, info};
 
-#[derive(Debug, PartialEq)]
+#[derive(Debug, PartialEq, Eq)]
 pub enum EditorStatus {
     Modified,
     NotModified,
