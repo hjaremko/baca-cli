@@ -96,7 +96,7 @@ Submits given file to specified task. Will prompt the user for task, if not prov
 - Optional parameter `--zip` will zip given file before submitting. The archive is saved as **`source.zip`**.
 - Optional parameter `--rename` will rename file before submitting and zipping.
 - Optional parameter `--no-main` will remove main function from C/C++ files before submitting and zipping.
-- Optional parameter `--no-polsih` will remove non-unicode characters from files before submitting and zipping.
+- Optional parameter `--no-polish` will remove non-unicode characters from files before submitting and zipping.
 - Optional parameter `--language <language>` explicitly sets input file language.
 - `submit config` opens editor to edit submit config.
 - `submit clear` clears saved submit config.
