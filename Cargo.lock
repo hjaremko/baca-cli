@@ -39,6 +39,22 @@ dependencies = [
 ]
 
 [[package]]
+name = "api"
+version = "1.0.0"
+dependencies = [
+ "assert_cmd",
+ "colored",
+ "dyn-fmt",
+ "mockall",
+ "predicates",
+ "reqwest",
+ "serde",
+ "serde_json",
+ "serde_yaml",
+ "tracing",
+]
+
+[[package]]
 name = "assert_cmd"
 version = "2.0.4"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -82,32 +98,6 @@ name = "autocfg"
 version = "1.1.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "d468802bab17cbc0cc575e9b053f41e72aa36bfa6b7f55e3529ffa43161b97fa"
-
-[[package]]
-name = "baca"
-version = "0.5.1"
-dependencies = [
- "assert_cmd",
- "assert_fs",
- "clap",
- "colored",
- "deunicode",
- "dialoguer",
- "dyn-fmt",
- "merge",
- "mockall",
- "predicates",
- "regex",
- "reqwest",
- "serde",
- "serde_json",
- "serde_yaml",
- "tempfile",
- "time",
- "tracing",
- "tracing-subscriber",
- "zip",
-]
 
 [[package]]
 name = "base64"
@@ -227,6 +217,33 @@ dependencies = [
 ]
 
 [[package]]
+name = "cli"
+version = "0.6.0"
+dependencies = [
+ "api",
+ "assert_cmd",
+ "assert_fs",
+ "clap",
+ "colored",
+ "deunicode",
+ "dialoguer",
+ "dyn-fmt",
+ "merge",
+ "mockall",
+ "predicates",
+ "regex",
+ "reqwest",
+ "serde",
+ "serde_json",
+ "serde_yaml",
+ "tempfile",
+ "time",
+ "tracing",
+ "tracing-subscriber",
+ "zip",
+]
+
+[[package]]
 name = "colored"
 version = "2.0.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -284,6 +301,10 @@ dependencies = [
  "time",
  "url",
 ]
+
+[[package]]
+name = "core"
+version = "0.1.0"
 
 [[package]]
 name = "core-foundation"
