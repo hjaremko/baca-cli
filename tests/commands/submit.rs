@@ -359,10 +359,10 @@ fn given_just_filename_absolute_path_should_be_saved() -> Result<(), Box<dyn std
 
     let submit_config_contents = fs::read_to_string(dir.baca_submit_config_file_path()).unwrap();
     let input_path = input_file.path().canonicalize().unwrap();
-    let input_path = input_path.to_str().unwrap().replace('\\', "\\\\");
+    let input_path = input_path.to_str().unwrap();
 
     assert!(
-        predicate::str::contains(&input_path).eval(&submit_config_contents),
+        predicate::str::contains(input_path).eval(&submit_config_contents),
         "contents: {:?}\ninput_path: {:?}",
         submit_config_contents,
         input_path
@@ -394,10 +394,10 @@ fn given_absolute_path_should_be_saved() -> Result<(), Box<dyn std::error::Error
 
     let submit_config_contents = fs::read_to_string(dir.baca_submit_config_file_path()).unwrap();
     let input_path = input_file.path().canonicalize().unwrap();
-    let input_path = input_path.to_str().unwrap().replace('\\', "\\\\");
+    let input_path = input_path.to_str().unwrap();
 
     assert!(
-        predicate::str::contains(&input_path).eval(&submit_config_contents),
+        predicate::str::contains(input_path).eval(&submit_config_contents),
         "contents: {:?}\ninput_path: {:?}",
         submit_config_contents,
         input_path
@@ -436,10 +436,10 @@ fn given_relative_path_absolute_should_be_saved() -> Result<(), Box<dyn std::err
 
     let submit_config_contents = fs::read_to_string(dir.baca_submit_config_file_path()).unwrap();
     let input_path = input_file.path().canonicalize().unwrap();
-    let input_path = input_path.to_str().unwrap().replace('\\', "\\\\");
+    let input_path = input_path.to_str().unwrap();
 
     assert!(
-        predicate::str::contains(&input_path).eval(&submit_config_contents),
+        predicate::str::contains(input_path).eval(&submit_config_contents),
         "contents: {:?}\ninput_path: {:?}",
         submit_config_contents,
         input_path
