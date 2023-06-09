@@ -12,17 +12,17 @@ jobs:
         os: [ ubuntu-latest, windows-latest ]
 
     steps:
-      - name: Chceckout code
-        uses: actions/checkout@v2
+      - name: Checkout code
+        uses: actions/checkout@v3
       - name: Cache cargo
-        uses: actions/cache@v2
+        id: cache-cargo
+        uses: actions/cache@v3
         with:
           path: |
             ~/.cargo/registry
             ~/.cargo/git
             target
           key: ${{ runner.os }}-cargo-debug-${{ hashFiles('**/Cargo.lock') }}
-          restore-keys: ${{ runner.os }}-cargo-debug-
       - name: Run linter
         run: cargo clippy --all-features -- -D warnings
       - name: Run tests
@@ -39,7 +39,7 @@ jobs:
     runs-on: macos-latest
 
     steps:
-      - name: Chceckout code
-        uses: actions/checkout@v2
+      - name: Checkout code
+        uses: actions/checkout@v3
       - name: Check formatting
         run: cargo fmt --all -- --check
