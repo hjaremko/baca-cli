@@ -20,7 +20,6 @@ impl FromBacaOutput for Results {
 
         let submits: Vec<Submit> = st
             .chunks(10)
-            .into_iter()
             .rev()
             .skip(1)
             .map(|raw| Submit {

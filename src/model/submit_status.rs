@@ -1,10 +1,11 @@
 use std::str::FromStr;
 
-#[derive(Debug, PartialEq, Eq, Clone)]
+#[derive(Debug, PartialEq, Eq, Clone, Default)]
 pub enum SubmitStatus {
     Ok,
     InQueue,
     Processing,
+    #[default]
     WrongAnswer,
     TimeExceeded,
     CompileError,
@@ -14,12 +15,6 @@ pub enum SubmitStatus {
     RuntimeError,
     InternalError,
     OutputSizeExceeded,
-}
-
-impl Default for SubmitStatus {
-    fn default() -> Self {
-        SubmitStatus::WrongAnswer
-    }
 }
 
 impl FromStr for SubmitStatus {

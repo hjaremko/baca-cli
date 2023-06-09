@@ -24,7 +24,7 @@ impl BacaDirectoryPaths for TempDir {
 
 pub fn set_up_command(dir: &TempDir) -> Result<Command, Box<dyn Error>> {
     let mut cmd = Command::cargo_bin("baca")?;
-    cmd.current_dir(&dir);
+    cmd.current_dir(dir);
     cmd.arg("-uv");
     Ok(cmd)
 }
@@ -57,7 +57,7 @@ pub fn initialize_correct_workspace() -> Result<TempDir, Box<dyn std::error::Err
     let (dir, mut cmd) = set_up_with_dir()?;
 
     cmd.arg("init")
-        .args(&["-h", &host, "-p", &pass, "-l", &login]);
+        .args(["-h", &host, "-p", &pass, "-l", &login]);
     cmd.assert();
     Ok(dir)
 }

@@ -25,7 +25,7 @@ impl Submit {
 
         let offset = 10;
         Submit {
-            status: SubmitStatus::from_str(&*st[offset]).unwrap(),
+            status: SubmitStatus::from_str(&st[offset]).unwrap(),
             points: st[offset + 1].parse().unwrap(),
             lateness: Some(st[offset + 2].parse().unwrap()),
             accepted: st[offset + 3].parse().unwrap(),
@@ -51,14 +51,12 @@ impl Submit {
 
         let mut ans = raw_test_data
             .chunks(offset)
-            .into_iter()
             .filter(|x| x.len() == offset)
             .skip(1)
             .map(|data| TestResults {
                 name: data[test_name_idx].to_string(),
                 status: SubmitStatus::from_str(data[test_status_idx]).expect("Invalid test status"),
             })
-            .into_iter()
             .collect::<Vec<_>>();
         ans.reverse();
         if ans.is_empty() {

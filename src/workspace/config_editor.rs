@@ -108,7 +108,7 @@ impl EditorSpawner for Spawner {
 
         process::Command::new(cmd)
             .args(args)
-            .arg(&path)
+            .arg(path)
             .spawn()?
             .wait()
     }
