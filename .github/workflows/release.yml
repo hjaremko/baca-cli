@@ -18,21 +18,20 @@ jobs:
         os: [ ubuntu-latest, windows-latest, macos-latest ]
 
     steps:
-      - name: Chceckout code
-        uses: actions/checkout@v2
+      - name: Checkout code
+        uses: actions/checkout@v3
       - name: Cache cargo
-        uses: actions/cache@v2
+        uses: actions/cache@v3
         with:
           path: |
             ~/.cargo/registry
             ~/.cargo/git
             target
           key: ${{ runner.os }}-cargo-release-${{ hashFiles('**/Cargo.lock') }}
-          restore-keys: ${{ runner.os }}-cargo-release-
       - name: Build project
         run: cargo build --all --all-targets --release
       - name: Upload artifact
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v3
         with:
           name: baca-${{ runner.os }}
           path: ./target/release/baca*

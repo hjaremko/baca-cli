@@ -1,11 +1,12 @@
+use reqwest::blocking::{multipart, RequestBuilder, Response};
+use reqwest::header::{CONTENT_TYPE, COOKIE};
+use tracing::{debug, info};
+
 use crate::api::RequestType;
 use crate::error;
 use crate::error::Error;
 use crate::model::Task;
 use crate::workspace::ConnectionConfig;
-use reqwest::blocking::{multipart, RequestBuilder, Response};
-use reqwest::header::{CONTENT_TYPE, COOKIE};
-use tracing::{debug, info};
 
 pub struct Request<'a> {
     connection_config: &'a ConnectionConfig,
@@ -114,8 +115,9 @@ impl<'a> Request<'a> {
 
 #[cfg(test)]
 mod tests {
-    use super::*;
     use reqwest::StatusCode;
+
+    use super::*;
 
     fn make_connection_config() -> ConnectionConfig {
         ConnectionConfig {
