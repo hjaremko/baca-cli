@@ -31,5 +31,6 @@ assert_fs = "1"
 tempfile = "3"
 
 [profile.release]
-strip = "debuginfo"
-
+strip = true
+lto = true
+codegen-units = 1
