@@ -6,15 +6,30 @@ CLI client for the Jagiellonian University's BaCa online judge
 
 ## Installation
 
-The latest release can be downloaded **[here](https://github.com/hjaremko/baca-cli/releases)**.
+Using `cargo` is recommended. The latest release binaries can be downloaded **[here](https://github.com/hjaremko/baca-cli/releases/latest)**.
 
-- **Windows** users can use convenient installer or download raw binary.
-- **Linux** and **macOS** users should rename binary to `baca` and copy it to `~/.local/bin` or whatever your `PATH` is.
-- **Cargo** users can install with command `cargo install --git https://github.com/hjaremko/baca-cli.git`
+#### Cargo
+```shell
+cargo install --git https://github.com/hjaremko/baca-cli.git
+```
+#### Linux
+```sh
+$ curl -Lo baca.zip https://github.com/hjaremko/baca-cli/releases/download/v0.5.0/baca-0.5.0-linux.zip
+$ unzip baca.zip
+$ sudo install baca /usr/local/bin/
+```
+#### macOS
+```sh
+$ curl -Lo baca.zip https://github.com/hjaremko/baca-cli/releases/download/v0.5.0/baca-0.5.0-linux.zip
+$ unzip baca.zip
+$ sudo cp baca /usr/local/bin/
+```
+#### Windows
+Download the raw binary and place it in your `PATH` ([What is `PATH`?](https://en.wikipedia.org/wiki/PATH_(variable))).
 
-### Arch Linux
+#### Arch Linux (not maintained)
 
-You can download the latest release from [AUR](https://aur.archlinux.org/packages/baca-cli) and install it using your
+Download the release from [AUR](https://aur.archlinux.org/packages/baca-cli) and install it using your
 favourite AUR helper or directly from source:
 
 ```
@@ -112,6 +127,7 @@ FLAGS:
                        diacritics.
         --no-save      Does not ask for save
     -s, --save         Saves task config, if provided, future 'submit' calls won't require providing task config
+        --skip-header  Skips header verification
     -V, --version      Prints version information
     -z, --zip          Zips files to 'source.zip' before submitting, overrides saved config
 
@@ -137,8 +153,8 @@ Submitting hello.cpp to task [E] Metoda SOR (C++ with file support).
 
 #### Saving task info
 
-If you don't want to type task info (id and filename) every time you submit, you can use `--save` flag to save it. Keep
-in mind, that config provided through parameters will override saved data. To completely remove saved data
+If you don't want to type task info (id and filename) every time you submit, use `--save` flag to save it. Keep
+in mind that the config provided through parameters will override saved data. To completely remove saved data
 use `baca submit clear`. To disable automatic prompt for save, use `--no-save`.
 
 Example:
@@ -152,8 +168,8 @@ Submitting hello.cpp to task [E] Metoda SOR (C++ with file support).
 
 ### Recent submits: `log`
 
-Prints statuses of a couple of recent submits (default 3). Parameter `-t <task_id>` lets you print logs for specific
-task. Task ID can be found by `baca tasks`.
+Prints statuses of a couple of recent submits (default 3). Parameter `-t <task_id>` lets you print logs for a specific
+task. Task ID can be found through `baca tasks`.
 
 ```
 baca log [optional: number] [optional: -t <task_id>]
@@ -179,8 +195,8 @@ Example:
 
 ### Last submit details: `last`
 
-Prints details of last submit. Requires workspace to be initialized. Parameter `-t <task_id>` lets you print logs for
-specific task. Task ID can be found by `baca tasks`.
+Prints details of the last submit. Requires workspace to be initialized. Parameter `-t <task_id>` lets you print logs
+for a specific task. Task ID can be found through `baca tasks`.
 
 ```
 baca last [optional: -t <task_id>]
@@ -202,7 +218,7 @@ Example:
 
 ### Any submit details: `details`
 
-Prints details of given submit. Requires workspace to be initialized.
+Prints details of a given submit. Requires workspace to be initialized.
 
 ```
 baca details <id>
@@ -284,8 +300,8 @@ cargo build --release
 
 ## Running tests
 
-Some tests require credentials to actual BaCa server, which can be set using environment variables. These tests are
-disabled by default, you can try running them with command `cargo test -- --ignored`.
+Some tests require credentials to a actual BaCa server, which can be set using environment variables. These tests are
+disabled by default, but you can try running them with the command `cargo test -- --ignored`.
 
 ```
 TEST_BACA_LOGIN=<login>
@@ -295,7 +311,7 @@ TEST_BACA_HOST=<host>
 
 ## Setting log levels
 
-Log levels are configured by `-v` flag.
+Log levels are configured by a `-v` flag.
 
 - `no flag` - no additional logs
 - `-v` - **info**

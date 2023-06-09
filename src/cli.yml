@@ -51,7 +51,7 @@ subcommands:
         - task:
             long: task
             short: t
-            help: Print only spiecified task logs, type 'baca tasks' to see what ids are available
+            help: Print only specified task logs, type 'baca tasks' to see what ids are available
             takes_value: true
   - tasks:
       about: Prints available tasks
@@ -66,7 +66,7 @@ subcommands:
         - file:
             long: file
             short: f
-            help: File to submit, overrided saved path
+            help: File to submit, overrides saved path
             takes_value: true
         - zip:
             long: zip
@@ -97,7 +97,7 @@ subcommands:
             help: Transliterates Unicode strings in the input file into pure ASCII, effectively removing Polish diacritics.
         - skip_header:
             long: skip-header
-            help: Skips header authentication
+            help: Skips header verification
       subcommands:
         - clear:
             long: clear
@@ -111,7 +111,7 @@ subcommands:
         - task:
             long: task
             short: t
-            help: Print spiecified task logs, type 'baca tasks' to see what ids are available
+            help: Print specified task logs, type 'baca tasks' to see what ids are available
             takes_value: true
   - config:
       about: Opens editor to edit BaCa configuration
