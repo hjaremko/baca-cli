@@ -22,7 +22,7 @@ fn invalid_password() -> Result<(), Box<dyn std::error::Error>> {
     cmd.current_dir(&temp);
     cmd.arg("-u");
     cmd.arg("init")
-        .args(&["--host", "mn2020", "--login", "jaremko", "-p", "invalid"]);
+        .args(["--host", "mn2020", "--login", "jaremko", "-p", "invalid"]);
     cmd.assert()
         .stdout(predicate::str::contains("Invalid login or password"));
 
@@ -42,7 +42,7 @@ fn invalid_host() -> Result<(), Box<dyn std::error::Error>> {
     cmd.current_dir(&temp);
     cmd.arg("-u");
     cmd.arg("init")
-        .args(&["--host", "invalid", "--login", &login, "-p", &pass]);
+        .args(["--host", "invalid", "--login", &login, "-p", &pass]);
     cmd.assert()
         .stdout(predicate::str::contains("Invalid host"));
 
@@ -62,7 +62,7 @@ fn success() -> Result<(), Box<dyn std::error::Error>> {
     cmd.current_dir(&temp);
     cmd.arg("-u");
     cmd.arg("init")
-        .args(&["--host", &host, "-p", &pass, "-l", &login]);
+        .args(["--host", &host, "-p", &pass, "-l", &login]);
     cmd.assert().code(0);
 
     assert!(baca_dir_exists(&temp));
@@ -82,7 +82,7 @@ fn should_save_version() -> Result<(), Box<dyn std::error::Error>> {
     cmd.current_dir(&temp);
     cmd.arg("-u");
     cmd.arg("init")
-        .args(&["--host", &host, "-p", &pass, "-l", &login]);
+        .args(["--host", &host, "-p", &pass, "-l", &login]);
     cmd.assert().code(0);
 
     let version_path = temp.path().join(".baca/version");

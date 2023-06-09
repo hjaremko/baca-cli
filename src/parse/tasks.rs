@@ -14,7 +14,6 @@ impl FromStr for Tasks {
 
         let tasks: Vec<_> = st
             .chunks(5)
-            .into_iter()
             .rev()
             .skip(1)
             .map(|raw| Task {

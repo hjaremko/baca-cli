@@ -11,7 +11,7 @@ fn update_check_timestamp_should_be_saved_if_no_update() -> Result<(), Box<dyn s
 
     let mut cmd = baca_verbose(&temp)?;
     cmd.arg("init")
-        .args(&["--host", &host, "-p", &pass, "-l", &login]);
+        .args(["--host", &host, "-p", &pass, "-l", &login]);
     cmd.assert()
         .stdout(predicate::str::contains("Checking for updates"))
         .success();
@@ -39,7 +39,7 @@ fn update_check_timestamp_should_not_be_saved_if_update() -> Result<(), Box<dyn 
 
     let mut cmd = baca_verbose_dummy_repo(&temp)?;
     cmd.arg("init")
-        .args(&["--host", &host, "-p", &pass, "-l", &login]);
+        .args(["--host", &host, "-p", &pass, "-l", &login]);
     cmd.assert()
         .stdout(predicate::str::contains("New version"))
         .success();
@@ -81,7 +81,7 @@ fn forced_update_check_should_be_triggered_despite_timestamp(
     // Save timestamp
     let mut cmd = baca_verbose(&temp)?;
     cmd.arg("init")
-        .args(&["--host", &host, "-p", &pass, "-l", &login]);
+        .args(["--host", &host, "-p", &pass, "-l", &login]);
     cmd.assert()
         .stdout(predicate::str::contains("Checking for updates"))
         .success();
@@ -115,7 +115,7 @@ fn forced_update_check_should_be_triggered_despite_timestamp(
 
 fn baca_verbose(temp: &TempDir) -> Result<Command, Box<dyn std::error::Error>> {
     let mut cmd = Command::cargo_bin("baca")?;
-    cmd.current_dir(&temp);
+    cmd.current_dir(temp);
     cmd.arg("-v");
     Ok(cmd)
 }

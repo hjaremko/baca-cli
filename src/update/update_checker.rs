@@ -35,7 +35,7 @@ impl<T: ReleaseService> UpdateChecker<T> {
         let last = last.unwrap();
 
         debug!("Current version: {}", CURRENT_VERSION);
-        let res = if last.is_newer_than(&*self.current_version) {
+        let res = if last.is_newer_than(&self.current_version) {
             info!("New version: {}", last.version);
             Update(last)
         } else {

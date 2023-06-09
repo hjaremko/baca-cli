@@ -26,7 +26,7 @@ fn not_initialized() {
     let (dir, mut cmd) = set_up_with_dir().unwrap();
     make_input_file_cpp(&dir).unwrap();
 
-    cmd.args(&[
+    cmd.args([
         "submit",
         "-t",
         "1",
@@ -49,7 +49,7 @@ fn inactive_task_should_report_error() -> Result<(), Box<dyn std::error::Error>>
     let mut cmd = set_up_command(&dir)?;
     let input_file = make_input_file_cpp(&dir)?;
 
-    cmd.args(&[
+    cmd.args([
         "submit",
         "-t",
         "1",
@@ -76,7 +76,7 @@ fn no_file_should_report_error() -> Result<(), Box<dyn std::error::Error>> {
     let dir = initialize_correct_workspace()?;
     let mut cmd = set_up_command(&dir)?;
 
-    cmd.args(&["submit", "-l", "C++", "-t", "2"]);
+    cmd.args(["submit", "-l", "C++", "-t", "2"]);
 
     cmd.assert()
         .stdout(predicate::str::contains("provide file"));
@@ -92,7 +92,7 @@ fn no_language_on_expired_task_should_report_error() -> Result<(), Box<dyn std::
     let mut cmd = set_up_command(&dir)?;
     make_input_file_dummy(&dir).unwrap();
 
-    cmd.args(&["submit", "-f", "dummy.txt", "-t", "2"]);
+    cmd.args(["submit", "-f", "dummy.txt", "-t", "2"]);
 
     cmd.assert()
         .stdout(predicate::str::contains("still active?"));
@@ -107,7 +107,7 @@ fn invalid_filename_should_report_error() -> Result<(), Box<dyn std::error::Erro
     let dir = initialize_correct_workspace()?;
     let mut cmd = set_up_command(&dir)?;
 
-    cmd.args(&[
+    cmd.args([
         "submit",
         "-f",
         "dummy.txt",
@@ -132,7 +132,7 @@ fn invalid_language_should_report_error() -> Result<(), Box<dyn std::error::Erro
     let mut cmd = set_up_command(&dir)?;
     make_input_file_dummy(&dir).unwrap();
 
-    cmd.args(&["submit", "-f", "dummy.txt", "-t", "2", "-l", "CPlusPlus"]);
+    cmd.args(["submit", "-f", "dummy.txt", "-t", "2", "-l", "CPlusPlus"]);
 
     cmd.assert()
         .stdout(predicate::str::contains("cplusplus is not yet supported"));
@@ -148,7 +148,7 @@ fn invalid_task_should_report_error() -> Result<(), Box<dyn std::error::Error>> 
     let mut cmd = set_up_command(&dir)?;
     make_input_file_dummy(&dir).unwrap();
 
-    cmd.args(&[
+    cmd.args([
         "submit",
         "-f",
         "dummy.txt",
@@ -173,7 +173,7 @@ fn zip_should_zip() -> Result<(), Box<dyn std::error::Error>> {
     let mut cmd = set_up_command(&dir)?;
     let input_file = make_input_file_cpp(&dir)?;
 
-    cmd.args(&[
+    cmd.args([
         "submit",
         "-t",
         "1",
@@ -199,7 +199,7 @@ fn default_option_should_save_config() -> Result<(), Box<dyn std::error::Error>>
     let mut cmd = set_up_command(&dir)?;
     make_input_file_dummy(&dir).unwrap();
 
-    cmd.args(&[
+    cmd.args([
         "submit",
         "-f",
         "dummy.txt",
@@ -235,7 +235,7 @@ fn saved_task_should_be_used() -> Result<(), Box<dyn std::error::Error>> {
     let mut cmd = set_up_command(&dir)?;
     make_input_file_dummy(&dir).unwrap();
 
-    cmd.args(&[
+    cmd.args([
         "submit",
         "-f",
         "dummy.txt",
@@ -266,7 +266,7 @@ fn cmd_options_should_override_saved_task() -> Result<(), Box<dyn std::error::Er
     make_input_file_cpp(&dir)?;
     make_input_file_dummy(&dir)?;
 
-    cmd.args(&[
+    cmd.args([
         "-v",
         "submit",
         "-f",
@@ -280,7 +280,7 @@ fn cmd_options_should_override_saved_task() -> Result<(), Box<dyn std::error::Er
     cmd.assert();
 
     let mut cmd = set_up_command(&dir)?;
-    cmd.args(&["submit", "-f", "source.cpp", "-l", "C++", "--no-save"]);
+    cmd.args(["submit", "-f", "source.cpp", "-l", "C++", "--no-save"]);
     cmd.assert()
         .stdout(predicate::str::contains("Submitting source.cpp"))
         .stdout(predicate::str::contains("C++"))
@@ -297,7 +297,7 @@ fn clear_should_remove_saved_config() -> Result<(), Box<dyn std::error::Error>> 
     let mut cmd = set_up_command(&dir)?;
     make_input_file_dummy(&dir)?;
 
-    cmd.args(&[
+    cmd.args([
         "submit",
         "-f",
         "dummy.txt",
@@ -342,7 +342,7 @@ fn given_just_filename_absolute_path_should_be_saved() -> Result<(), Box<dyn std
     let mut cmd = set_up_command(&dir)?;
     let input_file = make_input_file_cpp(&dir)?;
 
-    cmd.args(&[
+    cmd.args([
         "submit",
         "-t",
         "1",
@@ -359,7 +359,7 @@ fn given_just_filename_absolute_path_should_be_saved() -> Result<(), Box<dyn std
 
     let submit_config_contents = fs::read_to_string(dir.baca_submit_config_file_path()).unwrap();
     let input_path = input_file.path().canonicalize().unwrap();
-    let input_path = input_path.to_str().unwrap().replace("\\", "\\\\");
+    let input_path = input_path.to_str().unwrap().replace('\\', "\\\\");
 
     assert!(
         predicate::str::contains(&input_path).eval(&submit_config_contents),
@@ -378,7 +378,7 @@ fn given_absolute_path_should_be_saved() -> Result<(), Box<dyn std::error::Error
     let mut cmd = set_up_command(&dir)?;
     let input_file = make_input_file_cpp(&dir)?;
 
-    cmd.args(&[
+    cmd.args([
         "submit",
         "-t",
         "1",
@@ -394,7 +394,7 @@ fn given_absolute_path_should_be_saved() -> Result<(), Box<dyn std::error::Error
 
     let submit_config_contents = fs::read_to_string(dir.baca_submit_config_file_path()).unwrap();
     let input_path = input_file.path().canonicalize().unwrap();
-    let input_path = input_path.to_str().unwrap().replace("\\", "\\\\");
+    let input_path = input_path.to_str().unwrap().replace('\\', "\\\\");
 
     assert!(
         predicate::str::contains(&input_path).eval(&submit_config_contents),
@@ -419,7 +419,7 @@ fn given_relative_path_absolute_should_be_saved() -> Result<(), Box<dyn std::err
 
     let mut cmd = set_up_command(&dir)?;
 
-    cmd.args(&[
+    cmd.args([
         "submit",
         "-t",
         "1",
@@ -436,7 +436,7 @@ fn given_relative_path_absolute_should_be_saved() -> Result<(), Box<dyn std::err
 
     let submit_config_contents = fs::read_to_string(dir.baca_submit_config_file_path()).unwrap();
     let input_path = input_file.path().canonicalize().unwrap();
-    let input_path = input_path.to_str().unwrap().replace("\\", "\\\\");
+    let input_path = input_path.to_str().unwrap().replace('\\', "\\\\");
 
     assert!(
         predicate::str::contains(&input_path).eval(&submit_config_contents),
@@ -455,7 +455,7 @@ fn when_rename_option_then_submit_renamed_file() -> Result<(), Box<dyn std::erro
     let mut cmd = set_up_command(&dir)?;
     let input_file = make_input_file_cpp(&dir)?;
 
-    cmd.args(&[
+    cmd.args([
         "submit",
         "-t",
         "1",
@@ -483,7 +483,7 @@ fn when_rename_as_same_name_then_do_not_rename() -> Result<(), Box<dyn std::erro
     let mut cmd = set_up_command(&dir)?;
     let input_file = make_input_file_cpp(&dir)?;
 
-    cmd.args(&[
+    cmd.args([
         "submit",
         "-t",
         "1",
@@ -511,7 +511,7 @@ fn when_zipping_renamed_then_zip_renamed() -> Result<(), Box<dyn std::error::Err
     let mut cmd = set_up_command(&dir)?;
     let input_file = make_input_file_cpp(&dir)?;
 
-    cmd.args(&[
+    cmd.args([
         "submit",
         "-t",
         "1",
@@ -544,7 +544,7 @@ fn given_already_saved_when_submit_then_do_not_ask_for_save(
     let mut cmd = set_up_command(&dir)?;
     let input_file = make_input_file_cpp(&dir)?;
 
-    cmd.args(&[
+    cmd.args([
         "submit",
         "-t",
         "1",
@@ -557,7 +557,7 @@ fn given_already_saved_when_submit_then_do_not_ask_for_save(
     cmd.assert();
 
     let mut cmd = set_up_command(&dir)?;
-    cmd.args(&["submit"]);
+    cmd.args(["submit"]);
     cmd.assert()
         .stdout(predicate::str::contains("Save submit configuration? [Y/n]").not());
 
@@ -572,7 +572,7 @@ fn given_config_edit_when_no_config_saved_then_print_error(
     let dir = initialize_correct_workspace()?;
 
     let mut cmd = set_up_command(&dir)?;
-    cmd.args(&["submit", "config"]);
+    cmd.args(["submit", "config"]);
     cmd.assert()
         .stdout(predicate::str::contains("No saved submit config!"));
 
@@ -587,7 +587,7 @@ fn given_no_main_should_trigger_main_removal() -> Result<(), Box<dyn std::error:
     let mut cmd = set_up_command(&dir)?;
     let input_file = make_input_file_cpp(&dir)?;
 
-    cmd.args(&[
+    cmd.args([
         "submit",
         "--no-main",
         "-f",
@@ -610,7 +610,7 @@ fn given_no_main_when_zip_should_remove_before_zipping() -> Result<(), Box<dyn s
     let mut cmd = set_up_command(&dir)?;
     let input_file = make_input_file_cpp(&dir)?;
 
-    cmd.args(&[
+    cmd.args([
         "submit",
         "--no-main",
         "-f",
@@ -634,7 +634,7 @@ fn given_no_polish_should_trigger_unicode_removal() -> Result<(), Box<dyn std::e
     let mut cmd = set_up_command(&dir)?;
     let input_file = make_input_file_cpp(&dir)?;
 
-    cmd.args(&[
+    cmd.args([
         "submit",
         "--no-polish",
         "-f",
@@ -658,7 +658,7 @@ fn not_given_no_polish_should_not_trigger_unicode_removal() -> Result<(), Box<dy
     let mut cmd = set_up_command(&dir)?;
     let input_file = make_input_file_cpp(&dir)?;
 
-    cmd.args(&[
+    cmd.args([
         "submit",
         "-f",
         input_file.path().to_str().unwrap(),
@@ -680,7 +680,7 @@ fn submit_with_no_header_should_fail() -> Result<(), Box<dyn std::error::Error>>
     let mut cmd = set_up_command(&dir)?;
     let input_file = make_input_file_dummy_no_header(&dir)?;
 
-    cmd.args(&[
+    cmd.args([
         "submit",
         "-f",
         input_file.path().to_str().unwrap(),
@@ -705,7 +705,7 @@ fn submit_with_header_should_not_fail() -> Result<(), Box<dyn std::error::Error>
     let mut cmd = set_up_command(&dir)?;
     let input_file = make_input_file_cpp(&dir)?;
 
-    cmd.args(&[
+    cmd.args([
         "submit",
         "-f",
         input_file.path().to_str().unwrap(),

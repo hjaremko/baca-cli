@@ -28,6 +28,6 @@ impl WorkspacePaths {
     where
         T: ConfigObject,
     {
-        self.baca_dir().join(&T::config_filename())
+        self.baca_dir().join(T::config_filename())
     }
 }
