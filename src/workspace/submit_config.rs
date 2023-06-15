@@ -3,6 +3,7 @@ use crate::model::Language;
 use crate::workspace::{ConfigObject, Workspace};
 use merge::Merge;
 use serde::{Deserialize, Serialize};
+use std::io::ErrorKind;
 use std::path::Path;
 use std::path::PathBuf;
 
@@ -17,7 +18,7 @@ pub struct SubmitConfig {
     #[merge(strategy = merge_left_option)]
     pub id: Option<String>,
     #[merge(strategy = merge_left_option)]
-    pub file: Option<PathBuf>,
+    pub files: Option<Vec<PathBuf>>,
     #[merge(strategy = merge::bool::overwrite_false)]
     pub to_zip: bool,
     #[merge(strategy = merge_left_option)]
@@ -43,7 +44,7 @@ impl SubmitConfig {
     ) -> Self {
         Self {
             id: id.to_string().into(),
-            file: file.to_owned().into(),
+            // files: file.to_owned().into(),
             to_zip,
             language: language.into(),
             rename_as,
@@ -57,27 +58,50 @@ impl SubmitConfig {
         self.id.as_ref()
     }
 
-    pub fn file(&self) -> Option<&Path> {
-        self.file.as_deref()
+    pub fn files(&self) -> Option<&Vec<PathBuf>> {
+        self.files.as_ref()
     }
 
-    pub fn try_set_file<P>(&mut self, filepath: Option<P>) -> crate::error::Result<()>
+    pub fn try_set_files<P>(&mut self, filepaths: &Option<Vec<P>>) -> crate::error::Result<()>
     where
-        P: Into<PathBuf>,
+        P: Into<PathBuf> + Clone,
     {
-        let file = match filepath {
+        let files = match filepaths {
             None => None,
-            Some(file) => {
-                let path = file.into();
+            Some(files) => {
+                let l: Result<Vec<PathBuf>, _> = files
+                    .iter()
+                    .map(|file| {
+                        let path: PathBuf = file.clone().into();
+                        if !path.exists() {
+                            //     return Err(Error::InputFileDoesNotExist);
+                            return Err(std::io::Error::new(ErrorKind::NotFound, "asdas"));
+                        }
+                        path.canonicalize()
+                    })
+                    .collect();
 
-                if !path.exists() {
-                    return Err(Error::InputFileDoesNotExist);
-                }
-
-                Some(path.canonicalize()?)
+                // let l = files.iter().map(|file| {
+                //     let path: PathBuf = (*file.to_owned()).into();
+                //
+                //
+                //     Ok(Some(path.canonicalize()?))
+                // }).to_owned();
+                Some(l)
             }
         };
-        self.file = file;
+
+        if files.is_none() {
+            return Err(Error::InputFileDoesNotExist);
+        }
+
+        let files = files.unwrap();
+
+        if files.is_err() {
+            return Err(Error::InputFileDoesNotExist);
+        }
+
+        self.files = Some(files.unwrap());
         Ok(())
     }
 }

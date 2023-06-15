@@ -60,7 +60,7 @@ where
             let subcommand = SubmitSubcommand::from(command);
             let save_switch = SaveSwitch::new(*save, *no_save);
             let mut provided_config = SubmitConfig {
-                file: None,
+                files: None,
                 language: match language {
                     None => None,
                     Some(lang_str) => Some(lang_str.parse()?),
@@ -72,7 +72,7 @@ where
                 no_polish: *no_polish,
                 skip_header: *skip_header,
             };
-            provided_config.try_set_file(file.as_ref())?;
+            provided_config.try_set_files(file)?;
 
             Submit {
                 subcommand,

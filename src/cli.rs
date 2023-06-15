@@ -63,8 +63,8 @@ pub(crate) enum Commands {
         task: Option<u32>,
 
         /// A file to submit, overrides saved path
-        #[arg(short, long, value_name = "FILE")]
-        file: Option<String>,
+        #[arg(short, long, value_name = "FILE", num_args(0..))]
+        file: Option<Vec<String>>,
 
         /// Task language. Please provide it exactly as is displayed on BaCa
         #[arg(short, long)]

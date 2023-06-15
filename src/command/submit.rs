@@ -111,7 +111,7 @@ impl Submit {
     {
         let (ask_for_save, mut submit_config) = self.merge_saved_and_provided_configs(workspace)?;
 
-        if submit_config.file().is_none() {
+        if submit_config.files().is_none() {
             return Err(Error::SubmitArgumentNotProvided("file".to_string()));
         }
 
@@ -225,7 +225,7 @@ where
     task.language = submit_config.language.unwrap();
 
     let original_filename = submit_config
-        .file()
+        .files()
         .unwrap()
         .file_name()
         .unwrap()
@@ -239,7 +239,7 @@ where
         } else {
             let renamed = std::env::temp_dir().join(new_name);
             fs::copy(submit_config.file().unwrap(), &renamed)?;
-            submit_config.try_set_file(renamed.into())?;
+            // submit_config.try_set_files(renamed.into())?;
 
             format!(
                 "{} as {}",
@@ -269,7 +269,7 @@ where
         println!("Submitting with no main included");
 
         let unmained_input = workspace::remove_main(submit_config.file().unwrap())?;
-        submit_config.try_set_file(unmained_input.into())?;
+        // submit_config.try_set_files(unmained_input.into())?;
         info!("Unmained input file: {:?}", submit_config.file());
     }
 
@@ -278,16 +278,16 @@ where
         println!("Submitting with no Polish diacritics");
 
         let polishless_input = workspace::make_polishless_file(submit_config.file().unwrap())?;
-        submit_config.try_set_file(polishless_input.into())?;
+        // submit_config.try_set_files(polishless_input.into())?;
         info!("Polishless input file: {:?}", submit_config.file());
     }
 
     if submit_config.to_zip {
-        submit_config.try_set_file(
-            workspace::zip_file(submit_config.file().unwrap())?
-                .to_path_buf()
-                .into(),
-        )?;
+        // submit_config.try_set_files(
+        //     workspace::zip_file(submit_config.file().unwrap())?
+        //         .to_path_buf()
+                // .into(),
+        // )?;
         println!(
             "Zipped as {}",
             submit_config

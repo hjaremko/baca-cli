@@ -194,6 +194,34 @@ fn zip_should_zip() -> Result<(), Box<dyn std::error::Error>> {
 
 #[test]
 #[ignore]
+fn zip_should_zip_multiple_files() -> Result<(), Box<dyn std::error::Error>> {
+    let dir = initialize_correct_workspace()?;
+    let mut cmd = set_up_command(&dir)?;
+    let input_file = make_input_file_cpp(&dir)?;
+    let input_file2 = make_input_file_dummy(&dir)?;
+
+    cmd.args([
+        "submit",
+        "-t",
+        "1",
+        "-l",
+        "C++",
+        "-f",
+        input_file.path().to_str().unwrap(),
+        input_file2.path().to_str().unwrap(),
+        "--zip",
+        "--no-save",
+    ]);
+
+    cmd.assert()
+        .stdout(predicate::str::contains("Zipping source.cpp"));
+
+    dir.close()?;
+    Ok(())
+}
+
+#[test]
+#[ignore]
 fn default_option_should_save_config() -> Result<(), Box<dyn std::error::Error>> {
     let dir = initialize_correct_workspace()?;
     let mut cmd = set_up_command(&dir)?;
