@@ -80,7 +80,7 @@ fn filter_given_invalid_argument_should_print_error() -> Result<(), Box<dyn std:
 
     cmd.arg("last").arg("-t").arg("asd");
     cmd.assert()
-        .stdout(predicate::str::contains("asd does not exist"));
+        .stderr(predicate::str::contains("invalid value"));
     dir.close()?;
     Ok(())
 }

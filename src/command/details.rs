@@ -2,8 +2,6 @@ use crate::api::baca_api::BacaApi;
 use crate::command::Command;
 use crate::error::Result;
 use crate::workspace::{ConfigObject, ConnectionConfig, Workspace};
-
-use clap::ArgMatches;
 use tracing::info;
 
 pub struct Details {
@@ -13,15 +11,6 @@ pub struct Details {
 impl Details {
     pub fn new(submit_id: &str) -> Self {
         Details {
-            submit_id: submit_id.to_string(),
-        }
-    }
-}
-
-impl From<&ArgMatches<'_>> for Details {
-    fn from(args: &ArgMatches) -> Self {
-        let submit_id = args.value_of("id").unwrap();
-        Self {
             submit_id: submit_id.to_string(),
         }
     }

@@ -1,4 +1,5 @@
 use crate::api::baca_api::BacaApi;
+use crate::cli::SubmitCommands;
 use crate::command::last::Last;
 use crate::command::prompt::Prompt;
 use crate::command::{prompt, Command};
@@ -8,47 +9,45 @@ use crate::workspace::config_editor::ConfigEditor;
 use crate::workspace::header_check::is_header_present;
 use crate::workspace::{ConfigObject, ConnectionConfig, SubmitConfig, Workspace};
 use crate::{error, workspace};
-use clap::ArgMatches;
 use colored::Colorize;
 use dialoguer::Confirm;
 use merge::Merge;
-use std::convert::TryFrom;
 use std::fs;
 use tracing::{debug, info};
 
-enum SubmitSubcommand {
+#[derive(Default)]
+pub enum SubmitSubcommand {
+    #[default]
     None,
     Clear,
     Config,
 }
 
-impl<'a> From<&'a ArgMatches<'a>> for SubmitSubcommand {
-    fn from(args: &'a ArgMatches) -> Self {
-        if args.subcommand_matches("clear").is_some() {
-            return Self::Clear;
+impl From<&Option<SubmitCommands>> for SubmitSubcommand {
+    fn from(args: &Option<SubmitCommands>) -> Self {
+        match args {
+            None => Self::None,
+            Some(command) => match command {
+                SubmitCommands::Config {} => Self::Config,
+                SubmitCommands::Clear {} => Self::Clear,
+            },
         }
-
-        if args.subcommand_matches("config").is_some() {
-            return Self::Config;
-        }
-
-        Self::None
     }
 }
 
-enum SaveSwitch {
+pub enum SaveSwitch {
     None,
     Save,
     NoSave,
 }
 
-impl<'a> From<&'a ArgMatches<'a>> for SaveSwitch {
-    fn from(args: &'a ArgMatches) -> Self {
-        if args.is_present("save") {
+impl SaveSwitch {
+    pub fn new(save: bool, no_save: bool) -> Self {
+        if save {
             return Self::Save;
         }
 
-        if args.is_present("no_save") {
+        if no_save {
             return Self::NoSave;
         }
 
@@ -57,21 +56,9 @@ impl<'a> From<&'a ArgMatches<'a>> for SaveSwitch {
 }
 
 pub struct Submit {
-    subcommand: SubmitSubcommand,
-    save_switch: SaveSwitch,
-    provided_config: SubmitConfig,
-}
-
-impl<'a> TryFrom<&'a ArgMatches<'a>> for Submit {
-    type Error = crate::error::Error;
-
-    fn try_from(args: &'a ArgMatches<'a>) -> core::result::Result<Self, Self::Error> {
-        Ok(Self {
-            subcommand: args.into(),
-            save_switch: args.into(),
-            provided_config: SubmitConfig::try_from(args)?,
-        })
-    }
+    pub subcommand: SubmitSubcommand,
+    pub save_switch: SaveSwitch,
+    pub provided_config: SubmitConfig,
 }
 
 impl Command for Submit {
@@ -329,7 +316,7 @@ where
         submit_config.file().unwrap().to_str().unwrap(),
     )?;
 
-    Last::with_filter(&task_id).execute(workspace, api)
+    Last::with_filter(task_id).execute(workspace, api)
 }
 
 #[cfg(test)]

@@ -8,7 +8,7 @@ pub struct Refresh {}
 
 impl Refresh {
     pub fn new() -> Self {
-        Refresh {}
+        Self {}
     }
 }
 

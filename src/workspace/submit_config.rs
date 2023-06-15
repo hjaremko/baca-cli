@@ -1,10 +1,8 @@
 use crate::error::Error;
 use crate::model::Language;
 use crate::workspace::{ConfigObject, Workspace};
-use clap::ArgMatches;
 use merge::Merge;
 use serde::{Deserialize, Serialize};
-use std::convert::TryFrom;
 use std::path::Path;
 use std::path::PathBuf;
 
@@ -19,7 +17,7 @@ pub struct SubmitConfig {
     #[merge(strategy = merge_left_option)]
     pub id: Option<String>,
     #[merge(strategy = merge_left_option)]
-    file: Option<PathBuf>,
+    pub file: Option<PathBuf>,
     #[merge(strategy = merge::bool::overwrite_false)]
     pub to_zip: bool,
     #[merge(strategy = merge_left_option)]
@@ -99,28 +97,6 @@ impl ConfigObject for SubmitConfig {
 
     fn config_filename() -> String {
         "submit".to_string()
-    }
-}
-
-impl<'a> TryFrom<&'a ArgMatches<'a>> for SubmitConfig {
-    type Error = crate::error::Error;
-
-    fn try_from(args: &'a ArgMatches<'a>) -> Result<Self, Error> {
-        let mut x = Self {
-            file: None,
-            language: match args.value_of("language") {
-                None => None,
-                Some(lang_str) => Some(lang_str.parse()?),
-            },
-            id: args.value_of("task_id").map(|x| x.into()),
-            rename_as: args.value_of("rename").map(|x| x.into()),
-            to_zip: args.is_present("zip"),
-            no_main: args.is_present("no_main"),
-            no_polish: args.is_present("no_polish"),
-            skip_header: args.is_present("skip_header"),
-        };
-        x.try_set_file(args.value_of("file"))?;
-        Ok(x)
     }
 }
 

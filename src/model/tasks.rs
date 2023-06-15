@@ -15,7 +15,7 @@ impl Tasks {
     pub fn print(&self) {
         for task in &self.tasks {
             let s = format!(
-                "● {} - {} - {} OK",
+                "● Id: {} - {} - {} OK",
                 task.id, task.problem_name, task.overall_oks
             )
             .bold();

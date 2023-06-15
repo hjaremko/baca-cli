@@ -49,7 +49,7 @@ impl Workspace for WorkspaceDir {
 
     fn check_if_initialized(&self) -> Result<()> {
         let path = self.paths.baca_dir();
-        info!("Checking if {} exists.", path.to_str().unwrap());
+        debug!("Checking if {} exists.", path.to_str().unwrap());
 
         if !path.exists() {
             return Err(Error::WorkspaceNotInitialized);

@@ -94,7 +94,7 @@ impl Submit {
 
 fn add_emoji(str: &str, status: &SubmitStatus) -> String {
     match status {
-        SubmitStatus::Ok => format!(" ✔️{}", str),
+        SubmitStatus::Ok => format!(" ✅{}", str),
         _ => format!(" ❌{}", str),
     }
 }

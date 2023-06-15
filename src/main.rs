@@ -1,15 +1,14 @@
-#[macro_use]
-extern crate clap;
-
+use crate::cli::Cli;
 use crate::update::{GithubReleases, UpdateCheckTimestamp, UpdateChecker, UpdateStatus};
 use crate::workspace::{ConfigObject, WorkspaceDir};
 use api::baca_service::BacaService;
-use clap::{App, AppSettings, ArgMatches};
+use clap::Parser;
 use colored::Colorize;
 use std::env;
 use tracing::{error, info, Level};
 
 mod api;
+mod cli;
 mod command;
 mod error;
 mod log;
@@ -19,41 +18,37 @@ mod update;
 mod workspace;
 
 fn main() {
-    let yaml = load_yaml!("cli.yml");
-    let app = App::from_yaml(yaml)
-        .version(env!("CARGO_PKG_VERSION"))
-        .setting(AppSettings::ArgRequiredElseHelp);
-    let matches = app.get_matches();
+    let cli = Cli::parse();
     let workspace = WorkspaceDir::new();
     let baca_api = BacaService::default();
 
-    set_logging_level(&matches);
-    check_for_updates(&workspace, &matches);
+    set_logging_level(&cli);
+    check_for_updates(&workspace, cli.no_update, cli.force_update);
 
-    if let (command, Some(sub_matches)) = matches.subcommand() {
-        if let Err(e) = command::execute(&workspace, &baca_api, command, sub_matches) {
-            error!("{:?}", e);
-            println!("{}", format!("{}", e).bright_red());
-        }
+    let result = match &cli.command {
+        Some(commands) => command::execute(&workspace, &baca_api, commands),
+        None => Ok(()),
+    };
+
+    if let Err(e) = result {
+        error!("{:?}", e);
+        println!("{}", format!("{}", e).bright_red());
     }
 }
 
-fn set_logging_level(matches: &ArgMatches) {
-    let verbose_matches = matches.occurrences_of("verbose");
-
-    let log_level = match verbose_matches {
+fn set_logging_level(cli: &Cli) {
+    let log_level = match cli.verbose {
+        0 => return,
         1 => Level::INFO,
         2 => Level::DEBUG,
         _ => Level::TRACE,
     };
 
-    if verbose_matches != 0 {
-        log::init_logging(log_level);
-    }
+    log::init_logging(log_level);
 }
 
-fn check_for_updates(workspace: &WorkspaceDir, matches: &ArgMatches) {
-    if matches.is_present("noupdate") {
+fn check_for_updates(workspace: &WorkspaceDir, no_update: bool, force_update: bool) {
+    if no_update {
         info!("Update check disabled.");
         return;
     }
@@ -61,7 +56,7 @@ fn check_for_updates(workspace: &WorkspaceDir, matches: &ArgMatches) {
     let now = UpdateCheckTimestamp::now();
     let last_check = UpdateCheckTimestamp::read_config(workspace).unwrap();
 
-    if matches.is_present("force-update") || last_check.is_expired(&now) {
+    if force_update || last_check.is_expired(&now) {
         let updates = fetch_updates();
 
         if let Err(e) = updates {

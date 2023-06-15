@@ -5,7 +5,6 @@ use crate::command::Command;
 use crate::update::BacaRelease;
 use crate::workspace::{ConfigObject, Workspace};
 use crate::{error, workspace};
-use clap::ArgMatches;
 use tracing::{debug, info};
 
 pub struct Init {
@@ -17,12 +16,8 @@ pub struct Init {
     host_prompt: Box<dyn Prompt>,
 }
 
-impl From<&ArgMatches<'_>> for Init {
-    fn from(args: &ArgMatches) -> Self {
-        let host = args.value_of("host").map(|x| x.to_string());
-        let login = args.value_of("login").map(|x| x.to_string());
-        let password = args.value_of("password").map(|x| x.to_string());
-
+impl Init {
+    pub fn new(host: Option<String>, login: Option<String>, password: Option<String>) -> Self {
         Self {
             host,
             login,

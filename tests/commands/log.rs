@@ -63,7 +63,7 @@ fn with_given_more_than_available_should_print_all() -> Result<(), Box<dyn std::
     let dir = initialize_correct_workspace()?;
     let mut cmd = set_up_command(&dir)?;
 
-    cmd.arg("log").arg("1000000");
+    cmd.arg("log").arg("60000");
     cmd.assert()
         .stdout(predicate::str::contains("[G] Funkcje sklejane"))
         .stdout(predicate::str::contains("[A] Zera funkcji"))
@@ -89,7 +89,7 @@ fn with_invalid_argument_should_report_error() -> Result<(), Box<dyn std::error:
 
     cmd.arg("log").arg("nan");
     cmd.assert()
-        .stdout(predicate::str::contains("Invalid argument"));
+        .stderr(predicate::str::contains("invalid value"));
     dir.close()?;
     Ok(())
 }
@@ -149,7 +149,7 @@ fn filter_given_invalid_argument_should_print_error() -> Result<(), Box<dyn std:
 
     cmd.arg("log").arg("-t").arg("asd");
     cmd.assert()
-        .stdout(predicate::str::contains("asd does not exist"));
+        .stderr(predicate::str::contains("invalid value"));
     dir.close()?;
     Ok(())
 }

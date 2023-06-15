@@ -79,7 +79,7 @@ fn no_file_should_report_error() -> Result<(), Box<dyn std::error::Error>> {
     cmd.args(["submit", "-l", "C++", "-t", "2"]);
 
     cmd.assert()
-        .stdout(predicate::str::contains("provide file"));
+        .stdout(predicate::str::contains("provide a file"));
 
     dir.close()?;
     Ok(())

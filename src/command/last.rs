@@ -4,7 +4,6 @@ use crate::command::Command;
 use crate::error::{Error, Result};
 use crate::model::Submit;
 use crate::workspace::{ConfigObject, ConnectionConfig, Workspace};
-use clap::ArgMatches;
 
 pub struct Last {
     task_id: Option<String>,
@@ -15,9 +14,9 @@ impl Last {
         Self { task_id: None }
     }
 
-    pub fn with_filter(task_id: &str) -> Self {
+    pub fn with_filter(task_id: String) -> Self {
         Self {
-            task_id: Some(task_id.to_string()),
+            task_id: Some(task_id),
         }
     }
 
@@ -45,16 +44,6 @@ impl Command for Last {
         let last = self.get_last_submit(&connection_config, api)?;
 
         Details::new(&last.id).execute(workspace, api)
-    }
-}
-
-impl From<&ArgMatches<'_>> for Last {
-    fn from(args: &ArgMatches) -> Self {
-        if let Some(task_id) = args.value_of("task") {
-            return Last::with_filter(task_id);
-        }
-
-        Last::new()
     }
 }
 

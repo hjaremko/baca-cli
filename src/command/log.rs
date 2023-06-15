@@ -3,25 +3,19 @@ use crate::command::Command;
 use crate::error::{Error, Result};
 use crate::model::Results;
 use crate::workspace::{ConfigObject, ConnectionConfig, Workspace};
-use clap::ArgMatches;
 use tracing::info;
 
 pub struct Log {
-    last_n: String,
-    task_id: Option<String>,
+    pub last_n: String,
+    pub task_id: Option<String>,
 }
 
 impl Log {
-    pub fn new(last_n: &str) -> Self {
+    pub fn new(last_n: &str, task_id: &Option<u32>) -> Self {
         Log {
             last_n: last_n.to_string(),
-            task_id: None,
+            task_id: task_id.map(|x| x.to_string()),
         }
-    }
-
-    pub fn add_filter(mut self, task_id: &str) -> Self {
-        self.task_id = Some(task_id.to_string());
-        self
     }
 
     fn fetch_logs<A>(&self, api: &A, connection_config: &ConnectionConfig) -> Result<Results>
@@ -33,19 +27,6 @@ impl Log {
         } else {
             api.get_results(connection_config)?
         })
-    }
-}
-
-impl From<&ArgMatches<'_>> for Log {
-    fn from(args: &ArgMatches) -> Self {
-        let last_n = args.value_of("amount").unwrap();
-        let log = Self::new(last_n);
-
-        if let Some(task_id) = args.value_of("task") {
-            return log.add_filter(task_id);
-        }
-
-        log
     }
 }
 
@@ -89,7 +70,7 @@ mod tests {
             .withf(|x| *x == ConnectionConfig::default())
             .returning(|_| Ok(Results::default()));
 
-        let log = Log::new("10");
+        let log = Log::new("10", &None);
         let result = log.execute(&mock_workspace, &mock_api);
         assert!(result.is_ok())
     }

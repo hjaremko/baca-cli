@@ -67,7 +67,7 @@ impl fmt::Display for Error {
             Error::NoSubmitsYet => "No submits yet!".to_owned(),
             Error::InputFileDoesNotExist => "Provided input file does not exist!".to_owned(),
             Error::EditorFail(code) => format!("Config editor failed with exit code: {}", code),
-            Error::SubmitArgumentNotProvided(argument) => format!("Please provide {}. Type 'baca submit -h' for more info.", argument),
+            Error::SubmitArgumentNotProvided(argument) => format!("Please provide a {}. Type 'baca submit -h' for more info.", argument),
             Error::NoHeader => "No header!".to_owned(),
         };
 

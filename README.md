@@ -14,13 +14,13 @@ cargo install --git https://github.com/hjaremko/baca-cli.git
 ```
 #### Linux
 ```sh
-$ curl -Lo baca.zip https://github.com/hjaremko/baca-cli/releases/download/v0.5.0/baca-0.5.0-linux.zip
+$ curl -Lo baca.zip https://github.com/hjaremko/baca-cli/releases/download/v0.6.0/baca-0.6.0-linux.zip
 $ unzip baca.zip
 $ sudo install baca /usr/local/bin/
 ```
 #### macOS
 ```sh
-$ curl -Lo baca.zip https://github.com/hjaremko/baca-cli/releases/download/v0.5.0/baca-0.5.0-linux.zip
+$ curl -Lo baca.zip https://github.com/hjaremko/baca-cli/releases/download/v0.6.0/baca-0.6.0-linux.zip
 $ unzip baca.zip
 $ sudo cp baca /usr/local/bin/
 ```
@@ -48,28 +48,29 @@ sudo apt install pkg-config libssl-dev
 ## Usage
 
 ```
-baca [FLAGS] [SUBCOMMAND]
+baca [OPTIONS] [COMMAND]
 ```
 
 ```
-FLAGS:
-    -U, --force-update    Force update check
-    -h, --help            Prints help information
-    -u, --no-update       Disable update check
-    -V, --version         Prints version information
-    -v, --verbose         Sets the level of verbosity
+Commands:
+  init     Initialise the current directory as a BaCa workspace
+  details  Get submit details
+  refresh  Refresh session, use in case of a cookie expiration
+  log      Print the last N (default 3) submits
+  tasks    Print available tasks
+  submit   Make a submit
+  last     Print details of the last submit
+  config   Open a editor to edit BaCa configuration
+  clear    Remove the whole `.baca` directory
+  help     Print this message or the help of the given subcommand(s)
 
-SUBCOMMANDS:
-    clear      Removes the whole `.baca` directory
-    config     Opens editor to edit BaCa configuration
-    details    Gets submit details
-    help       Prints this message or the help of the given subcommand(s)
-    init       Initializes current directory as BaCa workspace
-    last       Prints details of the last submit
-    log        Prints last (default 3) submits
-    refresh    Refreshes session, use in case of cookie expiration
-    submit     Submits file
-    tasks      Prints available tasks
+Options:
+  -v, --verbose...    Sets the level of log verbosity
+  -u, --no-update     Disable update check
+  -U, --force-update  Force update check
+  -h, --help          Print help
+  -V, --version       Print version
+
 ```
 
 ### Workspace initialization: `init`
@@ -79,13 +80,15 @@ text.**
 User will be asked for credentials, if not provided.
 
 ```
-baca init
+baca init [OPTIONS]
 ```
 
 ```
--h, --host <host>            BaCa hostname, ex. mn2020
--l, --login <login>          BaCa login
--p, --password <password>    BaCa password
+Options:
+      --host <HOST>          BaCa hostname, ex. mn2020
+  -l, --login <LOGIN>        BaCa login
+  -p, --password <PASSWORD>  BaCa password
+  -h, --help                 Print help
 ```
 
 Example, running on `Metody numeryczne 2019/2020` with no login prompt:
@@ -113,34 +116,30 @@ Submits given file to specified task. Will prompt the user for task, if not prov
 - Optional parameter `--no-main` will remove main function from C/C++ files before submitting and zipping.
 - Optional parameter `--no-polish` will remove non-unicode characters from files before submitting and zipping.
 - Optional parameter `--language <language>` explicitly sets input file language.
+- Optional parameter `--skip-header` disabled header verification. Use in case of a non-standard header.
 - `submit config` opens editor to edit submit config.
 - `submit clear` clears saved submit config.
 
 ```
-USAGE:
-    baca submit [FLAGS] [OPTIONS] [SUBCOMMAND]
+Usage: baca submit [OPTIONS] [COMMAND]
 
-FLAGS:
-    -h, --help         Prints help information
-        --no-main      Removes main function before submitting. Takes effect only on C/C++ files.
-        --no-polish    Transliterates Unicode strings in the input file into pure ASCII, effectively removing Polish
-                       diacritics.
-        --no-save      Does not ask for save
-    -s, --save         Saves task config, if provided, future 'submit' calls won't require providing task config
-        --skip-header  Skips header verification
-    -V, --version      Prints version information
-    -z, --zip          Zips files to 'source.zip' before submitting, overrides saved config
+Commands:
+  config  Open a editor to edit submit config
+  clear   Clear saved submit config
+  help    Print this message or the help of the given subcommand(s)
 
-OPTIONS:
-    -f, --file <file>            File to submit, overrided saved path
-    -l, --language <language>    Task language. Please type exacly as it is displayed on Baca.
-    -r, --rename <rename>        Submit input file under different name
-    -t, --task-id <task_id>      Task id, type 'baca tasks' to see what ids are available, overrides saved task id
-
-SUBCOMMANDS:
-    clear     Clears saved submit config
-    config    Opens editor to edit submit config
-    help      Prints this message or the help of the given subcommand(s)
+Options:
+  -t, --task <TASK_ID>       Task id, use 'baca tasks' to see what ids are available, overrides saved task id
+  -f, --file <FILE>          A file to submit, overrides saved path
+  -l, --language <LANGUAGE>  Task language. Please provide it exactly as is displayed on BaCa
+  -r, --rename <NEW_NAME>    Submit input file under different name
+  -s, --save                 Save task config. If provided, future 'submit' calls won't require providing task config
+  -z, --zip                  Zip files to 'source.zip' before submitting, overrides saved config
+      --no-save              Do not ask for save
+      --no-main              Remove main function before submitting. Takes effect only on C/C++ files
+      --no-polish            Transliterate Unicode strings in the input file into pure ASCII, effectively removing Polish diacritics
+      --skip-header          Skip header verification
+  -h, --help                 Print help
 ```
 
 Example:
@@ -172,7 +171,7 @@ Prints statuses of a couple of recent submits (default 3). Parameter `-t <task_i
 task. Task ID can be found through `baca tasks`.
 
 ```
-baca log [optional: number] [optional: -t <task_id>]
+baca log [optional: number, default 3] [optional: -t <task_id>]
 ```
 
 Example:
@@ -210,10 +209,10 @@ Example:
 ● [G] Funkcje sklejane - C++ - 2020-05-17 18:53:09 - submit 4334
 ├─── 100% - 4/4 pts - Ok
 └─── https://baca.ii.uj.edu.pl/mn2020/#SubmitDetails/4334
- ✔️ ── test0/0 - Ok
- ✔️ ── test1/0 - Ok
- ✔️ ── test2/0 - Ok
- ✔️ ── test3/0 - Ok
+ ✅ ── test0/0 - Ok
+ ✅ ── test1/0 - Ok
+ ✅ ── test2/0 - Ok
+ ✅ ── test3/0 - Ok
 ```
 
 ### Any submit details: `details`
@@ -232,25 +231,25 @@ Example:
 ● [D] Skalowany Gauss - C++ - 2020-04-22 19:20:07 - submit 2904
 ├─── 89% - 3.58/4 pts - TimeExceeded
 └─── https://baca.ii.uj.edu.pl/mn2020/#SubmitDetails/2904
- ✔️ ── testy_jawne/test1 - Ok
- ✔️ ── testy_jawne/test2 - Ok
- ✔️ ── testy_jawne/test3 - Ok
- ✔️ ── testy_jawne/test4 - Ok
- ✔️ ── testy_jawne/test5 - Ok
- ✔️ ── testy_jawne/test6 - Ok
- ✔️ ── testy_jawne/test8 - Ok
- ✔️ ── testy/test0 - Ok
- ✔️ ── testy/test1 - Ok
- ❌  ── testy/test10 - TimeExceeded
- ❌  ── testy/test11 - TimeExceeded
- ✔️ ── testy/test2 - Ok
- ✔️ ── testy/test3 - Ok
- ✔️ ── testy/test4 - Ok
- ✔️ ── testy/test5 - Ok
- ✔️ ── testy/test6 - Ok
- ✔️ ── testy/test7 - Ok
- ✔️ ── testy/test8 - Ok
- ✔️ ── testy/test9 - Ok
+ ✅ ── testy_jawne/test1 - Ok
+ ✅ ── testy_jawne/test2 - Ok
+ ✅ ── testy_jawne/test3 - Ok
+ ✅ ── testy_jawne/test4 - Ok
+ ✅ ── testy_jawne/test5 - Ok
+ ✅ ── testy_jawne/test6 - Ok
+ ✅ ── testy_jawne/test8 - Ok
+ ✅ ── testy/test0 - Ok
+ ✅ ── testy/test1 - Ok
+ ❌ ── testy/test10 - TimeExceeded
+ ❌ ── testy/test11 - TimeExceeded
+ ✅ ── testy/test2 - Ok
+ ✅ ── testy/test3 - Ok
+ ✅ ── testy/test4 - Ok
+ ✅ ── testy/test5 - Ok
+ ✅ ── testy/test6 - Ok
+ ✅ ── testy/test7 - Ok
+ ✅ ── testy/test8 - Ok
+ ✅ ── testy/test9 - Ok
 ```
 
 ### All tasks: `tasks`
@@ -266,20 +265,20 @@ Example:
 ```
 > baca tasks
 
-● 1 - [A] Zera funkcji - 69 OK
-● 2 - [B] Metoda Newtona - 58 OK
-● 3 - [C] FAD\x3Csup\x3E2\x3C/sup\x3E - Pochodne mieszane - 62 OK
-● 4 - [D] Skalowany Gauss - 52 OK
-● 5 - [E] Metoda SOR - 64 OK
-● 6 - [F] Interpolacja - 63 OK
-● 7 - [G] Funkcje sklejane - 59 OK
-● 8 - A2 - 1 OK
-● 9 - B2 - 2 OK
-● 10 - C2 - 1 OK
-● 11 - D2 - 2 OK
-● 12 - E2 - 1 OK
-● 13 - F2 - 3 OK
-● 14 - G2 - 2 OK
+● Id: 1 - [A] Zera funkcji - 69 OK
+● Id: 2 - [B] Metoda Newtona - 58 OK
+● Id: 3 - [C] FAD\x3Csup\x3E2\x3C/sup\x3E - Pochodne mieszane - 62 OK
+● Id: 4 - [D] Skalowany Gauss - 52 OK
+● Id: 5 - [E] Metoda SOR - 64 OK
+● Id: 6 - [F] Interpolacja - 63 OK
+● Id: 7 - [G] Funkcje sklejane - 59 OK
+● Id: 8 - A2 - 1 OK
+● Id: 9 - B2 - 2 OK
+● Id: 10 - C2 - 1 OK
+● Id: 11 - D2 - 2 OK
+● Id: 12 - E2 - 1 OK
+● Id: 13 - F2 - 3 OK
+● Id: 14 - G2 - 2 OK
 ```
 
 ## Environment variables
